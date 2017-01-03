@@ -48,10 +48,11 @@ public class WeatherContract {
     // the database to the start of the the Julian day at UTC.
     public static long normalizeDate(long startDate) {
         // normalize the start date to the beginning of the (UTC) day
-        Time time = new Time();
-        time.set(startDate);
-        int julianDay = Time.getJulianDay(startDate, time.gmtoff);
-        return time.setJulianDay(julianDay);
+//        Time time = new Time();
+//        time.set(startDate);
+//        int julianDay = Time.getJulianDay(startDate, time.gmtoff);
+//        return time.setJulianDay(julianDay);
+        return startDate;
     }
 
     /* Inner class that defines the table contents of the location table */

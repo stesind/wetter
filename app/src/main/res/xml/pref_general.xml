@@ -26,4 +26,11 @@
         android:summaryOn="@string/pref_enable_notifications_true"
         android:defaultValue="@string/pref_enable_notifications_default" />
 
+    <CheckBoxPreference
+        android:title="@string/pref_enable_hourly_forecast_label"
+        android:key="@string/pref_enable_hourly_forecast_key"
+        android:summaryOff="@string/pref_enable_hourly_forecast_false"
+        android:summaryOn="@string/pref_enable_hourly_forecast_true"
+        android:defaultValue="@string/pref_enable_hourly_forecast_default" />
+
 </PreferenceScreen>

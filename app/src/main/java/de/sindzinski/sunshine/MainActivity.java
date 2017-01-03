@@ -24,6 +24,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
+import com.facebook.stetho.Stetho;
+
 import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 
 public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback {
@@ -37,6 +39,27 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Create an InitializerBuilder
+        Stetho.InitializerBuilder initializerBuilder =
+                Stetho.newInitializerBuilder(this);
+
+// Enable Chrome DevTools
+        initializerBuilder.enableWebKitInspector(
+                Stetho.defaultInspectorModulesProvider(this)
+        );
+
+// Enable command line interface
+        initializerBuilder.enableDumpapp(
+                Stetho.defaultDumperPluginsProvider(this)
+        );
+
+// Use the InitializerBuilder to generate an Initializer
+        Stetho.Initializer initializer = initializerBuilder.build();
+
+// Initialize Stetho with the Initializer
+        Stetho.initialize(initializer);
+
         mLocation = Utility.getPreferredLocation(this);
 
         setContentView(R.layout.activity_main);

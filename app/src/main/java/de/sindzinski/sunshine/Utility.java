@@ -108,26 +108,39 @@ public class Utility {
 
         // If the date we're building the String for is today's date, the format
         // is "Today, June 24"
-        if (today == day) {
-            int formatId = R.string.format_full_friendly_date;
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
-            return String.format(context.getString(
-                    formatId,
-                    gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
-                    shortenedDateFormat.format(timeInMillis)));
-        } else if ( day < today + 7 ) {
-            // If the input date is less than a week in the future, just return the day name.
-            String dayName=gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());//Locale.US);
-            return dayName;
-        } else {
-            // Otherwise, use the form "Mon Jun 3"
-            SimpleDateFormat shortenedDateFormat;
-            if ( Utility.getHourlyForecast(context)) {
-                shortenedDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
+        if ( Utility.getHourlyForecast(context)) {
+            if (today == day) {
+                int formatId = R.string.format_full_friendly_date;
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
+                return String.format(context.getString(
+                        formatId,
+                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
+                        shortenedDateFormat.format(timeInMillis)));
+            } else if ( day < today + 1 ) {
+                // If the input date is less than a week in the future, just return the day name.
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
+                return shortenedDateFormat.format(timeInMillis);
             } else {
-                shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+                // Otherwise, use the form "Mon Jun 3"
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
+                return shortenedDateFormat.format(timeInMillis);
             }
-            return shortenedDateFormat.format(timeInMillis);
+        } else {
+            if (today == day) {
+                int formatId = R.string.format_full_friendly_date;
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
+                return String.format(context.getString(
+                        formatId,
+                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
+                        shortenedDateFormat.format(timeInMillis)));
+            } else if ( day < today + 7 ) {
+                // If the input date is less than a week in the future, just return the day name.
+                String dayName=gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());//Locale.US);
+                return dayName;
+            } else {
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+                return shortenedDateFormat.format(timeInMillis);
+            }
         }
     }
 

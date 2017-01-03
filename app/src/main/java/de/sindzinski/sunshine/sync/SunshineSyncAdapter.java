@@ -46,6 +46,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Vector;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
@@ -106,22 +107,33 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            final String FORECAST_BASE_URL =
-                    "http://api.openweathermap.org/data/2.5/forecast/daily?";
+
             final String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "mode";
             final String UNITS_PARAM = "units";
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
-
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, locationQuery)
-                    .appendQueryParameter(FORMAT_PARAM, format)
-                    .appendQueryParameter(UNITS_PARAM, units)
-                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
-                    .build();
-
+            Uri builtUri;
+            if ( Utility.getHourlyForecast(getContext())) {
+                final String FORECAST_BASE_URL =
+                        "http://api.openweathermap.org/data/2.5/forecast?";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM, locationQuery)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .build();
+            } else {
+                final String FORECAST_BASE_URL =
+                        "http://api.openweathermap.org/data/2.5/forecast/daily?";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM, locationQuery)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .build();
+            }
             URL url = new URL(builtUri.toString());
 
             // Create the request to OpenWeatherMap, and open the connection
@@ -193,34 +205,67 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         // into an Object hierarchy for us.
 
         // These are the names of the JSON objects that need to be extracted.
-
         // Location information
-        final String OWM_CITY = "city";
-        final String OWM_CITY_NAME = "name";
-        final String OWM_COORD = "coord";
+        String OWM_CITY = "city";
+        String OWM_CITY_NAME = "name";
+        String OWM_COORD = "coord";
 
         // Location coordinate
-        final String OWM_LATITUDE = "lat";
-        final String OWM_LONGITUDE = "lon";
+        String OWM_LATITUDE = "lat";
+        String OWM_LONGITUDE = "lon";
 
+        String OWM_TIME = "dt";
         // Weather information.  Each day's forecast info is an element of the "list" array.
-        final String OWM_LIST = "list";
+        String OWM_LIST = "list";
 
-        final String OWM_PRESSURE = "pressure";
-        final String OWM_HUMIDITY = "humidity";
-        final String OWM_WINDSPEED = "speed";
-        final String OWM_WIND_DIRECTION = "deg";
+        String OWM_PRESSURE = "pressure";
+        String OWM_HUMIDITY = "humidity";
+        String OWM_WIND = "wind";
+        String OWM_WINDSPEED = "speed";
+        String OWM_WIND_DIRECTION = "deg";
 
         // All temperatures are children of the "temp" object.
-        final String OWM_TEMPERATURE = "temp";
-        final String OWM_MAX = "max";
-        final String OWM_MIN = "min";
+        String OWM_TEMPERATURE = "temp";
+        String OWM_MAX = "max";
+        String OWM_MIN = "min";
 
-        final String OWM_WEATHER = "weather";
-        final String OWM_DESCRIPTION = "main";
-        final String OWM_WEATHER_ID = "id";
+        String OWM_WEATHER = "weather";
+        String OWM_DESCRIPTION = "main";
+        String OWM_WEATHER_ID = "id";
 
-        final String OWM_MESSAGE_CODE = "cod";
+        String OWM_MESSAGE_CODE = "cod";
+
+        if ( Utility.getHourlyForecast(getContext())) {
+            // Location information
+            OWM_CITY = "city";
+            OWM_CITY_NAME = "name";
+            OWM_COORD = "coord";
+
+            // Location coordinate
+            OWM_LATITUDE = "lat";
+            OWM_LONGITUDE = "lon";
+
+            OWM_TIME = "dt";
+            // Weather information.  Each day's forecast info is an element of the "list" array.
+            OWM_LIST = "list";
+
+            OWM_PRESSURE = "pressure";
+            OWM_HUMIDITY = "humidity";
+            OWM_WIND = "wind";
+            OWM_WINDSPEED = "speed";
+            OWM_WIND_DIRECTION = "deg";
+
+            // All temperatures are children of the "temp" object.
+            OWM_TEMPERATURE = "main";
+            OWM_MAX = "temp_max";
+            OWM_MIN = "temp_min";
+
+            OWM_WEATHER = "weather";
+            OWM_DESCRIPTION = "main";
+            OWM_WEATHER_ID = "id";
+
+            OWM_MESSAGE_CODE = "cod";
+        }
 
         try {
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
@@ -262,21 +307,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // Since this data is also sent in-order and the first day is always the
             // current day, we're going to take advantage of that to get a nice
             // normalized UTC date for all of our weather.
-
-            Time dayTime = new Time();
-            dayTime.setToNow();
-
-            // we start at the day returned by local time. Otherwise this is a mess.
-            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
-
-            // now we work exclusively in UTC
-            dayTime = new Time();
-
+            long timeInMillis = 0;
             for(int i = 0; i < weatherArray.length(); i++) {
                 // These are the values that will be collected.
-                long dateTime;
-                double pressure;
-                int humidity;
+
+                double pressure=0;
+                int humidity=0;
                 double windSpeed;
                 double windDirection;
 
@@ -290,13 +326,19 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
 
                 // Cheating to convert this to UTC time, which is what we want anyhow
-                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                timeInMillis = dayForecast.getLong(OWM_TIME)*1000;
 
-                pressure = dayForecast.getDouble(OWM_PRESSURE);
-                humidity = dayForecast.getInt(OWM_HUMIDITY);
-                windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
-                windDirection = dayForecast.getDouble(OWM_WIND_DIRECTION);
+                if ( Utility.getHourlyForecast(getContext())) {
+                    JSONObject weatherObject = dayForecast.getJSONObject(OWM_WIND);
+                    windSpeed = weatherObject.getDouble(OWM_WINDSPEED);
+                    windDirection = weatherObject.getDouble(OWM_WIND_DIRECTION);
+                } else {
+                    windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
+                    windDirection = dayForecast.getDouble(OWM_WIND_DIRECTION);
 
+                    pressure = dayForecast.getDouble(OWM_PRESSURE);
+                    humidity = dayForecast.getInt(OWM_HUMIDITY);
+                }
                 // Description is in a child array called "weather", which is 1 element long.
                 // That element also contains a weather code.
                 JSONObject weatherObject =
@@ -310,10 +352,15 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 high = temperatureObject.getDouble(OWM_MAX);
                 low = temperatureObject.getDouble(OWM_MIN);
 
+                if ( Utility.getHourlyForecast(getContext())) {
+                    pressure = temperatureObject.getDouble(OWM_PRESSURE);
+                    humidity = temperatureObject.getInt(OWM_HUMIDITY);
+                }
+
                 ContentValues weatherValues = new ContentValues();
 
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, dateTime);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, timeInMillis);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
@@ -329,14 +376,21 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             int inserted = 0;
             // add to database
             if ( cVVector.size() > 0 ) {
+
+                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        null,
+                        null);
+
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
+                Calendar calendar = Calendar.getInstance();
+                long today = calendar.getTimeInMillis();
                 // delete old data so we don't build up an endless history
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
-                        new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
+                        WeatherContract.WeatherEntry.COLUMN_DATE + " < ?",
+                        new String[] {Long.toString(today)});
 
                 notifyWeather();
             }
