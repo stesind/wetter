@@ -122,4 +122,8 @@
     <string name="empty_forecast_list_server_error">No weather information available. The server is not returning valid data. Please check for an updated version of Sunshine.</string>
     <string name="empty_forecast_list_invalid_location">No weather information available. The location in settings is not recognized by the weather server.</string>
 
+    <string name="tab1_label">Tab 1</string>
+    <string name="tab2_label">Tab 1</string>
+    <string name="tab3_label">Tab 1</string>
+
 </resources>
