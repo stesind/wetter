@@ -39,6 +39,8 @@ import android.widget.TextView;
 import de.sindzinski.sunshine.data.WeatherContract;
 import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 
+import static de.sindzinski.sunshine.data.WeatherContract.TYPE_HOURLY;
+
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -255,7 +257,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
-        String type = "hourly";
+        Integer type = TYPE_HOURLY;
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDateAndType(
                 locationSetting, System.currentTimeMillis(), type);
 

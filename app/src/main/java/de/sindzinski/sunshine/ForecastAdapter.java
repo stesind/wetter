@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import static de.sindzinski.sunshine.data.WeatherContract.TYPE_HOURLY;
+
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
  * from a {@link Cursor} to a {@link android.widget.ListView}.
@@ -97,9 +99,10 @@ public class ForecastAdapter extends CursorAdapter {
 
         // Read date from cursor
         long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
-        String type = cursor.getString(ForecastHourlyFragment.COL_TYPE);
+        Integer type = cursor.getInt(ForecastHourlyFragment.COL_TYPE);
+
         // Find TextView and set formatted date on it
-        if (type.equals("hourly")) {
+        if (type == TYPE_HOURLY) {
             viewHolder.dateView.setText(Utility.getHourlyDayString(context, timeInMillis));
         } else {
             viewHolder.dateView.setText(Utility.getDailyDayString(context, timeInMillis));

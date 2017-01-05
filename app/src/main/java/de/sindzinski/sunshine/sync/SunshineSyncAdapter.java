@@ -49,6 +49,9 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Vector;
 
+import static de.sindzinski.sunshine.data.WeatherContract.TYPE_DAILY;
+import static de.sindzinski.sunshine.data.WeatherContract.TYPE_HOURLY;
+
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
     // Interval at which to sync with the weather, in seconds.
@@ -88,16 +91,16 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        String type = "daily";
+        Integer type = TYPE_DAILY;
         syncAllSources(account, extras, authority, provider, syncResult, type);
 
         if (Utility.getHourlyForecast(getContext())) {
-            type = "hourly";
+            type = TYPE_HOURLY;
             syncAllSources(account, extras, authority, provider, syncResult, type);
         }
     }
 
-    private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, String type) {
+    private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
         Log.d(LOG_TAG, "Starting sync");
         String locationQuery = Utility.getPreferredLocation(getContext());
 
@@ -124,7 +127,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
             Uri builtUri;
-            if (type.equals( "hourly")) {
+            if (type == TYPE_HOURLY) {
                 final String FORECAST_BASE_URL =
                         "http://api.openweathermap.org/data/2.5/forecast?";
                 builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
@@ -208,7 +211,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      */
     private void getWeatherDataFromJson(String forecastJsonStr,
                                         String locationSetting,
-                                        String type)
+                                        Integer type)
             throws JSONException {
 
         // Now we have a String representing the complete forecast in JSON Format.
@@ -246,7 +249,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         String OWM_MESSAGE_CODE = "cod";
 
-        if ( type.equals("hourly")) {
+        if ( type == TYPE_HOURLY) {
             // Location information
             OWM_CITY = "city";
             OWM_CITY_NAME = "name";
@@ -340,7 +343,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 // Cheating to convert this to UTC time, which is what we want anyhow
                 timeInMillis = dayForecast.getLong(OWM_TIME)*1000;
 
-                if ( type.equals("hourly")) {
+                if ( type == TYPE_HOURLY) {
                     JSONObject weatherObject = dayForecast.getJSONObject(OWM_WIND);
                     windSpeed = weatherObject.getDouble(OWM_WINDSPEED);
                     windDirection = weatherObject.getDouble(OWM_WIND_DIRECTION);
@@ -364,7 +367,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 high = temperatureObject.getDouble(OWM_MAX);
                 low = temperatureObject.getDouble(OWM_MIN);
 
-                if ( type.equals("hourly")) {
+                if ( type == TYPE_HOURLY) {
                     pressure = temperatureObject.getDouble(OWM_PRESSURE);
                     humidity = temperatureObject.getInt(OWM_HUMIDITY);
                 }
@@ -404,7 +407,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 String selection =  WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
                         WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Long.toString(today), type};
+                String[] selectionArgs = new String[]{Long.toString(today), Integer.toString(type)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);

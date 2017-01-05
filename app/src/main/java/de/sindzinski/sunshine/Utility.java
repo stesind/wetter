@@ -86,7 +86,6 @@ public class Utility {
      *
      * @param context      Context to use for resource localization
      * @param timeInMillis The date in milliseconds
-     * @param type         Type either daily or hourly
      * @return a user-friendly representation of the date.
      */
     @SuppressLint("StringFormatMatches")
@@ -135,7 +134,6 @@ public class Utility {
      *
      * @param context      Context to use for resource localization
      * @param timeInMillis The date in milliseconds
-     * @param type         Type either daily or hourly
      * @return a user-friendly representation of the date.
      */
     @SuppressLint("StringFormatMatches")

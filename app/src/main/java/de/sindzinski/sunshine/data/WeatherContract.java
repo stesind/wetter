@@ -44,6 +44,9 @@ public class WeatherContract {
     public static final String PATH_WEATHER = "weather";
     public static final String PATH_LOCATION = "location";
 
+    public static final Integer TYPE_DAILY = 0;
+    public static final Integer TYPE_HOURLY = 1;
+
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
     public static long normalizeDate(long startDate) {
@@ -153,27 +156,27 @@ public class WeatherContract {
                     .appendPath(Long.toString(normalizeDate(date))).build();
         }
 
-        public static Uri buildWeatherLocationWithType(String locationSetting, String type) {
+        public static Uri buildWeatherLocationWithType(String locationSetting, Integer type) {
             return CONTENT_URI.buildUpon()
                     .appendPath(locationSetting)
-                    .appendPath(type)
+                    .appendPath(Integer.toString(type))
                     .build();
         }
 
         public static Uri buildWeatherLocationWithStartDateAndType(
-                String locationSetting, long startDate, String type) {
+                String locationSetting, long startDate, Integer type) {
             long normalizedDate = normalizeDate(startDate);
             return CONTENT_URI.buildUpon()
                     .appendPath(locationSetting)
-                    .appendPath(type)
+                    .appendPath(Integer.toString(type))
                     .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate))
                     .build();
         }
 
-        public static Uri buildWeatherLocationWithDateAndType(String locationSetting, long date, String type) {
+        public static Uri buildWeatherLocationWithDateAndType(String locationSetting, long date, Integer type) {
             return CONTENT_URI.buildUpon()
                     .appendPath(locationSetting)
-                    .appendPath(type)
+                    .appendPath(Integer.toString(type))
                     .appendPath(Long.toString(normalizeDate(date)))
                     .build();
         }

@@ -39,6 +39,8 @@ import android.widget.TextView;
 import de.sindzinski.sunshine.data.WeatherContract;
 import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 
+import static de.sindzinski.sunshine.data.WeatherContract.TYPE_DAILY;
+
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -253,7 +255,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
         // Sort order:  Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        String type = "daily";
+        Integer type = TYPE_DAILY;
         String locationSetting = Utility.getPreferredLocation(getActivity());
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDateAndType(
                 locationSetting, System.currentTimeMillis(), type);
