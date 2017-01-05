@@ -36,6 +36,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 import de.sindzinski.sunshine.data.WeatherContract;
 import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 
@@ -253,12 +256,19 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         // To only show current and future dates, filter the query to return weather only for
         // dates after or including today.
 
+        // get the time in millis of beginning of today
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long timeInMillis = cal.getTimeInMillis();
         // Sort order:  Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
         Integer type = TYPE_DAILY;
         String locationSetting = Utility.getPreferredLocation(getActivity());
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDateAndType(
-                locationSetting, System.currentTimeMillis(), type);
+                locationSetting, timeInMillis, type);
 
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,

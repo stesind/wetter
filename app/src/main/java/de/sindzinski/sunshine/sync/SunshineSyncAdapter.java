@@ -47,6 +47,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import static de.sindzinski.sunshine.data.WeatherContract.TYPE_DAILY;
@@ -59,6 +60,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
+    private static final long HOUR_IN_MILLIS = 1000 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
 
 
@@ -393,26 +395,34 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if ( cVVector.size() > 0 ) {
 
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        null,
-//                        null);
+                //delete all old data of given type
+                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                String[] selectionArgs = new String[]{Integer.toString(type)};
+                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        selection,
+                        selectionArgs);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
-                Calendar calendar = Calendar.getInstance();
-                long today = calendar.getTimeInMillis();
                 // delete old data so we don't build up an endless history
+                // difficult because there needs to be old data from same day
+                // get the time beginning of today
+//                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+//                cal.set(Calendar.HOUR_OF_DAY, 0);
+//                cal.set(Calendar.MINUTE, 0);
+//                cal.set(Calendar.SECOND, 0);
+//                cal.set(Calendar.MILLISECOND, 0);
+//                long timeInMillis = cal.getTimeInMillis();
+//                String selection =  WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+//                String[] selectionArgs = new String[]{Long.toString(today), Integer.toString(type)};
+//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                        selection,
+//                        selectionArgs);
 
-                String selection =  WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Long.toString(today), Integer.toString(type)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
-
-                //notifyWeather();
+                notifyWeather();
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -437,7 +447,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             String lastNotificationKey = context.getString(R.string.pref_last_notification);
             long lastSync = prefs.getLong(lastNotificationKey, 0);
 
-            if (System.currentTimeMillis() - lastSync >= DAY_IN_MILLIS) {
+            if (System.currentTimeMillis() - lastSync >= HOUR_IN_MILLIS) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = Utility.getPreferredLocation(context);
 

@@ -147,12 +147,14 @@ public class Utility {
         TimeZone timezone = TimeZone.getDefault();
         GregorianCalendar gregorianCalendar = new GregorianCalendar(timezone);
         gregorianCalendar.setTimeInMillis(timeInMillis);
-        int day = gregorianCalendar.get(Calendar.DAY_OF_MONTH);
+//        int day = gregorianCalendar.get(GregorianCalendar.DAY_OF_MONTH);
+
         //code for formatting the date
         Calendar calendar = Calendar.getInstance();
         int today = calendar.get(Calendar.DAY_OF_MONTH);
+        calendar.setTimeInMillis(timeInMillis);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        Date time = gregorianCalendar.getTime();
         SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
 
         // If the date we're building the String for is today's date, the format
