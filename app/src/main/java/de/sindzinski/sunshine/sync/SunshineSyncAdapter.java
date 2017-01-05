@@ -25,14 +25,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.text.format.Time;
 import android.util.Log;
-
-import de.sindzinski.sunshine.BuildConfig;
-import de.sindzinski.sunshine.MainActivity;
-import de.sindzinski.sunshine.R;
-import de.sindzinski.sunshine.Utility;
-import de.sindzinski.sunshine.data.WeatherContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,6 +43,12 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import de.sindzinski.sunshine.BuildConfig;
+import de.sindzinski.sunshine.MainActivity;
+import de.sindzinski.sunshine.R;
+import de.sindzinski.sunshine.Utility;
+import de.sindzinski.sunshine.data.WeatherContract;
+
 import static de.sindzinski.sunshine.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.sunshine.data.WeatherContract.TYPE_HOURLY;
 
@@ -58,13 +57,13 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
     public static final int SYNC_INTERVAL = 60 * 180;
-    public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
+    public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final long HOUR_IN_MILLIS = 1000 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
 
 
-    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
+    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
@@ -78,8 +77,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int INDEX_SHORT_DESC = 3;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID,  LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
-    public @interface LocationStatus {}
+    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
+    public @interface LocationStatus {
+    }
 
     public static final int LOCATION_STATUS_OK = 0;
     public static final int LOCATION_STATUS_SERVER_DOWN = 1;
@@ -207,7 +207,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
-     *
+     * <p>
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
@@ -251,7 +251,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         String OWM_MESSAGE_CODE = "cod";
 
-        if ( type == TYPE_HOURLY) {
+        if (type == TYPE_HOURLY) {
             // Location information
             OWM_CITY = "city";
             OWM_CITY_NAME = "name";
@@ -287,7 +287,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
 
             // do we have an error?
-            if ( forecastJson.has(OWM_MESSAGE_CODE) ) {
+            if (forecastJson.has(OWM_MESSAGE_CODE)) {
                 int errorCode = forecastJson.getInt(OWM_MESSAGE_CODE);
 
                 switch (errorCode) {
@@ -325,11 +325,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // normalized UTC date for all of our weather.
             long timeInMillis = 0;
 
-            for(int i = 0; i < weatherArray.length(); i++) {
+            for (int i = 0; i < weatherArray.length(); i++) {
                 // These are the values that will be collected.
 
-                double pressure=0;
-                int humidity=0;
+                double pressure = 0;
+                int humidity = 0;
                 double windSpeed;
                 double windDirection;
 
@@ -343,9 +343,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
 
                 // Cheating to convert this to UTC time, which is what we want anyhow
-                timeInMillis = dayForecast.getLong(OWM_TIME)*1000;
+                timeInMillis = dayForecast.getLong(OWM_TIME) * 1000;
 
-                if ( type == TYPE_HOURLY) {
+                if (type == TYPE_HOURLY) {
                     JSONObject weatherObject = dayForecast.getJSONObject(OWM_WIND);
                     windSpeed = weatherObject.getDouble(OWM_WINDSPEED);
                     windDirection = weatherObject.getDouble(OWM_WIND_DIRECTION);
@@ -369,7 +369,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 high = temperatureObject.getDouble(OWM_MAX);
                 low = temperatureObject.getDouble(OWM_MIN);
 
-                if ( type == TYPE_HOURLY) {
+                if (type == TYPE_HOURLY) {
                     pressure = temperatureObject.getDouble(OWM_PRESSURE);
                     humidity = temperatureObject.getInt(OWM_HUMIDITY);
                 }
@@ -393,34 +393,44 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
             int inserted = 0;
             // add to database
-            if ( cVVector.size() > 0 ) {
+            if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(type)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+//                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+//                String[] selectionArgs = new String[]{Integer.toString(type)};
+//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                        selection,
+//                        selectionArgs);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
                 // delete old data so we don't build up an endless history
-                // difficult because there needs to be old data from same day
-                // get the time beginning of today
-//                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-//                cal.set(Calendar.HOUR_OF_DAY, 0);
-//                cal.set(Calendar.MINUTE, 0);
-//                cal.set(Calendar.SECOND, 0);
-//                cal.set(Calendar.MILLISECOND, 0);
-//                long timeInMillis = cal.getTimeInMillis();
-//                String selection =  WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Long.toString(today), Integer.toString(type)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
+                if (type == TYPE_HOURLY) {
+                    // delete all older than 2hours for hourly
+                    Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+                    cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) - 2);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    timeInMillis = cal.getTimeInMillis();
+                } else {
+                    // get the time beginning of today for daily
+                    Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+                    cal.set(Calendar.HOUR_OF_DAY, 0);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    timeInMillis = cal.getTimeInMillis();
+                }
+
+                String selection =  WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(type)};
+                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        selection,
+                        selectionArgs);
 
                 notifyWeather();
             }
@@ -442,7 +452,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         boolean displayNotifications = prefs.getBoolean(displayNotificationsKey,
                 Boolean.parseBoolean(context.getString(R.string.pref_enable_notifications_default)));
 
-        if ( displayNotifications ) {
+        if (displayNotifications) {
 
             String lastNotificationKey = context.getString(R.string.pref_last_notification);
             long lastSync = prefs.getLong(lastNotificationKey, 0);
@@ -472,7 +482,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     String contentText = String.format(context.getString(R.string.format_notification),
                             desc,
                             Utility.formatTemperature(context, high, Utility.isMetric(context)),
-                            Utility.formatTemperature(context, low,  Utility.isMetric(context)));
+                            Utility.formatTemperature(context, low, Utility.isMetric(context)));
 
                     // NotificationCompatBuilder is a very convenient way to build backward-compatible
                     // notifications.  Just throw in some data.
@@ -520,9 +530,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Helper method to handle insertion of a new location in the weather database.
      *
      * @param locationSetting The location string used to request updates from the server.
-     * @param cityName A human-readable city name, e.g "Mountain View"
-     * @param lat the latitude of the city
-     * @param lon the longitude of the city
+     * @param cityName        A human-readable city name, e.g "Mountain View"
+     * @param lat             the latitude of the city
+     * @param lon             the longitude of the city
      * @return the row ID of the added location.
      */
     long addLocation(String locationSetting, String cityName, double lat, double lon) {
@@ -587,6 +597,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     /**
      * Helper method to have the sync adapter sync immediately
+     *
      * @param context The context used to access the account service
      */
     public static void syncImmediately(Context context) {
@@ -615,7 +626,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
 
         // If the password doesn't exist, the account doesn't exist
-        if ( null == accountManager.getPassword(newAccount) ) {
+        if (null == accountManager.getPassword(newAccount)) {
 
         /*
          * Add the account and account type, no password or user data
@@ -660,10 +671,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     /**
      * Sets the location status into shared preference.  This function should not be called from
      * the UI thread because it uses commit to write to the shared preferences.
-     * @param c Context to get the PreferenceManager from.
+     *
+     * @param c              Context to get the PreferenceManager from.
      * @param locationStatus The IntDef value to set
      */
-    static private void setLocationStatus(Context c, @LocationStatus int locationStatus){
+    static private void setLocationStatus(Context c, @LocationStatus int locationStatus) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
