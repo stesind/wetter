@@ -26,11 +26,9 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 
 import com.facebook.stetho.Stetho;
 
@@ -39,7 +37,7 @@ import java.util.List;
 
 import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 
-public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ForecastHourlyFragment.Callback {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -76,8 +74,8 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new ForecastFragment(), "Daily Forecast");
-        adapter.addFragment(new ForecastFragment(), "Hourly");
+        adapter.addFragment(new ForecastDailyFragment(), "Daily Forecast");
+        adapter.addFragment(new ForecastHourlyFragment(), "Hourly Forecast");
 
         viewPager.setAdapter(adapter);
 
@@ -153,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         String location = Utility.getPreferredLocation( this );
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {
-            ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+            ForecastHourlyFragment ff = (ForecastHourlyFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
             if ( null != ff ) {
                 ff.onLocationChanged();
             }

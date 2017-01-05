@@ -83,25 +83,29 @@ public class ForecastAdapter extends CursorAdapter {
             case VIEW_TYPE_TODAY: {
                 // Get weather icon
                 viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(
-                        cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID)));
-                viewHolder.cityView.setText(cursor.getString(ForecastFragment.COL_CITY_NAME));
+                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
+                viewHolder.cityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
                 break;
             }
             case VIEW_TYPE_FUTURE_DAY: {
                 // Get weather icon
                 viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(
-                        cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID)));
+                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
                 break;
             }
         }
 
         // Read date from cursor
-        long timeInMillis = cursor.getLong(ForecastFragment.COL_WEATHER_DATE);
+        long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
+        String type = cursor.getString(ForecastHourlyFragment.COL_TYPE);
         // Find TextView and set formatted date on it
-        viewHolder.dateView.setText(Utility.getFriendlyDayString(context, timeInMillis));
-
+        if (type.equals("hourly")) {
+            viewHolder.dateView.setText(Utility.getHourlyDayString(context, timeInMillis));
+        } else {
+            viewHolder.dateView.setText(Utility.getDailyDayString(context, timeInMillis));
+        }
         // Read weather forecast from cursor
-        String description = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
+        String description = cursor.getString(ForecastHourlyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it
         viewHolder.descriptionView.setText(description);
 
@@ -112,16 +116,16 @@ public class ForecastAdapter extends CursorAdapter {
         boolean isMetric = Utility.isMetric(context);
 
         // Read high temperature from cursor
-        double high = cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP);
+        double high = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_MAX_TEMP);
         viewHolder.highTempView.setText(Utility.formatTemperature(context, high, isMetric));
 
         // Read low temperature from cursor
-        double low = cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP);
+        double low = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_MIN_TEMP);
         viewHolder.lowTempView.setText(Utility.formatTemperature(context, low, isMetric));
 
         // Read wind speed and direction from cursor and update view
-        float windSpeedStr = cursor.getFloat(ForecastFragment.COL_WEATHER_WIND_SPEED);
-        float windDirStr = cursor.getFloat(ForecastFragment.COL_WEATHER_DEGREES);
+        float windSpeedStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);
+        float windDirStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_DEGREES);
        viewHolder.windView.setText(Utility.getSmallFormattedWind(context, windSpeedStr, windDirStr));
     }
 

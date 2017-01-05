@@ -100,6 +100,9 @@ public class WeatherContract {
 
         public static final String TABLE_NAME = "weather";
 
+        // Column for identifinng the type.
+        public static final String COLUMN_TYPE= "type";
+
         // Column with the foreign key into the location table.
         public static final String COLUMN_LOC_KEY = "location_id";
         // Date, stored as long in milliseconds since the epoch
@@ -138,24 +141,53 @@ public class WeatherContract {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
         }
 
-        public static Uri buildWeatherLocationWithStartDate(
-                String locationSetting, long startDate) {
-            long normalizedDate = normalizeDate(startDate);
-            return CONTENT_URI.buildUpon().appendPath(locationSetting)
-                    .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate)).build();
-        }
-
+//        public static Uri buildWeatherLocationWithStartDate(
+//                String locationSetting, long startDate) {
+//            long normalizedDate = normalizeDate(startDate);
+//            return CONTENT_URI.buildUpon().appendPath(locationSetting)
+//                    .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate)).build();
+//        }
+//
         public static Uri buildWeatherLocationWithDate(String locationSetting, long date) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting)
                     .appendPath(Long.toString(normalizeDate(date))).build();
+        }
+
+        public static Uri buildWeatherLocationWithType(String locationSetting, String type) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(locationSetting)
+                    .appendPath(type)
+                    .build();
+        }
+
+        public static Uri buildWeatherLocationWithStartDateAndType(
+                String locationSetting, long startDate, String type) {
+            long normalizedDate = normalizeDate(startDate);
+            return CONTENT_URI.buildUpon()
+                    .appendPath(locationSetting)
+                    .appendPath(type)
+                    .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate))
+                    .build();
+        }
+
+        public static Uri buildWeatherLocationWithDateAndType(String locationSetting, long date, String type) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(locationSetting)
+                    .appendPath(type)
+                    .appendPath(Long.toString(normalizeDate(date)))
+                    .build();
         }
 
         public static String getLocationSettingFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
 
+        public static String getTypeFromUri(Uri uri) {
+            return uri.getPathSegments().get(2);
+        }
+
         public static long getDateFromUri(Uri uri) {
-            return Long.parseLong(uri.getPathSegments().get(2));
+            return Long.parseLong(uri.getPathSegments().get(3));
         }
 
         public static long getStartDateFromUri(Uri uri) {

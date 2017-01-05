@@ -42,15 +42,15 @@ import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
-public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
+public class ForecastDailyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
-    public static final String LOG_TAG = ForecastFragment.class.getSimpleName();
+    public static final String LOG_TAG = ForecastDailyFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
-    private boolean mUseTodayLayout;
+    private boolean mUseTodayLayout = true;
 
     private static final String SELECTED_KEY = "selected_position";
 
@@ -75,7 +75,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             WeatherContract.LocationEntry.COLUMN_COORD_LONG,
             WeatherContract.LocationEntry.COLUMN_CITY_NAME,
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
-            WeatherContract.WeatherEntry.COLUMN_DEGREES
+            WeatherContract.WeatherEntry.COLUMN_DEGREES,
+            WeatherContract.WeatherEntry.COLUMN_TYPE
     };
 
     // These indices are tied to FORECAST_COLUMNS.  If FORECAST_COLUMNS changes, these
@@ -90,8 +91,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_COORD_LAT = 7;
     static final int COL_COORD_LONG = 8;
     static final int COL_CITY_NAME = 9;
-    public static final int COL_WEATHER_WIND_SPEED = 10;
-    public static final int COL_WEATHER_DEGREES = 11;
+    static final int COL_WEATHER_WIND_SPEED = 10;
+    static final int COL_WEATHER_DEGREES = 11;
+    static final int COL_TYPE = 12;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -105,7 +107,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         public void onItemSelected(Uri dateUri);
     }
 
-    public ForecastFragment() {
+    public ForecastDailyFragment() {
     }
 
     @Override
@@ -151,6 +153,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // Get a reference to the ListView, and attach this adapter to it.
         mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         mListView.setAdapter(mForecastAdapter);
+        mListView.setNestedScrollingEnabled(true);
         View emptyView = rootView.findViewById(R.id.listview_forecast_empty);
         mListView.setEmptyView(emptyView);
         // We'll call our MainActivity
@@ -250,10 +253,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         // Sort order:  Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-
+        String type = "daily";
         String locationSetting = Utility.getPreferredLocation(getActivity());
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
-                locationSetting, System.currentTimeMillis());
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDateAndType(
+                locationSetting, System.currentTimeMillis(), type);
 
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,

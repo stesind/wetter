@@ -39,6 +39,7 @@ public class Utility {
         return prefs.getString(context.getString(R.string.pref_location_key),
                 context.getString(R.string.pref_location_default));
     }
+
     public static boolean getHourlyForecast(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(context.getString(R.string.pref_enable_hourly_forecast_key),
@@ -62,8 +63,8 @@ public class Utility {
 
     public static String formatTemperature(Context context, double temperature, boolean isMetric) {
         double temp;
-        if ( !isMetric ) {
-            temp = 9*temperature/5+32;
+        if (!isMetric) {
+            temp = 9 * temperature / 5 + 32;
         } else {
             temp = temperature;
         }
@@ -83,12 +84,13 @@ public class Utility {
      * Helper method to convert the database representation of the date into something to display
      * to users.  As classy and polished a user experience as "20140102" is, we can do better.
      *
-     * @param context Context to use for resource localization
+     * @param context      Context to use for resource localization
      * @param timeInMillis The date in milliseconds
+     * @param type         Type either daily or hourly
      * @return a user-friendly representation of the date.
      */
     @SuppressLint("StringFormatMatches")
-    public static String getFriendlyDayString(Context context, long timeInMillis) {
+    public static String getHourlyDayString(Context context, long timeInMillis) {
         // The day string for forecast uses the following logic:
         // For today: "Today, June 8"
         // For tomorrow:  "Tomorrow"
@@ -108,47 +110,79 @@ public class Utility {
 
         // If the date we're building the String for is today's date, the format
         // is "Today, June 24"
-        if ( Utility.getHourlyForecast(context)) {
-            if (today == day) {
-                int formatId = R.string.format_full_friendly_date;
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
-                return String.format(context.getString(
-                        formatId,
-                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
-                        shortenedDateFormat.format(timeInMillis)));
-            } else if ( day < today + 1 ) {
-                // If the input date is less than a week in the future, just return the day name.
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
-                return shortenedDateFormat.format(timeInMillis);
-            } else {
-                // Otherwise, use the form "Mon Jun 3"
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
-                return shortenedDateFormat.format(timeInMillis);
-            }
+
+//            if (today == day) {
+//                int formatId = R.string.format_full_friendly_date;
+//                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
+//                return String.format(context.getString(
+//                        formatId,
+//                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
+//                        shortenedDateFormat.format(timeInMillis)));
+//            } else
+        if (day < today + 1) {
+            // If the input date is less than a week in the future, just return the day name.
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
+            return shortenedDateFormat.format(timeInMillis);
         } else {
-            if (today == day) {
-                int formatId = R.string.format_full_friendly_date;
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
-                return String.format(context.getString(
-                        formatId,
-                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
-                        shortenedDateFormat.format(timeInMillis)));
-            } else if ( day < today + 7 ) {
-                // If the input date is less than a week in the future, just return the day name.
-                String dayName=gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());//Locale.US);
-                return dayName;
-            } else {
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-                return shortenedDateFormat.format(timeInMillis);
-            }
+            // Otherwise, use the form "Mon Jun 3"
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
+            return shortenedDateFormat.format(timeInMillis);
         }
+    }
+    /**
+     * Helper method to convert the database representation of the date into something to display
+     * to users.  As classy and polished a user experience as "20140102" is, we can do better.
+     *
+     * @param context      Context to use for resource localization
+     * @param timeInMillis The date in milliseconds
+     * @param type         Type either daily or hourly
+     * @return a user-friendly representation of the date.
+     */
+    @SuppressLint("StringFormatMatches")
+    public static String getDailyDayString(Context context, long timeInMillis) {
+        // The day string for forecast uses the following logic:
+        // For today: "Today, June 8"
+        // For tomorrow:  "Tomorrow"
+        // For the next 5 days: "Wednesday
+        // " (just the day name)
+        // For all days after that: "Mon Jun 8"
+        TimeZone timezone = TimeZone.getDefault();
+        GregorianCalendar gregorianCalendar = new GregorianCalendar(timezone);
+        gregorianCalendar.setTimeInMillis(timeInMillis);
+        int day = gregorianCalendar.get(Calendar.DAY_OF_MONTH);
+        //code for formatting the date
+        Calendar calendar = Calendar.getInstance();
+        int today = calendar.get(Calendar.DAY_OF_MONTH);
+
+        Date time = gregorianCalendar.getTime();
+        SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
+
+        // If the date we're building the String for is today's date, the format
+        // is "Today, June 24"
+
+        if (today == day) {
+            int formatId = R.string.format_full_friendly_date;
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
+            return String.format(context.getString(
+                    formatId,
+                    gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
+                    shortenedDateFormat.format(timeInMillis)));
+        } else if (day < today + 7) {
+            // If the input date is less than a week in the future, just return the day name.
+            String dayName = gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());//Locale.US);
+            return dayName;
+        } else {
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            return shortenedDateFormat.format(timeInMillis);
+        }
+
     }
 
     /**
      * Given a day, returns just the name to use for that day.
      * E.g "today", "tomorrow", "wednesday".
      *
-     * @param context Context to use for resource localization
+     * @param context      Context to use for resource localization
      * @param dateInMillis The date in milliseconds
      * @return
      */
@@ -162,14 +196,14 @@ public class Utility {
         int currentJulianDay = Time.getJulianDay(System.currentTimeMillis(), t.gmtoff);
         if (julianDay == currentJulianDay) {
             return context.getString(R.string.today);
-        } else if ( julianDay == currentJulianDay +1 ) {
+        } else if (julianDay == currentJulianDay + 1) {
             return context.getString(R.string.tomorrow);
         } else {
             Time time = new Time();
             time.setToNow();
             // Otherwise, the format is just the day of the week (e.g "Wednesday".
             SimpleDateFormat dayFormat;
-            if ( Utility.getHourlyForecast(context)) {
+            if (Utility.getHourlyForecast(context)) {
                 dayFormat = new SimpleDateFormat("EEE HH:MM");
             } else {
                 dayFormat = new SimpleDateFormat("EEE");
@@ -180,12 +214,13 @@ public class Utility {
 
     /**
      * Converts db date format to the format "Month day", e.g "June 24".
-     * @param context Context to use for resource localization
+     *
+     * @param context      Context to use for resource localization
      * @param dateInMillis The db formatted date string, expected to be of the form specified
-     *                in Utility.DATE_FORMAT
+     *                     in Utility.DATE_FORMAT
      * @return The day in the form of a string formatted "December 6"
      */
-    public static String getFormattedMonthDay(Context context, long dateInMillis ) {
+    public static String getFormattedMonthDay(Context context, long dateInMillis) {
         Time time = new Time();
         time.setToNow();
         SimpleDateFormat dbDateFormat = new SimpleDateFormat(Utility.DATE_FORMAT);
@@ -263,6 +298,7 @@ public class Utility {
     /**
      * Helper method to provide the icon resource id according to the weather condition id returned
      * by the OpenWeatherMap call.
+     *
      * @param weatherId from OpenWeatherMap API response
      * @return resource id for the corresponding icon. -1 if no relation is found.
      */
@@ -298,6 +334,7 @@ public class Utility {
     /**
      * Helper method to provide the art resource id according to the weather condition id returned
      * by the OpenWeatherMap call.
+     *
      * @param weatherId from OpenWeatherMap API response
      * @return resource id for the corresponding icon. -1 if no relation is found.
      */
@@ -329,6 +366,7 @@ public class Utility {
         }
         return -1;
     }
+
     /**
      * Returns true if the network is available or about to become available.
      *
@@ -337,7 +375,7 @@ public class Utility {
      */
     static public boolean isNetworkAvailable(Context c) {
         ConnectivityManager cm =
-                (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null &&
@@ -345,17 +383,18 @@ public class Utility {
     }
 
     /**
-     *
      * @param c Context used to get the SharedPreferences
      * @return the location status integer type
      */
     @SuppressWarnings("ResourceType")
-    static public @SunshineSyncAdapter.LocationStatus
-    int getLocationStatus(Context c){
+    static public
+    @SunshineSyncAdapter.LocationStatus
+    int getLocationStatus(Context c) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         return sp.getInt(c.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);
     }
-    public static void resetLocationStatus(Context c){
+
+    public static void resetLocationStatus(Context c) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);

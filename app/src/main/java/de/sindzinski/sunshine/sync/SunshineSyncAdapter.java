@@ -88,6 +88,16 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+        String type = "daily";
+        syncAllSources(account, extras, authority, provider, syncResult, type);
+
+        if (Utility.getHourlyForecast(getContext())) {
+            type = "hourly";
+            syncAllSources(account, extras, authority, provider, syncResult, type);
+        }
+    }
+
+    private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, String type) {
         Log.d(LOG_TAG, "Starting sync");
         String locationQuery = Utility.getPreferredLocation(getContext());
 
@@ -114,7 +124,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
             Uri builtUri;
-            if ( Utility.getHourlyForecast(getContext())) {
+            if (type.equals( "hourly")) {
                 final String FORECAST_BASE_URL =
                         "http://api.openweathermap.org/data/2.5/forecast?";
                 builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
@@ -164,7 +174,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
             forecastJsonStr = buffer.toString();
-            getWeatherDataFromJson(forecastJsonStr, locationQuery);
+            getWeatherDataFromJson(forecastJsonStr, locationQuery, type);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
@@ -197,7 +207,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * into an Object hierarchy for us.
      */
     private void getWeatherDataFromJson(String forecastJsonStr,
-                                        String locationSetting)
+                                        String locationSetting,
+                                        String type)
             throws JSONException {
 
         // Now we have a String representing the complete forecast in JSON Format.
@@ -235,7 +246,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         String OWM_MESSAGE_CODE = "cod";
 
-        if ( Utility.getHourlyForecast(getContext())) {
+        if ( type.equals("hourly")) {
             // Location information
             OWM_CITY = "city";
             OWM_CITY_NAME = "name";
@@ -308,6 +319,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // current day, we're going to take advantage of that to get a nice
             // normalized UTC date for all of our weather.
             long timeInMillis = 0;
+
             for(int i = 0; i < weatherArray.length(); i++) {
                 // These are the values that will be collected.
 
@@ -328,7 +340,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 // Cheating to convert this to UTC time, which is what we want anyhow
                 timeInMillis = dayForecast.getLong(OWM_TIME)*1000;
 
-                if ( Utility.getHourlyForecast(getContext())) {
+                if ( type.equals("hourly")) {
                     JSONObject weatherObject = dayForecast.getJSONObject(OWM_WIND);
                     windSpeed = weatherObject.getDouble(OWM_WINDSPEED);
                     windDirection = weatherObject.getDouble(OWM_WIND_DIRECTION);
@@ -352,7 +364,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 high = temperatureObject.getDouble(OWM_MAX);
                 low = temperatureObject.getDouble(OWM_MIN);
 
-                if ( Utility.getHourlyForecast(getContext())) {
+                if ( type.equals("hourly")) {
                     pressure = temperatureObject.getDouble(OWM_PRESSURE);
                     humidity = temperatureObject.getInt(OWM_HUMIDITY);
                 }
@@ -369,6 +381,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, type);
 
                 cVVector.add(weatherValues);
             }
@@ -377,9 +390,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if ( cVVector.size() > 0 ) {
 
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        null,
-                        null);
+//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                        null,
+//                        null);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -388,11 +401,15 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 Calendar calendar = Calendar.getInstance();
                 long today = calendar.getTimeInMillis();
                 // delete old data so we don't build up an endless history
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        WeatherContract.WeatherEntry.COLUMN_DATE + " < ?",
-                        new String[] {Long.toString(today)});
 
-                notifyWeather();
+                String selection =  WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                String[] selectionArgs = new String[]{Long.toString(today), type};
+                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        selection,
+                        selectionArgs);
+
+                //notifyWeather();
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
