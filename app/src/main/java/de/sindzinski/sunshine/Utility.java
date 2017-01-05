@@ -118,7 +118,7 @@ public class Utility {
 //                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
 //                        shortenedDateFormat.format(timeInMillis)));
 //            } else
-        if (day < today + 1) {
+        if (day < today + 2) {
             // If the input date is less than a week in the future, just return the day name.
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
             return shortenedDateFormat.format(timeInMillis);
@@ -165,11 +165,12 @@ public class Utility {
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
             return String.format(context.getString(
                     formatId,
-                    gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
+                    "Today ",
+                    gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()),
                     shortenedDateFormat.format(timeInMillis)));
         } else if (day < today + 7) {
             // If the input date is less than a week in the future, just return the day name.
-            String dayName = gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());//Locale.US);
+            String dayName = gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());//Locale.US);
             return dayName;
         } else {
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
