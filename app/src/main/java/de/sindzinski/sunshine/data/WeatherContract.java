@@ -120,7 +120,11 @@ public class WeatherContract {
         // Min and max temperatures for the day (stored as floats)
         public static final String COLUMN_MIN_TEMP = "min";
         public static final String COLUMN_MAX_TEMP = "max";
-
+        public static final String COLUMN_MORNING_TEMP = "morning";
+        public static final String COLUMN_DAY_TEMP = "day";
+        public static final String COLUMN_EVENING_TEMP = "evening";
+        public static final String COLUMN_NIGHT_TEMP = "night";
+        public static final String COLUMN_TEMP = "temp";
         // Humidity is stored as a float representing percentage
         public static final String COLUMN_HUMIDITY = "humidity";
 
@@ -132,6 +136,14 @@ public class WeatherContract {
 
         // Degrees are meteorological degrees (e.g, 0 is north, 180 is south).  Stored as floats.
         public static final String COLUMN_DEGREES = "degrees";
+
+        // Amount of rain and snow
+        public static final String COLUMN_RAIN = "rain";
+        public static final String COLUMN_SNOW = "snow";
+        public static final String COLUMN_CLOUDS = "clouds";
+
+        // the default icon to display
+        public static final String COLUMN_ICON = "icon";
 
         public static Uri buildWeatherUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
