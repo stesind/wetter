@@ -258,7 +258,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
         // get the time beginning of today
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY)-2);
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY)-1);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);

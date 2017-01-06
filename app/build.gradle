@@ -17,7 +17,8 @@ android {
         }
     }
     buildTypes.each {
-        it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', ' "7a3f8aebc0db0239a8eab18869208c37" '
+        // getting from gradle.properties in the users home folder
+        it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', OpenWeatherMapApiKey
     }
     productFlavors {
     }
