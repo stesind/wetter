@@ -105,11 +105,11 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
      * implement. This mechanism allows activities to be notified of item
      * selections.
      */
-    public interface Callback {
+    public interface CallbackHourly {
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Uri dateUri);
+        public void onItemSelectedHourly(Uri dateUri);
     }
 
     public ForecastHourlyFragment() {
@@ -171,8 +171,8 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    ((Callback) getActivity())
-                            .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDateAndType(
+                    ((CallbackHourly) getActivity())
+                            .onItemSelectedHourly(WeatherContract.WeatherEntry.buildWeatherLocationWithDateAndType(
                                     locationSetting, cursor.getLong(COL_WEATHER_DATE), TYPE_HOURLY
                             ));
                 }

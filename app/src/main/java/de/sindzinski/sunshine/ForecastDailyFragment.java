@@ -105,11 +105,11 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
      * implement. This mechanism allows activities to be notified of item
      * selections.
      */
-    public interface Callback {
+    public interface CallbackDaily {
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Uri dateUri);
+        public void onItemSelectedDaily(Uri dateUri);
     }
 
     public ForecastDailyFragment() {
@@ -171,8 +171,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    ((Callback) getActivity())
-                            .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDateAndType(
+                    ((CallbackDaily) getActivity())
+                            .onItemSelectedDaily(WeatherContract.WeatherEntry.buildWeatherLocationWithDateAndType(
                                     locationSetting, cursor.getLong(COL_WEATHER_DATE), TYPE_DAILY
                             ));
                 }

@@ -37,7 +37,7 @@ import java.util.List;
 
 import de.sindzinski.sunshine.sync.SunshineSyncAdapter;
 
-public class MainActivity extends AppCompatActivity implements ForecastHourlyFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ForecastDailyFragment.CallbackDaily, ForecastHourlyFragment.CallbackHourly {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -164,9 +164,15 @@ public class MainActivity extends AppCompatActivity implements ForecastHourlyFra
     }
 
     @Override
-    public void onItemSelected(Uri contentUri) {
+    public void onItemSelectedDaily(Uri contentUri) {
             Intent intent = new Intent(this, DetailActivity.class)
                     .setData(contentUri);
             startActivity(intent);
+    }
+    @Override
+    public void onItemSelectedHourly(Uri contentUri) {
+        Intent intent = new Intent(this, DetailActivity.class)
+                .setData(contentUri);
+        startActivity(intent);
     }
 }
