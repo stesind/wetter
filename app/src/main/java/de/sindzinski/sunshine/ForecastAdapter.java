@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import static de.sindzinski.sunshine.data.WeatherContract.TYPE_HOURLY;
 
 /**
@@ -28,31 +30,31 @@ public class ForecastAdapter extends CursorAdapter {
      * Cache of the children views for a forecast list item.
      */
     public static class ViewHolder {
-        public final ImageView iconView;
-        public final TextView dateView;
-        public final TextView cityView;
-        public final TextView descriptionView;
-        public final TextView highTempView;
-        public final TextView lowTempView;
-        public final TextView windView;
+        public final ImageView mIconView;
+        public final TextView mDateView;
+        public final TextView mCityView;
+        public final TextView mDescriptionView;
+        public final TextView mHighTempView;
+        public final TextView mLowTempView;
+        public final TextView mWindView;
 
         public ViewHolder(View view) {
-            cityView = (TextView) view.findViewById(R.id.list_item_city_textview);
-            iconView = (ImageView) view.findViewById(R.id.list_item_icon);
-            dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
-            descriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
-            highTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
-            lowTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
-            windView = (TextView) view.findViewById(R.id.list_item_wind_textview);
+            mCityView = (TextView) view.findViewById(R.id.list_item_city_textview);
+            mIconView = (ImageView) view.findViewById(R.id.list_item_icon);
+            mDateView = (TextView) view.findViewById(R.id.list_item_date_textview);
+            mDescriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
+            mHighTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
+            mLowTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
+            mWindView = (TextView) view.findViewById(R.id.list_item_wind_textview);
         }
     }
 
-    public ForecastAdapter(Context context, Cursor c, int flags) {
-        super(context, c, flags);
+    public ForecastAdapter(Context mContext, Cursor c, int flags) {
+        super(mContext, c, flags);
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+    public View newView(Context mContext, Cursor cursor, ViewGroup parent) {
         // Choose the layout type
         int viewType = getItemViewType(cursor.getPosition());
         int layoutId = -1;
@@ -67,7 +69,7 @@ public class ForecastAdapter extends CursorAdapter {
             }
         }
 
-        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
 
         ViewHolder viewHolder = new ViewHolder(view);
         view.setTag(viewHolder);
@@ -76,60 +78,74 @@ public class ForecastAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, Context mContext, Cursor cursor) {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
         int viewType = getItemViewType(cursor.getPosition());
+        int weatherId = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID);
+        int defaultImage;
         switch (viewType) {
             case VIEW_TYPE_TODAY: {
                 // Get weather icon
-                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(
-                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
-                viewHolder.cityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
+//                viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(
+//                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
+                defaultImage = Utility.getArtResourceForWeatherCondition(weatherId);
+                viewHolder.mCityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
                 break;
             }
-            case VIEW_TYPE_FUTURE_DAY: {
+            default: {
                 // Get weather icon
-                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(
+                defaultImage = Utility.getIconResourceForWeatherCondition(
+                        weatherId);
+                viewHolder.mIconView.setImageResource(Utility.getIconResourceForWeatherCondition(
                         cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
                 break;
             }
         }
 
+        if ( Utility.usingLocalGraphics(mContext) ) {
+            viewHolder.mIconView.setImageResource(defaultImage);
+        } else {
+            Glide.with(mContext)
+                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        }
         // Read date from cursor
         long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
         Integer type = cursor.getInt(ForecastHourlyFragment.COL_TYPE);
 
         // Find TextView and set formatted date on it
         if (type == TYPE_HOURLY) {
-            viewHolder.dateView.setText(Utility.getHourlyDayString(context, timeInMillis));
+            viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
         } else {
-            viewHolder.dateView.setText(Utility.getDailyDayString(context, timeInMillis));
+            viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
         }
         // Read weather forecast from cursor
         String description = cursor.getString(ForecastHourlyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it
-        viewHolder.descriptionView.setText(description);
+        viewHolder.mDescriptionView.setText(description);
 
         // For accessibility, add a content description to the icon field
-        viewHolder.iconView.setContentDescription(description);
+        viewHolder.mIconView.setContentDescription(description);
 
         // Read user preference for metric or imperial temperature units
-        boolean isMetric = Utility.isMetric(context);
+        boolean isMetric = Utility.isMetric(mContext);
 
         // Read high temperature from cursor
         double high = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_MAX_TEMP);
-        viewHolder.highTempView.setText(Utility.formatTemperature(context, high, isMetric));
+        viewHolder.mHighTempView.setText(Utility.formatTemperature(mContext, high, isMetric));
 
         // Read low temperature from cursor
         double low = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_MIN_TEMP);
-        viewHolder.lowTempView.setText(Utility.formatTemperature(context, low, isMetric));
+        viewHolder.mLowTempView.setText(Utility.formatTemperature(mContext, low, isMetric));
 
         // Read wind speed and direction from cursor and update view
         float windSpeedStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);
         float windDirStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_DEGREES);
-       viewHolder.windView.setText(Utility.getSmallFormattedWind(context, windSpeedStr, windDirStr));
+       viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
     }
 
     public void setUseTodayLayout(boolean useTodayLayout) {
