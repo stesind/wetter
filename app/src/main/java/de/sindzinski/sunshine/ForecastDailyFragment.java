@@ -51,7 +51,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String LOG_TAG = ForecastDailyFragment.class.getSimpleName();
-    private ForecastAdapter mForecastAdapter;
+    private ForecastAdapterDaily mForecastAdapter;
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
@@ -74,6 +74,10 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MORNING_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_DAY_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_EVENING_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_NIGHT_TEMP,
             WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.LocationEntry.COLUMN_COORD_LAT,
@@ -91,14 +95,18 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
     static final int COL_WEATHER_DESC = 2;
     static final int COL_WEATHER_MAX_TEMP = 3;
     static final int COL_WEATHER_MIN_TEMP = 4;
-    static final int COL_LOCATION_SETTING = 5;
-    static final int COL_WEATHER_CONDITION_ID = 6;
-    static final int COL_COORD_LAT = 7;
-    static final int COL_COORD_LONG = 8;
-    static final int COL_CITY_NAME = 9;
-    static final int COL_WEATHER_WIND_SPEED = 10;
-    static final int COL_WEATHER_DEGREES = 11;
-    static final int COL_TYPE = 12;
+    static final int COL_WEATHER_MORNING_TEMP = 5;
+    static final int COL_WEATHER_DAY_TEMP = 6;
+    static final int COL_WEATHER_EVENING_TEMP = 7;
+    static final int COL_WEATHER_NIGHT_TEMP = 8;
+    static final int COL_LOCATION_SETTING = 9;
+    static final int COL_WEATHER_CONDITION_ID = 10;
+    static final int COL_COORD_LAT = 11;
+    static final int COL_COORD_LONG = 12;
+    static final int COL_CITY_NAME = 13;
+    static final int COL_WEATHER_WIND_SPEED = 14;
+    static final int COL_WEATHER_DEGREES = 15;
+    static final int COL_TYPE = 16;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -151,7 +159,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
         // The ForecastAdapter will take data from a source and
         // use it to populate the ListView it's attached to.
-        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mForecastAdapter = new ForecastAdapterDaily(getActivity(), null, 0);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 

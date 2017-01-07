@@ -51,7 +51,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String LOG_TAG = ForecastHourlyFragment.class.getSimpleName();
-    private ForecastAdapter mForecastAdapter;
+    private ForecastAdapterHourly mForecastAdapter;
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
@@ -72,6 +72,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
             WeatherContract.WeatherEntry.COLUMN_DATE,
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
             WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
@@ -81,6 +82,10 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             WeatherContract.LocationEntry.COLUMN_CITY_NAME,
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
             WeatherContract.WeatherEntry.COLUMN_DEGREES,
+            WeatherContract.WeatherEntry.COLUMN_CLOUDS,
+            WeatherContract.WeatherEntry.COLUMN_RAIN,
+            WeatherContract.WeatherEntry.COLUMN_SNOW,
+            WeatherContract.WeatherEntry.COLUMN_ICON,
             WeatherContract.WeatherEntry.COLUMN_TYPE
     };
 
@@ -89,16 +94,21 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     static final int COL_WEATHER_ID = 0;
     static final int COL_WEATHER_DATE = 1;
     static final int COL_WEATHER_DESC = 2;
-    static final int COL_WEATHER_MAX_TEMP = 3;
-    static final int COL_WEATHER_MIN_TEMP = 4;
-    static final int COL_LOCATION_SETTING = 5;
-    static final int COL_WEATHER_CONDITION_ID = 6;
-    static final int COL_COORD_LAT = 7;
-    static final int COL_COORD_LONG = 8;
-    static final int COL_CITY_NAME = 9;
-    static final int COL_WEATHER_WIND_SPEED = 10;
-    static final int COL_WEATHER_DEGREES = 11;
-    static final int COL_TYPE = 12;
+    static final int COL_WEATHER_TEMP = 3;
+    static final int COL_WEATHER_MAX_TEMP = 4;
+    static final int COL_WEATHER_MIN_TEMP = 5;
+    static final int COL_LOCATION_SETTING = 6;
+    static final int COL_WEATHER_CONDITION_ID = 7;
+    static final int COL_COORD_LAT = 8;
+    static final int COL_COORD_LONG = 9;
+    static final int COL_CITY_NAME = 10;
+    static final int COL_WEATHER_WIND_SPEED = 11;
+    static final int COL_WEATHER_DEGREES = 12;
+    static final int COL_WEATHER_CLOUDS = 13;
+    static final int COL_WEATHER_RAIN = 14;
+    static final int COL_WEATHER_SNOW = 15;
+    static final int COL_WEATHER_ICON = 16;
+    static final int COL_TYPE = 17;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -151,7 +161,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
         // The ForecastAdapter will take data from a source and
         // use it to populate the ListView it's attached to.
-        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mForecastAdapter = new ForecastAdapterHourly(getActivity(), null, 0);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
