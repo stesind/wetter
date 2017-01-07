@@ -45,6 +45,7 @@
             android:textColor="@color/white"
             android:textAppearance="?android:textAppearanceMedium"
             android:layout_marginLeft="8dp"/>
+
     </LinearLayout>
 
     <LinearLayout

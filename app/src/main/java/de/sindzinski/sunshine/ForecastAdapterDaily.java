@@ -37,6 +37,8 @@ public class ForecastAdapterDaily extends CursorAdapter {
         public final TextView mMinMaxTempView;
         public final TextView mDayTempView;
         public final TextView mWindView;
+        public final ImageView mIconCloudsView;
+        public final TextView mCloudsView;
 
         public ViewHolder(View view) {
             mCityView = (TextView) view.findViewById(R.id.list_item_city_textview);
@@ -46,6 +48,8 @@ public class ForecastAdapterDaily extends CursorAdapter {
             mMinMaxTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
             mDayTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
             mWindView = (TextView) view.findViewById(R.id.list_item_wind_textview);
+            mIconCloudsView = (ImageView) view.findViewById(R.id.list_item_icon_clouds);
+            mCloudsView = (TextView) view.findViewById(R.id.list_item_clouds_textview);
         }
     }
 
@@ -64,7 +68,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
                 break;
             }
             case VIEW_TYPE_FUTURE_DAY: {
-                layoutId = R.layout.list_item_forecast;
+                layoutId = R.layout.list_item_forecast_daily;
                 break;
             }
         }
@@ -167,6 +171,13 @@ public class ForecastAdapterDaily extends CursorAdapter {
         float windSpeedStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_WIND_SPEED);
         float windDirStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_DEGREES);
         viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
+        int clouds = cursor.getInt(ForecastDailyFragment.COL_WEATHER_CLOUDS);
+        if ((viewType == VIEW_TYPE_FUTURE_DAY)&&(clouds>0)) {
+            int cloudsImage = Utility.getIconResourceForWeatherCondition(
+                    802);
+            viewHolder.mIconCloudsView.setImageResource(cloudsImage);
+            viewHolder.mCloudsView.setText(Double.toString(clouds)+"%");
+        }
     }
 
     public void setUseTodayLayout(boolean useTodayLayout) {

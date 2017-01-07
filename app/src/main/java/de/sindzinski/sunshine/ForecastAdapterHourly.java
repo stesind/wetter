@@ -31,6 +31,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
      */
     public static class ViewHolder {
         public final ImageView mIconView;
+        public final ImageView mIconCondView;
+
         public final TextView mDateView;
         public final TextView mCityView;
         public final TextView mDescriptionView;
@@ -46,6 +48,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
             mTempView = (TextView) view.findViewById(R.id.list_item_temp_textview);
             mCondView = (TextView) view.findViewById(R.id.list_item_cond_textview);
             mWindView = (TextView) view.findViewById(R.id.list_item_wind_textview);
+            mIconCondView = (ImageView) view.findViewById(R.id.list_item_icon_cond);
+
         }
     }
 
@@ -144,9 +148,12 @@ public class ForecastAdapterHourly extends CursorAdapter {
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
             int clouds = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CLOUDS);
-            viewHolder.mCondView.setText(
-                    rain + " / " +
-                            snow );
+            if ((rain+snow)> 0) {
+                viewHolder.mCondView.setText(
+                        (double) Math.round((rain) * 100) / 100 +
+                                " / " +
+                                (double) Math.round((snow) * 100) / 100);
+            }
         } else {
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
@@ -154,10 +161,11 @@ public class ForecastAdapterHourly extends CursorAdapter {
 
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
-            int clouds = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CLOUDS);
-            viewHolder.mCondView.setText(
-                    rain + " / " +
-                    snow );
+            double rainSnow = (double) Math.round((rain+snow) * 100) / 100;
+            if ((rainSnow)>0) {
+                viewHolder.mIconCondView.setImageResource(defaultImage);
+                viewHolder.mCondView.setText(Double.toString(rainSnow)+"mm");
+            }
         }
         // Read wind speed and direction from cursor and update view
         float windSpeedStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);

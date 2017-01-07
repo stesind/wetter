@@ -8,4 +8,5 @@
     <!-- Icon Sizes -->
     <dimen name="today_icon">96dp</dimen>
     <dimen name="list_icon">40dp</dimen>
+    <dimen name="cond_icon">16dp</dimen>
 </resources>
