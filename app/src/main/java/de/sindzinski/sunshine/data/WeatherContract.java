@@ -182,6 +182,13 @@ public class WeatherContract {
                     .build();
         }
 
+        public static Uri buildWeatherLocationCurrent(String locationSetting) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(locationSetting)
+                    .appendPath("current")
+                    .build();
+        }
+
         public static String getLocationSettingFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }

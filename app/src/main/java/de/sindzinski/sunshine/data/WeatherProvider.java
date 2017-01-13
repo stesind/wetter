@@ -35,7 +35,8 @@ public class WeatherProvider extends ContentProvider {
     static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
     static final int WEATHER_WITH_LOCATION_AND_DATE_HOURLY = 103;
     static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY = 104;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 105;
+    static final int WEATHER_WITH_LOCATION_CURRENT = 105;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 106;
     static final int LOCATION = 300;
 
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
@@ -183,6 +184,21 @@ public class WeatherProvider extends ContentProvider {
                 sortOrder
         );
     }
+
+    private Cursor getWeatherByLocationSettingCurrent(
+            Uri uri, String[] projection, String sortOrder) {
+        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
+        String type = WeatherContract.TYPE_CURRENT.toString();
+
+        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                sLocationSettingWithTypeSelection,
+                new String[]{locationSetting, type},
+                null,
+                null,
+                sortOrder
+        );
+    }
     /*
         Students: Here is where you need to create the UriMatcher. This UriMatcher will
         match each URI to the WEATHER, WEATHER_WITH_LOCATION, WEATHER_WITH_LOCATION_AND_DATE,
@@ -207,6 +223,7 @@ public class WeatherProvider extends ContentProvider {
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/#", WEATHER_WITH_LOCATION_AND_DATE);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/hourly/#", WEATHER_WITH_LOCATION_AND_DATE_HOURLY);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/daily/#", WEATHER_WITH_LOCATION_AND_DATE_DAILY);
+        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/current", WEATHER_WITH_LOCATION_CURRENT);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/currenthourly/#", WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY);
 
         matcher.addURI(authority, WeatherContract.PATH_LOCATION, LOCATION);
@@ -243,6 +260,8 @@ public class WeatherProvider extends ContentProvider {
             case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
+            case WEATHER_WITH_LOCATION_CURRENT:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
@@ -299,6 +318,11 @@ public class WeatherProvider extends ContentProvider {
             case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
             {
                 retCursor = getWeatherByLocationSettingAndDateCurrentHourly(uri, projection, sortOrder);
+                break;
+            }
+            case WEATHER_WITH_LOCATION_CURRENT:
+            {
+                retCursor = getWeatherByLocationSettingCurrent(uri, projection, sortOrder);
                 break;
             }
             // "location"
