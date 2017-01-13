@@ -852,11 +852,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-//                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Integer.toString(type)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
+                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLYgit )};
+                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        selection,
+                        selectionArgs);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -872,12 +872,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 cal.set(Calendar.MILLISECOND, 0);
                 timeInMillis = cal.getTimeInMillis();
 
-                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_DAILY)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_DAILY)};
+//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                        selection,
+//                        selectionArgs);
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
