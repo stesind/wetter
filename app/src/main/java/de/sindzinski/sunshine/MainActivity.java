@@ -74,8 +74,8 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new ForecastDailyFragment(), "Daily Forecast");
         adapter.addFragment(new ForecastHourlyFragment(), "Hourly Forecast");
+        adapter.addFragment(new ForecastDailyFragment(), "Daily Forecast");
 
         viewPager.setAdapter(adapter);
 
