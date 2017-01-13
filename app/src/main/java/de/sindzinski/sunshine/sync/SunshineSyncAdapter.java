@@ -853,7 +853,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 //delete all old data of given type
                 String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLYgit )};
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLY)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);
