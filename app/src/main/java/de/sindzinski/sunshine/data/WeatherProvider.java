@@ -33,9 +33,9 @@ public class WeatherProvider extends ContentProvider {
     static final int WEATHER = 100;
     static final int WEATHER_WITH_LOCATION = 101;
     static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
-    static final int WEATHER_WITH_TYPE = 103;
-    static final int WEATHER_WITH_LOCATION_AND_TYPE = 104;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_AND_TYPE = 105;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_HOURLY = 103;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY = 104;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 105;
     static final int LOCATION = 300;
 
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
@@ -84,6 +84,12 @@ public class WeatherProvider extends ContentProvider {
                     WeatherContract.WeatherEntry.COLUMN_DATE + " >= ? AND " +
                     WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
 
+    private static final String sLocationSettingWithStartDateCurrentHourlySelection =
+            WeatherContract.LocationEntry.TABLE_NAME+
+                    "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? AND " +
+                    WeatherContract.WeatherEntry.COLUMN_DATE + " >= ? AND (" +
+                    WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? OR " +
+                    WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
     //location.location_setting = ? AND date = ?
     private static final String sLocationSettingAndDayAndTypeSelection =
             WeatherContract.LocationEntry.TABLE_NAME +
@@ -131,48 +137,52 @@ public class WeatherProvider extends ContentProvider {
         );
     }
 
-    private Cursor getWeatherByLocationSettingAndType(Uri uri, String[] projection, String sortOrder) {
-        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        String type = WeatherContract.WeatherEntry.getTypeFromUri(uri);
-        long startDate = WeatherContract.WeatherEntry.getStartDateFromUri(uri);
-
-        String[] selectionArgs;
-        String selection;
-
-        if (startDate == 0) {
-            selection = sLocationSettingWithTypeSelection;
-            selectionArgs = new String[]{locationSetting, type};
-        } else {
-            selectionArgs = new String[]{locationSetting, Long.toString(startDate), type};
-            selection = sLocationSettingWithStartDateAndTypeSelection;
-        }
-
-        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                sortOrder
-        );
-    }
-
-    private Cursor getWeatherByLocationSettingAndDateAndType(
+    private Cursor getWeatherByLocationSettingAndDateHourly(
             Uri uri, String[] projection, String sortOrder) {
         String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        String type = WeatherContract.WeatherEntry.getTypeFromUri(uri);
+        String type = WeatherContract.TYPE_HOURLY.toString();
         long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
 
         return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
-                sLocationSettingAndDayAndTypeSelection,
+                sLocationSettingWithStartDateAndTypeSelection,
                 new String[]{locationSetting, Long.toString(date), type},
                 null,
                 null,
                 sortOrder
         );
     }
+    private Cursor getWeatherByLocationSettingAndDateDaily(
+            Uri uri, String[] projection, String sortOrder) {
+        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
+        String type = WeatherContract.TYPE_DAILY.toString();
+        long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
 
+        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                sLocationSettingWithStartDateAndTypeSelection,
+                new String[]{locationSetting, Long.toString(date), type},
+                null,
+                null,
+                sortOrder
+        );
+    }
+    private Cursor getWeatherByLocationSettingAndDateCurrentHourly(
+            Uri uri, String[] projection, String sortOrder) {
+        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
+        String type = WeatherContract.TYPE_CURRENT.toString();
+        String orType = WeatherContract.TYPE_HOURLY.toString();
+        long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+
+        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                sLocationSettingWithStartDateCurrentHourlySelection,
+                new String[]{locationSetting, Long.toString(date), type, orType},
+                null,
+                null,
+                sortOrder
+        );
+    }
     /*
         Students: Here is where you need to create the UriMatcher. This UriMatcher will
         match each URI to the WEATHER, WEATHER_WITH_LOCATION, WEATHER_WITH_LOCATION_AND_DATE,
@@ -195,9 +205,9 @@ public class WeatherProvider extends ContentProvider {
         matcher.addURI(authority, WeatherContract.PATH_WEATHER, WEATHER);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*", WEATHER_WITH_LOCATION);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/#", WEATHER_WITH_LOCATION_AND_DATE);
-        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/#" ,WEATHER_WITH_TYPE);
-        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/#", WEATHER_WITH_LOCATION_AND_TYPE);
-        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/#/#", WEATHER_WITH_LOCATION_AND_DATE_AND_TYPE);
+        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/hourly/#", WEATHER_WITH_LOCATION_AND_DATE_HOURLY);
+        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/daily/#", WEATHER_WITH_LOCATION_AND_DATE_DAILY);
+        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/currenthourly/#", WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY);
 
         matcher.addURI(authority, WeatherContract.PATH_LOCATION, LOCATION);
         return matcher;
@@ -227,16 +237,14 @@ public class WeatherProvider extends ContentProvider {
         switch (match) {
             // Student: Uncomment and fill out these two cases
             case WEATHER_WITH_LOCATION_AND_DATE:
-                return WeatherContract.WeatherEntry.CONTENT_ITEM_TYPE;
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
+            case WEATHER_WITH_LOCATION_AND_DATE_HOURLY:
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
+            case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER:
-                return WeatherContract.WeatherEntry.CONTENT_TYPE;
-            case WEATHER_WITH_LOCATION_AND_DATE_AND_TYPE:
-                return WeatherContract.WeatherEntry.CONTENT_ITEM_TYPE;
-            case WEATHER_WITH_LOCATION_AND_TYPE:
-                return WeatherContract.WeatherEntry.CONTENT_TYPE;
-            case WEATHER_WITH_TYPE:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case LOCATION:
                 return WeatherContract.LocationEntry.CONTENT_TYPE;
@@ -276,27 +284,19 @@ public class WeatherProvider extends ContentProvider {
                 );
                 break;
             }
-            case WEATHER_WITH_LOCATION_AND_DATE_AND_TYPE:
+            case WEATHER_WITH_LOCATION_AND_DATE_HOURLY:
             {
-                retCursor = getWeatherByLocationSettingAndDateAndType(uri, projection, sortOrder);
+                retCursor = getWeatherByLocationSettingAndDateHourly(uri, projection, sortOrder);
                 break;
             }
-            // "weather/*"
-            case WEATHER_WITH_LOCATION_AND_TYPE: {
-                retCursor = getWeatherByLocationSettingAndType(uri, projection, sortOrder);
+            case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
+            {
+                retCursor = getWeatherByLocationSettingAndDateDaily(uri, projection, sortOrder);
                 break;
             }
-            // "weather"
-            case WEATHER_WITH_TYPE: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        WeatherContract.WeatherEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+            case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
+            {
+                retCursor = getWeatherByLocationSettingAndDateCurrentHourly(uri, projection, sortOrder);
                 break;
             }
             // "location"

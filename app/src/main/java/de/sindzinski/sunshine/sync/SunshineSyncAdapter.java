@@ -49,6 +49,7 @@ import de.sindzinski.sunshine.R;
 import de.sindzinski.sunshine.Utility;
 import de.sindzinski.sunshine.data.WeatherContract;
 
+import static de.sindzinski.sunshine.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.sunshine.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.sunshine.data.WeatherContract.TYPE_HOURLY;
 
@@ -93,13 +94,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Integer type = TYPE_DAILY;
-        syncAllSources(account, extras, authority, provider, syncResult, type);
+        syncAllSources(account, extras, authority, provider, syncResult, TYPE_DAILY);
 
         if (Utility.getHourlyForecast(getContext())) {
-            type = TYPE_HOURLY;
-            syncAllSources(account, extras, authority, provider, syncResult, type);
+            syncAllSources(account, extras, authority, provider, syncResult, TYPE_HOURLY);
         }
+
+        syncAllSources(account, extras, authority, provider, syncResult, TYPE_CURRENT);
+
         notifyWeather();
     }
 
@@ -129,7 +131,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             final String UNITS_PARAM = "units";
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
-            Uri builtUri;
+            Uri builtUri = null;
+
             if (type == TYPE_HOURLY) {
                 final String FORECAST_BASE_URL =
                         "http://api.openweathermap.org/data/2.5/forecast?";
@@ -139,7 +142,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
                         .build();
-            } else {
+            } else if (type == TYPE_DAILY) {
                 final String FORECAST_BASE_URL =
                         "http://api.openweathermap.org/data/2.5/forecast/daily?";
                 builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
@@ -147,6 +150,15 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .build();
+            } else if (type == TYPE_CURRENT) { //current
+                final String FORECAST_BASE_URL =
+                        "http://api.openweathermap.org/data/2.5/weather?";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM, locationQuery)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
                         .build();
             }
@@ -182,8 +194,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             forecastJsonStr = buffer.toString();
             if (type == TYPE_HOURLY) {
                 getWeatherDataFromJsonHourly(forecastJsonStr, locationQuery);
-            } else {
+            } else if (type == TYPE_DAILY) {
                 getWeatherDataFromJsonDaily(forecastJsonStr, locationQuery);
+            } else if (type== TYPE_CURRENT) {
+                getWeatherDataFromJsonCurrent(forecastJsonStr, locationQuery);
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -216,6 +230,215 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
+
+    private void getWeatherDataFromJsonCurrent(String forecastJsonStr,
+                                               String locationSetting)
+            throws JSONException {
+
+        // Now we have a String representing the complete forecast in JSON Format.
+        // Fortunately parsing is easy:  constructor takes the JSON string and converts it
+        // into an Object hierarchy for us.
+
+        // These are the names of the JSON objects that need to be extracted.
+        // Location information
+        String OWM_CITY = "id";
+        String OWM_CITY_NAME = "name";
+        String OWM_COORD = "coord";
+
+        // Location coordinate
+        String OWM_LATITUDE = "lat";
+        String OWM_LONGITUDE = "lon";
+
+        String OWM_TIME = "dt";
+        // Weather information.  Each day's forecast info is an element of the "list" array.
+
+        String OWM_WIND = "wind";
+        String OWM_WIND_SPEED = "speed";
+        String OWM_WIND_DIRECTION = "deg";
+
+        String OWM_MAIN = "main";
+        String OWM_TEMP = "temp";
+        String OWM_MAX = "temp_max";
+        String OWM_MIN = "temp_min";
+        String OWM_PRESSURE = "pressure";
+        String OWM_HUMIDITY = "humidity";
+        String OWM_MESSAGE_CODE = "cod";
+
+        String OWM_WEATHER = "weather";
+        String OWM_WEATHER_ID = "id";
+        String OWM_DESCRIPTION = "main";
+        String OWM_WEATHER_ICON = "icon";
+
+        String OWM_CLOUDS = "clouds";
+        String OWM_CLOUDS_ALL = "all";
+
+        String OWM_RAIN = "rain";
+        String OWM_RAIN_3h = "3h";
+        String OWM_SNOW = "snow";
+        String OWM_SNOW_3h = "3h";
+
+        String OWM_SYS = "sys";
+        String OWM_SUN_RISE = "sunrise";
+        String OWM_SUN_SET = "sunset";
+
+        try {
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+
+            // do we have an error?
+            if (forecastJson.has(OWM_MESSAGE_CODE)) {
+                int errorCode = forecastJson.getInt(OWM_MESSAGE_CODE);
+
+                switch (errorCode) {
+                    case HttpURLConnection.HTTP_OK:
+                        break;
+                    case HttpURLConnection.HTTP_NOT_FOUND:
+                        setLocationStatus(getContext(), LOCATION_STATUS_INVALID);
+                        return;
+                    default:
+                        setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+                        return;
+                }
+            }
+
+
+            int cityID = forecastJson.getInt(OWM_CITY);
+            String cityName = forecastJson.getString(OWM_CITY_NAME);
+
+            double cityLatitude = 0;
+            double cityLongitude = 0;
+            if (forecastJson.has(OWM_COORD)) {
+                JSONObject coord = forecastJson.getJSONObject(OWM_COORD);
+                cityLatitude = coord.getDouble(OWM_LATITUDE);
+                cityLongitude = coord.getDouble(OWM_LONGITUDE);
+            }
+
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
+
+            long timeInMillis = 0;
+
+            double pressure;
+            int humidity;
+            int clouds;
+            double windSpeed;
+            double windDirection;
+
+            double min;
+            double max;
+            double temp;
+
+            double rain = 0;
+            double snow = 0;
+
+            String icon;
+
+            String description;
+            int weatherId;
+
+            long sunRise = 0;
+            long sunSet = 0;
+
+            // Cheating to convert this to UTC time, which is what we want anyhow
+            timeInMillis = forecastJson.getLong(OWM_TIME) * 1000;
+
+            JSONObject weatherObject = forecastJson.getJSONArray(OWM_WEATHER).getJSONObject(0);
+            description = weatherObject.getString(OWM_DESCRIPTION);
+            weatherId = weatherObject.getInt(OWM_WEATHER_ID);
+            icon = weatherObject.getString(OWM_WEATHER_ICON);
+
+            JSONObject mainObject = forecastJson.getJSONObject(OWM_MAIN);
+            temp = mainObject.getDouble(OWM_TEMP);
+            max = mainObject.getDouble(OWM_MAX);
+            min = mainObject.getDouble(OWM_MIN);
+            pressure = mainObject.getDouble(OWM_PRESSURE);
+            humidity = mainObject.getInt(OWM_HUMIDITY);
+
+            JSONObject windObject = forecastJson.getJSONObject(OWM_WIND);
+            windSpeed = windObject.getDouble(OWM_WIND_SPEED);
+            windDirection = windObject.getDouble(OWM_WIND_DIRECTION);
+
+            JSONObject cloudsObject = forecastJson.getJSONObject(OWM_CLOUDS);
+            clouds = cloudsObject.getInt(OWM_CLOUDS_ALL);
+
+            if (forecastJson.has(OWM_RAIN)) {
+                JSONObject rainObject = forecastJson.getJSONObject(OWM_RAIN);
+                rain = rainObject.has(OWM_RAIN_3h) ? rainObject.getDouble(OWM_RAIN_3h) : 0;
+            }
+
+            if (forecastJson.has(OWM_SNOW)) {
+                JSONObject snowObject = forecastJson.getJSONObject(OWM_SNOW);
+                snow = snowObject.has(OWM_SNOW_3h) ? snowObject.getDouble(OWM_SNOW_3h) : 0;
+            }
+
+            if (forecastJson.has(OWM_SYS)) {
+                JSONObject sysObject = forecastJson.getJSONObject(OWM_SYS);
+                sunRise = sysObject.has(OWM_SUN_RISE) ? sysObject.getLong(OWM_SUN_RISE) : 0;
+                sunSet = sysObject.has(OWM_SUN_SET) ? sysObject.getLong(OWM_SUN_SET) : 0;
+            }
+
+
+            ContentValues weatherValues = new ContentValues();
+
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, timeInMillis);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_CLOUDS, clouds);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, max);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, min);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TEMP, temp);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_CURRENT);
+
+            // Insert the new weather information into the database
+            Vector<ContentValues> cVVector = new Vector<ContentValues>(1);
+            cVVector.add(weatherValues);
+
+            // add to database
+            if (cVVector.size() > 0) {
+
+                //delete all old data of given type
+                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_CURRENT)};
+                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        selection,
+                        selectionArgs);
+
+                ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                cVVector.toArray(cvArray);
+                getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
+
+                // delete old data so we don't build up an endless history
+                // get the time beginning of today for daily
+                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                timeInMillis = cal.getTimeInMillis();
+
+//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_CURRENT)};
+//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                        selection,
+//                        selectionArgs);
+            }
+            Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
+            setLocationStatus(getContext(), LOCATION_STATUS_OK);
+
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+        }
+    }
+
     private void getWeatherDataFromJsonDaily(String forecastJsonStr,
                                              String locationSetting)
             throws JSONException {
@@ -595,12 +818,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (dayForecast.has(OWM_RAIN)) {
                     JSONObject rainObject = dayForecast.getJSONObject(OWM_RAIN);
-                    rain = rainObject.has(OWM_RAIN_3h) ? rainObject.getDouble(OWM_RAIN_3h): 0 ;
+                    rain = rainObject.has(OWM_RAIN_3h) ? rainObject.getDouble(OWM_RAIN_3h) : 0;
                 }
 
-                if (dayForecast.has(OWM_RAIN)) {
+                if (dayForecast.has(OWM_SNOW)) {
                     JSONObject snowObject = dayForecast.getJSONObject(OWM_SNOW);
-                    snow = snowObject.has(OWM_SNOW_3h) ? snowObject.getDouble(OWM_SNOW_3h) :0;
+                    snow = snowObject.has(OWM_SNOW_3h) ? snowObject.getDouble(OWM_SNOW_3h) : 0;
                 }
 
                 ContentValues weatherValues = new ContentValues();
@@ -683,7 +906,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = Utility.getPreferredLocation(context);
 
-                Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
+                Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateHourly(locationQuery, System.currentTimeMillis());
 
                 // we'll query our contentProvider, as always
                 Cursor cursor = context.getContentResolver().query(weatherUri, NOTIFY_WEATHER_PROJECTION, null, null, null);

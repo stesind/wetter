@@ -182,9 +182,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
                     ((CallbackDaily) getActivity())
-                            .onItemSelectedDaily(WeatherContract.WeatherEntry.buildWeatherLocationWithDateAndType(
-                                    locationSetting, cursor.getLong(COL_WEATHER_DATE), TYPE_DAILY
-                            ));
+                            .onItemSelectedDaily(WeatherContract.WeatherEntry.buildWeatherLocationWithDateDaily(
+                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)));
                 }
                 mPosition = position;
             }
@@ -277,8 +276,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
         Integer type = TYPE_DAILY;
         String locationSetting = Utility.getPreferredLocation(getActivity());
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDateAndType(
-                locationSetting, timeInMillis, type);
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateDaily(
+                locationSetting, timeInMillis);
 
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,

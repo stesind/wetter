@@ -182,9 +182,8 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
                     ((CallbackHourly) getActivity())
-                            .onItemSelectedHourly(WeatherContract.WeatherEntry.buildWeatherLocationWithDateAndType(
-                                    locationSetting, cursor.getLong(COL_WEATHER_DATE), TYPE_HOURLY
-                            ));
+                            .onItemSelectedHourly(WeatherContract.WeatherEntry.buildWeatherLocationWithDateHourly(
+                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)));
                 }
                 mPosition = position;
             }
@@ -279,8 +278,8 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
         Integer type = TYPE_HOURLY;
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDateAndType(
-                locationSetting, timeInMillis, type);
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateHourly(
+                locationSetting, timeInMillis);
 
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,
