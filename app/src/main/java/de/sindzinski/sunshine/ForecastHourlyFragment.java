@@ -274,11 +274,11 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         long timeInMillis = cal.getTimeInMillis();
         //long timeInMillis = System.currentTimeMillis():
         // Sort order:  Ascending, by date.
-        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_TYPE + " DESC," + WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
         Integer type = TYPE_HOURLY;
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateHourly(
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateCurrentHourly(
                 locationSetting, timeInMillis);
 
         return new CursorLoader(getActivity(),

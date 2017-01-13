@@ -89,7 +89,7 @@ public class WeatherProvider extends ContentProvider {
                     "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? AND " +
                     WeatherContract.WeatherEntry.COLUMN_DATE + " >= ? AND (" +
                     WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? OR " +
-                    WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                    WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? )";
     //location.location_setting = ? AND date = ?
     private static final String sLocationSettingAndDayAndTypeSelection =
             WeatherContract.LocationEntry.TABLE_NAME +
@@ -241,6 +241,8 @@ public class WeatherProvider extends ContentProvider {
             case WEATHER_WITH_LOCATION_AND_DATE_HOURLY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
+            case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
