@@ -6,7 +6,7 @@
          It's to keep this short, so your launcher icon isn't displayed with "The greatest Wea"
          or something similar.
     -->
-    <string name="app_name">Sunshine</string>
+    <string name="app_name">Wetter</string>
 
     <!--
          By convention, "action" denotes that this String will be used as the label for an Action,
@@ -122,8 +122,8 @@
     <string name="format_humidity">Humidity: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
 
     <!-- SyncAdapter related -->
-    <string name="sync_account_type">sunshine.sindzinski.de</string>
-    <string name="content_authority">de.sindzinski.sunshine</string>
+    <string name="sync_account_type">wetter.sindzinski.de</string>
+    <string name="content_authority">de.sindzinski.wetter</string>
 
     <!-- Notification Format -->
     <string name="format_notification">

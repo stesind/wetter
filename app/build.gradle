@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId "de.sindzinski.sunshine"
+        applicationId "de.sindzinski.wetter"
         minSdkVersion 24
         targetSdkVersion 25
         versionCode 1
