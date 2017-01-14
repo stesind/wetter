@@ -57,10 +57,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = WetterSyncAdapter.class.getSimpleName();
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
-    public static final int SYNC_INTERVAL = 60 * 60;
+    public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
-    private static final long HOUR_IN_MILLIS = 1000 * 60 * 24;
+    private static final long HOUR_IN_MILLIS = 1000 * 60 * 60;
+    private static final long MINUTE_IN_MILLIS = 1000 * 60 ;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
 
 
@@ -903,7 +904,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             String lastNotificationKey = context.getString(R.string.pref_last_notification);
             long lastSync = prefs.getLong(lastNotificationKey, 0);
 
-            if (System.currentTimeMillis() - lastSync >= HOUR_IN_MILLIS) {
+            if (System.currentTimeMillis() - lastSync >= MINUTE_IN_MILLIS) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = Utility.getPreferredLocation(context);
 

@@ -21,29 +21,29 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="@color/white" />
+            android:textColor="@color/primary_text" />
         <TextView
             android:id="@+id/list_item_date_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="@color/white" />
+            android:textColor="@color/primary_text" />
 
         <TextView
             android:id="@+id/list_item_temp_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="72sp"
+            android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-light"
-            android:textColor="@color/white" />
+            android:textColor="@color/primary_text" />
 
         <TextView
             android:id="@+id/list_item_cond_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="36sp"
+            android:textColor="@color/primary_text"
+            android:textAppearance="?android:textAppearanceMedium"
             android:layout_marginLeft="8dp"/>
     </LinearLayout>
 
@@ -68,14 +68,14 @@
             android:fontFamily="sans-serif-condensed"
             android:layout_gravity="center_horizontal"
             android:textAppearance="?android:textAppearanceLarge"
-            android:textColor="@color/white"/>
+            android:textColor="@color/primary_text"/>
         <TextView
             android:id="@+id/list_item_wind_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="@color/white"
+            android:textColor="@color/primary_text"
             android:textAppearance="?android:textAppearanceMedium" />
     </LinearLayout>
 </LinearLayout>

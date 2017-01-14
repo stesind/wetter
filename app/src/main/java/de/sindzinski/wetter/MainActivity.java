@@ -111,15 +111,15 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
 
         WetterSyncAdapter.initializeSyncAdapter(this);
 
-        mResolver = getContentResolver();
-        /*
-         * Turn on periodic syncing
-         */
-        ContentResolver.addPeriodicSync(
-                ACCOUNT,
-                AUTHORITY,
-                Bundle.EMPTY,
-                SYNC_INTERVAL);
+//        mResolver = getContentResolver();
+//        /*
+//         * Turn on periodic syncing
+//         */
+//        ContentResolver.addPeriodicSync(
+//                ACCOUNT,
+//                AUTHORITY,
+//                Bundle.EMPTY,
+//                SYNC_INTERVAL);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = prefs.getString(this.getString(R.string.pref_theme_key),
