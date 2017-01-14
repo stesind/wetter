@@ -40,4 +40,11 @@
         android:summaryOn="@string/pref_enable_hourly_forecast_true"
         android:defaultValue="@string/pref_enable_hourly_forecast_default" />
 
+    <ListPreference
+        android:title="@string/pref_theme_label"
+        android:key="@string/pref_theme_key"
+        android:defaultValue="@string/pref_theme_night"
+        android:entryValues="@array/pref_theme_values"
+        android:entries="@array/pref_theme_options" />
+
 </PreferenceScreen>

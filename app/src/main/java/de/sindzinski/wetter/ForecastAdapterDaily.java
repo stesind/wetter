@@ -11,8 +11,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
-
 /**
  * {@link ForecastAdapterDaily} exposes a list of weather forecasts
  * from a {@link Cursor} to a {@link android.widget.ListView}.
@@ -45,8 +43,8 @@ public class ForecastAdapterDaily extends CursorAdapter {
             mIconView = (ImageView) view.findViewById(R.id.list_item_icon);
             mDateView = (TextView) view.findViewById(R.id.list_item_date_textview);
             mDescriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
-            mMinMaxTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
-            mDayTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
+            mDayTempView = (TextView) view.findViewById(R.id.list_item_day_textview);
+            mMinMaxTempView = (TextView) view.findViewById(R.id.list_item_minmax_textview);
             mWindView = (TextView) view.findViewById(R.id.list_item_wind_textview);
             mIconCloudsView = (ImageView) view.findViewById(R.id.list_item_icon_clouds);
             mCloudsView = (TextView) view.findViewById(R.id.list_item_clouds_textview);
@@ -122,11 +120,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
         Integer type = cursor.getInt(ForecastDailyFragment.COL_TYPE);
 
         // Find TextView and set formatted date on it
-        if (type == TYPE_HOURLY) {
-            viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
-        } else {
             viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
-        }
         // Read weather forecast from cursor
         String description = cursor.getString(ForecastDailyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it
@@ -142,7 +136,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
             // Read high temperature from cursor
             double max = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MAX_TEMP);
             double min = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MIN_TEMP);
-            viewHolder.mMinMaxTempView
+            viewHolder.mDateView
                     .setText(Utility.formatTemperature(mContext, max, isMetric)
                             + " / " +
                             Utility.formatTemperature(mContext, min, isMetric));
@@ -152,20 +146,21 @@ public class ForecastAdapterDaily extends CursorAdapter {
             double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
             double evening = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_EVENING_TEMP);
             double night = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_NIGHT_TEMP);
-            viewHolder.mDayTempView.setText(
+            viewHolder.mMinMaxTempView.setText(
                     Utility.formatTemperature(mContext, morning, isMetric) + " / " +
                             Utility.formatTemperature(mContext, day, isMetric) + " / " +
                             Utility.formatTemperature(mContext, evening, isMetric) + " / " +
                             Utility.formatTemperature(mContext, night, isMetric)
             );
         } else {
-            // Read high temperature from cursor
-            double high = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_MAX_TEMP);
-            viewHolder.mMinMaxTempView.setText(Utility.formatTemperature(mContext, high, isMetric));
+            // Read day temperature from cursor
+            double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
+            viewHolder.mDayTempView.setText(Utility.formatTemperature(mContext, day, isMetric));
+            // Read high low temperature from cursor
+            double high = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MAX_TEMP);
+            double low = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MIN_TEMP);
+            viewHolder.mMinMaxTempView.setText(Utility.formatTemperature(mContext, high, isMetric)+ " / " + Utility.formatTemperature(mContext, low, isMetric) );
 
-            // Read low temperature from cursor
-            double low = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_MIN_TEMP);
-            viewHolder.mDayTempView.setText(Utility.formatTemperature(mContext, low, isMetric));
         }
         // Read wind speed and direction from cursor and update view
         float windSpeedStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_WIND_SPEED);

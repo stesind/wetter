@@ -11,6 +11,19 @@
         <item>@string/pref_units_imperial</item>
     </string-array>
 
+    <string-array name="pref_theme_options">
+        <item>@string/pref_theme_label_night</item>
+        <item>@string/pref_theme_label_day</item>
+        <item>@string/pref_theme_label_auto</item>
+    </string-array>
+
+    <string-array name="pref_theme_values">
+        <item>@string/pref_theme_night</item>
+        <item>@string/pref_theme_day</item>
+        <item>@string/pref_theme_auto</item>
+    </string-array>
+
+
     <!-- Names of the art packs available -->
     <string-array name="pref_art_pack_options">
         <item>@string/pref_art_pack_label_sunshine</item>

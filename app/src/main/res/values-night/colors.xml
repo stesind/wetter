@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="white">#FFFFFF</color>
+    <color name="grey">#cccccc</color>
+    <color name="grey_700">#646464</color>
+    <color name="black">#000000</color>
+
+    <!--<color name="sunshine_light_blue">#FF7137D4</color>-->
+    <!--<color name="sunshine_blue">#5d38a6</color>-->
+    <!--<color name="sunshine_dark_blue">#FF361968</color>-->
+    FF5D38A6
+    <!-- Main theme colors -->
+
+
+    <color name="primary">#673AB7</color>
+    <color name="primary_dark">#512DA8</color>
+    <color name="primary_light">#D1C4E9</color>
+    <color name="accent">#E040FB</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#BDBDBD</color>
+
+    <color name="window_background">#FF303030</color>
+    <color name="navigation_bar_color">#FF000000</color>
+</resources>

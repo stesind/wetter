@@ -18,8 +18,10 @@ package de.sindzinski.wetter;
 import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -27,6 +29,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +42,13 @@ import java.util.List;
 
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
+
 public class MainActivity extends AppCompatActivity implements ForecastDailyFragment.CallbackDaily, ForecastHourlyFragment.CallbackHourly {
+
+//    static {
+//        AppCompatDelegate.setDefaultNightMode(
+//                AppCompatDelegate.MODE_NIGHT_AUTO);
+//    }
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -111,6 +120,17 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
                 AUTHORITY,
                 Bundle.EMPTY,
                 SYNC_INTERVAL);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = prefs.getString(this.getString(R.string.pref_theme_key),
+                this.getString(R.string.pref_theme_night));
+        if (theme.equals(getString(R.string.pref_theme_night))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else if (theme.equals(getString(R.string.pref_theme_day))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
