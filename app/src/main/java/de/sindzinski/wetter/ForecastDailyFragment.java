@@ -86,6 +86,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
             WeatherContract.WeatherEntry.COLUMN_DEGREES,
             WeatherContract.WeatherEntry.COLUMN_CLOUDS,
+            WeatherContract.WeatherEntry.COLUMN_ICON,
             WeatherContract.WeatherEntry.COLUMN_TYPE
     };
 
@@ -108,7 +109,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
     static final int COL_WEATHER_WIND_SPEED = 14;
     static final int COL_WEATHER_DEGREES = 15;
     static final int COL_WEATHER_CLOUDS = 16;
-    static final int COL_TYPE = 17;
+    static final int COL_WEATHER_ICON = 17;
+    static final int COL_TYPE = 18;
 
     /**
      * A callback interface that all activities containing this fragment must

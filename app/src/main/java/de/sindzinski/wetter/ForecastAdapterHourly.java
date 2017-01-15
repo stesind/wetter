@@ -1,7 +1,9 @@
 package de.sindzinski.wetter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 /**
  * {@link ForecastAdapterHourly} exposes a list of weather forecasts
@@ -85,38 +88,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
     public void bindView(View view, Context mContext, Cursor cursor) {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
+        boolean isMetric = Utility.isMetric(mContext);
 
-        int viewType = getItemViewType(cursor.getPosition());
-        int weatherId = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID);
-        int defaultImage;
-        switch (viewType) {
-            case VIEW_TYPE_TODAY: {
-                // Get weather icon
-//                viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(
-//                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
-                defaultImage = Utility.getArtResourceForWeatherCondition(weatherId);
-                viewHolder.mCityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
-                break;
-            }
-            default: {
-                // Get weather icon
-                defaultImage = Utility.getIconResourceForWeatherCondition(
-                        weatherId);
-                viewHolder.mIconView.setImageResource(Utility.getIconResourceForWeatherCondition(
-                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
-                break;
-            }
-        }
-
-        if (Utility.usingLocalGraphics(mContext)) {
-            viewHolder.mIconView.setImageResource(defaultImage);
-        } else {
-            Glide.with(mContext)
-                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
-                    .error(defaultImage)
-                    .crossFade()
-                    .into(viewHolder.mIconView);
-        }
         // Read weather forecast from cursor
         String description = cursor.getString(ForecastHourlyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it
@@ -126,17 +99,54 @@ public class ForecastAdapterHourly extends CursorAdapter {
         viewHolder.mIconView.setContentDescription(description);
 
         // Read user preference for metric or imperial temperature units
-        boolean isMetric = Utility.isMetric(mContext);
 
+        // Read wind speed and direction from cursor and update view
+        float windSpeedStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);
+        float windDirStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_DEGREES);
+        viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
+
+
+        // Get weather icon
+        int weatherId = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID);
+        int defaultImage;
+        defaultImage = Utility.getIconResourceForWeatherCondition(
+                weatherId);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_key),
+                mContext.getString(R.string.pref_art_pack_sunshine));
+
+        if (artPack.equals(mContext.getString(R.string.pref_art_pack_owm))) {
+            String icon = cursor.getString(ForecastHourlyFragment.COL_WEATHER_ICON);
+            Glide.with(mContext)
+                    .load(String.format(Locale.US, artPack, icon))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        } else if (artPack.equals(mContext.getString(R.string.pref_art_pack_cute_dogs))) {
+            Glide.with(mContext)
+                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        } else {
+            // local images
+            viewHolder.mIconView.setImageResource(defaultImage);
+        }
+
+        int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
-            Integer type = cursor.getInt(ForecastHourlyFragment.COL_TYPE);
+
+            // Get weather icon
+//                viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(
+//                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
+            viewHolder.mCityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
 
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:MM");
             long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_RISE);
             String sunRise = shortenedDateFormat.format(timeInMillis);
             long timeInMillis2 = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
             String sunSet = shortenedDateFormat.format(timeInMillis2);
-            viewHolder.mDateView.setText( sunRise + " / " + sunSet );
+            viewHolder.mDateView.setText(sunRise + " / " + sunSet);
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView
@@ -153,6 +163,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
                                 (double) Math.round((snow) * 100) / 100);
             }
         } else {
+
             // Read date from cursor
             long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
             // Find TextView and set formatted date on it
@@ -169,10 +180,6 @@ public class ForecastAdapterHourly extends CursorAdapter {
                 viewHolder.mCondView.setText(Double.toString(rainSnow) + "mm");
             }
         }
-        // Read wind speed and direction from cursor and update view
-        float windSpeedStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);
-        float windDirStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_DEGREES);
-        viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
     }
 
     public void setUseTodayLayout(boolean useTodayLayout) {
