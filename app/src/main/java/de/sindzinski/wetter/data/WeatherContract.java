@@ -145,6 +145,9 @@ public class WeatherContract {
         // the default icon to display
         public static final String COLUMN_ICON = "icon";
 
+        public static final String COLUMN_SUN_RISE = "sunrise";
+        public static final String COLUMN_SUN_SET = "sunset";
+
         public static Uri buildWeatherUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }

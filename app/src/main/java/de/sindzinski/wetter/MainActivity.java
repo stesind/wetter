@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
         ViewCompat.animate(fab)
                 .rotation(135.0F)
                 .withLayer()
-                .setDuration(300L)
+                .setDuration(3000L)
                 .setInterpolator(new OvershootInterpolator(10.0F))
                 .start();
     }

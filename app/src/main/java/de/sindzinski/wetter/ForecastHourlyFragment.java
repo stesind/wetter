@@ -86,7 +86,10 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             WeatherContract.WeatherEntry.COLUMN_RAIN,
             WeatherContract.WeatherEntry.COLUMN_SNOW,
             WeatherContract.WeatherEntry.COLUMN_ICON,
+            WeatherContract.WeatherEntry.COLUMN_SUN_RISE,
+            WeatherContract.WeatherEntry.COLUMN_SUN_SET,
             WeatherContract.WeatherEntry.COLUMN_TYPE
+
     };
 
     // These indices are tied to FORECAST_COLUMNS.  If FORECAST_COLUMNS changes, these
@@ -108,7 +111,9 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     static final int COL_WEATHER_RAIN = 14;
     static final int COL_WEATHER_SNOW = 15;
     static final int COL_WEATHER_ICON = 16;
-    static final int COL_TYPE = 17;
+    static final int COL_WEATHER_SUN_RISE = 17;
+    static final int COL_WEATHER_SUN_SET = 18;
+    static final int COL_TYPE = 19;
 
     /**
      * A callback interface that all activities containing this fragment must

@@ -28,7 +28,7 @@ import de.sindzinski.wetter.data.WeatherContract.WeatherEntry;
 public class WeatherDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     static final String DATABASE_NAME = "weather.db";
 
@@ -68,6 +68,8 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 WeatherEntry.COLUMN_SNOW + " INTEGER, " +
                 WeatherEntry.COLUMN_CLOUDS + " INTEGER, " +
                 WeatherEntry.COLUMN_ICON + " TEXT NOT NULL, " +
+                WeatherEntry.COLUMN_SUN_RISE + " INTEGER, " +
+                WeatherEntry.COLUMN_SUN_SET + " INTEGER, " +
                 WeatherEntry.COLUMN_TYPE + " INTEGER NOT NULL, " +
 
                 // Set up the location column as a foreign key to location table.

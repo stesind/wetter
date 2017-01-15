@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+import java.text.SimpleDateFormat;
 
 /**
  * {@link ForecastAdapterHourly} exposes a list of weather forecasts
@@ -117,13 +117,6 @@ public class ForecastAdapterHourly extends CursorAdapter {
                     .crossFade()
                     .into(viewHolder.mIconView);
         }
-        // Read date from cursor
-        long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
-        Integer type = cursor.getInt(ForecastHourlyFragment.COL_TYPE);
-
-        // Find TextView and set formatted date on it
-            viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
-
         // Read weather forecast from cursor
         String description = cursor.getString(ForecastHourlyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it
@@ -136,6 +129,14 @@ public class ForecastAdapterHourly extends CursorAdapter {
         boolean isMetric = Utility.isMetric(mContext);
 
         if (viewType == VIEW_TYPE_TODAY) {
+            Integer type = cursor.getInt(ForecastHourlyFragment.COL_TYPE);
+
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:MM");
+            long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_RISE);
+            String sunRise = shortenedDateFormat.format(timeInMillis);
+            long timeInMillis2 = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
+            String sunSet = shortenedDateFormat.format(timeInMillis2);
+            viewHolder.mDateView.setText( sunRise + " / " + sunSet );
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView
@@ -145,23 +146,27 @@ public class ForecastAdapterHourly extends CursorAdapter {
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
             int clouds = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CLOUDS);
-            if ((rain+snow)> 0) {
+            if ((rain + snow) > 0) {
                 viewHolder.mCondView.setText(
                         (double) Math.round((rain) * 100) / 100 +
                                 " / " +
                                 (double) Math.round((snow) * 100) / 100);
             }
         } else {
+            // Read date from cursor
+            long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
+            // Find TextView and set formatted date on it
+            viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView.setText(Utility.formatTemperature(mContext, temp, isMetric));
 
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
-            double rainSnow = (double) Math.round((rain+snow) * 100) / 100;
-            if ((rainSnow)>0) {
+            double rainSnow = (double) Math.round((rain + snow) * 100) / 100;
+            if ((rainSnow) > 0) {
                 viewHolder.mIconCondView.setImageResource(defaultImage);
-                viewHolder.mCondView.setText(Double.toString(rainSnow)+"mm");
+                viewHolder.mCondView.setText(Double.toString(rainSnow) + "mm");
             }
         }
         // Read wind speed and direction from cursor and update view

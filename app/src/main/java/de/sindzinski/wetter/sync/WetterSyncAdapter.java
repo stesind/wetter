@@ -398,6 +398,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SUN_RISE, sunRise);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SUN_SET, sunSet);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_CURRENT);
 
             // Insert the new weather information into the database
