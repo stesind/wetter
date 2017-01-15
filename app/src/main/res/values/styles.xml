@@ -14,13 +14,12 @@
         <!--<item name="android:navigationBarColor">@color/navigation_bar_color</item>-->
     </style>
 
-     ToolBar
-    <style name="ToolBarStyle" parent="Widget.AppCompat.Toolbar">
+    <style name="ToolBarStyle" parent="Widget.AppCompat.ActionBar">
         <item name="android:textColorPrimary">@color/icons</item>
         <item name="android:textColorSecondary">@color/icons</item>
         <item name="actionMenuTextColor">@color/icons</item>
-        <item name="actionOverflowButtonStyle">@color/primary</item>
-        <item name="drawerArrowStyle">@color/primary</item>
+        <item name="actionOverflowButtonStyle">@color/icons</item>
+        <item name="drawerArrowStyle">@color/icons</item>
     </style>
 
     <!--Tab Layout Styles-->
