@@ -6,6 +6,7 @@
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
+        android:textColor="@color/icons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -13,17 +14,20 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
             android:elevation="4dp"
             app:layout_scrollFlags="scroll|enterAlways|snap"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            android:background="?attr/colorPrimary"
+            app:theme="@style/ToolBarStyle"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Dark"
+            />
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|enterAlways|snap"
-            app:tabMode="scrollable" />
+            app:tabMode="scrollable"
+            style="@style/TabLayout"/>
 
     </android.support.design.widget.AppBarLayout>
 

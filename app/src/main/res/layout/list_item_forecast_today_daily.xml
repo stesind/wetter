@@ -6,7 +6,6 @@
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="horizontal"
     android:background="@drawable/today_touch_selector">
-
     <LinearLayout
         android:layout_height="wrap_content"
         android:layout_width="0dp"
@@ -21,14 +20,14 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="@color/white" />
+            android:textColor="@color/icons" />
         <TextView
             android:id="@+id/list_item_date_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="@color/white" />
+            android:textColor="@color/icons" />
 
         <TextView
             android:id="@+id/list_item_day_textview"
@@ -36,20 +35,20 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-light"
-            android:textColor="@color/white" />
+            android:textColor="@color/icons" />
 
         <TextView
             android:id="@+id/list_item_minmax_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
+            android:textColor="@color/icons"
             android:textAppearance="?android:textAppearanceMedium"
             android:layout_marginLeft="8dp"/>
         <TextView
             android:id="@+id/list_item_condition_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
+            android:textColor="@color/icons"
             android:textAppearance="?android:textAppearanceMedium"
             android:layout_marginLeft="8dp"/>
 
@@ -76,14 +75,14 @@
             android:fontFamily="sans-serif-condensed"
             android:layout_gravity="center_horizontal"
             android:textAppearance="?android:textAppearanceLarge"
-            android:textColor="@color/white"/>
+            android:textColor="@color/icons"/>
         <TextView
             android:id="@+id/list_item_wind_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:fontFamily="sans-serif-condensed"
-            android:textColor="@color/white"
+            android:textColor="@color/icons"
             android:textAppearance="?android:textAppearanceMedium" />
     </LinearLayout>
 </LinearLayout>

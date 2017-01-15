@@ -14,4 +14,26 @@
         <!--<item name="android:navigationBarColor">@color/navigation_bar_color</item>-->
     </style>
 
+     ToolBar
+    <style name="ToolBarStyle" parent="Widget.AppCompat.Toolbar">
+        <item name="android:textColorPrimary">@color/icons</item>
+        <item name="android:textColorSecondary">@color/icons</item>
+        <item name="actionMenuTextColor">@color/icons</item>
+        <item name="actionOverflowButtonStyle">@color/primary</item>
+        <item name="drawerArrowStyle">@color/primary</item>
+    </style>
+
+    <!--Tab Layout Styles-->
+    <style name="TabLayout" parent="Widget.Design.TabLayout">
+        <item name="tabTextAppearance">@style/TabText</item>
+        <item name="tabSelectedTextColor">@color/icons</item>
+    </style>
+
+    <style name="TabText" parent="TextAppearance.AppCompat.Button">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/icons</item>
+    </style>
+
+
+
 </resources>
