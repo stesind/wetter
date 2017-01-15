@@ -18,9 +18,11 @@
         <item name="android:textColorPrimary">@color/icons</item>
         <item name="android:textColorSecondary">@color/icons</item>
         <item name="actionMenuTextColor">@color/icons</item>
-        <item name="actionOverflowButtonStyle">@color/icons</item>
-        <item name="drawerArrowStyle">@color/icons</item>
+        <!--<item name="actionOverflowButtonStyle">set Icon</item>-->
+        <!--<item name="drawerArrowStyle">@color/icons</item>-->
     </style>
+
+
 
     <!--Tab Layout Styles-->
     <style name="TabLayout" parent="Widget.Design.TabLayout">
