@@ -22,6 +22,6 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
 
-    <color name="window_background">#FF303030</color>
+    <color name="background">#FF303030</color>
     <color name="navigation_bar_color">#FF000000</color>
 </resources>

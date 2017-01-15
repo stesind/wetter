@@ -122,11 +122,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
         Integer type = cursor.getInt(ForecastHourlyFragment.COL_TYPE);
 
         // Find TextView and set formatted date on it
-        if (type == TYPE_HOURLY) {
             viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
-        } else {
-            viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
-        }
+
         // Read weather forecast from cursor
         String description = cursor.getString(ForecastHourlyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it

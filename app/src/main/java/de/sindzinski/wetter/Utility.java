@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.v4.view.ViewCompat;
 import android.text.format.Time;
 
 import java.text.DateFormat;
@@ -634,4 +635,5 @@ public class Utility {
         spe.putInt(c.getString(R.string.pref_location_status_key), WetterSyncAdapter.LOCATION_STATUS_UNKNOWN);
         spe.apply();
     }
+
 }

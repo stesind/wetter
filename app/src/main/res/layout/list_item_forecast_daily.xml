@@ -1,107 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Layout for weather forecast list item for future day (not today) -->
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/touch_selector"
-    android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:orientation="horizontal">
-
-    <FrameLayout
-        android:layout_width="60dp"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:id="@+id/list_item_icon"
-            android:layout_width="@dimen/list_icon"
-            android:layout_height="@dimen/list_icon"
-            android:layout_gravity="center"
-            android:adjustViewBounds="true" />
-
-    </FrameLayout>
+    android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="7"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:minHeight="?android:attr/listPreferredItemHeight"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/list_item_date_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/list_item_forecast_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
-            android:textAppearance="?android:textAppearanceSmall" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="5"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/list_item_wind_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="sans-serif-condensed"
-            android:textAppearance="?android:textAppearanceMedium" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="60dp"
+            android:layout_height="wrap_content">
 
             <ImageView
-                android:id="@+id/list_item_icon_clouds"
-                android:layout_width="@dimen/cond_icon"
-                android:layout_height="@dimen/cond_icon"
+                android:id="@+id/list_item_icon"
+                android:layout_width="@dimen/list_icon"
+                android:layout_height="@dimen/list_icon"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true" />
 
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:orientation="vertical">
+
             <TextView
-                android:id="@+id/list_item_clouds_textview"
+                android:id="@+id/list_item_date_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/list_item_forecast_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textAppearance="?android:textAppearanceSmall" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="5"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/list_item_wind_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="sans-serif-condensed"
                 android:textAppearance="?android:textAppearanceMedium" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/list_item_icon_clouds"
+                    android:layout_width="@dimen/cond_icon"
+                    android:layout_height="@dimen/cond_icon"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true" />
+
+                <TextView
+                    android:id="@+id/list_item_clouds_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:fontFamily="sans-serif-condensed"
+                    android:textAppearance="?android:textAppearanceMedium" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="5"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/list_item_day_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="sans-serif-condensed"
+                android:textAppearance="?android:textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/list_item_minmax_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="sans-serif-condensed"
+                android:textAlignment="center"
+                android:textAppearance="?android:textAppearanceSmall" />
         </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/list_item_condition_textview"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_weight="5"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/list_item_day_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="sans-serif-condensed"
-            android:textAppearance="?android:textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/list_item_minmax_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="sans-serif-condensed"
-            android:textAlignment="center"
-            android:textAppearance="?android:textAppearanceSmall" />
-    </LinearLayout>
+        android:fontFamily="sans-serif-condensed"
+        android:textAppearance="?android:textAppearanceMedium" />
 </LinearLayout>

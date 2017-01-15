@@ -45,6 +45,13 @@
             android:textColor="@color/white"
             android:textAppearance="?android:textAppearanceMedium"
             android:layout_marginLeft="8dp"/>
+        <TextView
+            android:id="@+id/list_item_condition_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:layout_marginLeft="8dp"/>
 
     </LinearLayout>
 

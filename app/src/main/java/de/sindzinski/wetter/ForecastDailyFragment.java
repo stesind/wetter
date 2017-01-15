@@ -181,11 +181,14 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    ((CallbackDaily) getActivity())
-                            .onItemSelectedDaily(WeatherContract.WeatherEntry.buildWeatherLocationWithDateDaily(
-                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)));
+                    mForecastAdapter.selectedItem(position);
+                    mForecastAdapter.notifyDataSetChanged();
+//                    ((CallbackDaily) getActivity())
+//                            .onItemSelectedDaily(WeatherContract.WeatherEntry.buildWeatherLocationWithDateDaily(
+//                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)));
                 }
                 mPosition = position;
+
             }
         });
 

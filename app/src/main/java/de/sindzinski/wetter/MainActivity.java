@@ -27,6 +27,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
@@ -34,6 +35,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.OvershootInterpolator;
 
 import com.facebook.stetho.Stetho;
 
@@ -61,28 +63,28 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
     // Sync interval constants
     public static final long SECONDS_PER_MINUTE = 60L;
     public static final long SYNC_INTERVAL_IN_MINUTES = 10L;
-    public static final long SYNC_INTERVAL = SYNC_INTERVAL_IN_MINUTES ;
+    public static final long SYNC_INTERVAL = SYNC_INTERVAL_IN_MINUTES;
     ContentResolver mResolver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-                // Create an InitializerBuilder
-                Stetho.InitializerBuilder initializerBuilder =
-                        Stetho.newInitializerBuilder(this);
+        // Create an InitializerBuilder
+        Stetho.InitializerBuilder initializerBuilder =
+                Stetho.newInitializerBuilder(this);
         // Enable Chrome DevTools
-                initializerBuilder.enableWebKitInspector(
-                        Stetho.defaultInspectorModulesProvider(this)
-                );
+        initializerBuilder.enableWebKitInspector(
+                Stetho.defaultInspectorModulesProvider(this)
+        );
         // Enable command line interface
-                initializerBuilder.enableDumpapp(
-                        Stetho.defaultDumperPluginsProvider(this)
-                );
+        initializerBuilder.enableDumpapp(
+                Stetho.defaultDumperPluginsProvider(this)
+        );
         // Use the InitializerBuilder to generate an Initializer
-                Stetho.Initializer initializer = initializerBuilder.build();
+        Stetho.Initializer initializer = initializerBuilder.build();
         // Initialize Stetho with the Initializer
-                Stetho.initialize(initializer);
+        Stetho.initialize(initializer);
 
         mLocation = Utility.getPreferredLocation(this);
 
@@ -105,8 +107,11 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
         FloatingActionButton button = (FloatingActionButton) findViewById(R.id.button_check);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                    WetterSyncAdapter.syncImmediately(getApplicationContext());
+                rotateFabForward();
+                //rotateFabBackward();
+                WetterSyncAdapter.syncImmediately(getApplicationContext());
             }
+
         });
 
         WetterSyncAdapter.initializeSyncAdapter(this);
@@ -189,15 +194,15 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
     @Override
     protected void onResume() {
         super.onResume();
-        String location = Utility.getPreferredLocation( this );
+        String location = Utility.getPreferredLocation(this);
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {
-            ForecastHourlyFragment ff = (ForecastHourlyFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
-            if ( null != ff ) {
+            ForecastHourlyFragment ff = (ForecastHourlyFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+            if (null != ff) {
                 ff.onLocationChanged();
             }
-            DetailFragment df = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
-            if ( null != df ) {
+            DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+            if (null != df) {
                 df.onLocationChanged(location);
             }
             mLocation = location;
@@ -206,14 +211,35 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
 
     @Override
     public void onItemSelectedDaily(Uri contentUri) {
-            Intent intent = new Intent(this, DetailActivity.class)
-                    .setData(contentUri);
-            startActivity(intent);
+        Intent intent = new Intent(this, DetailActivity.class)
+                .setData(contentUri);
+        startActivity(intent);
     }
+
     @Override
     public void onItemSelectedHourly(Uri contentUri) {
         Intent intent = new Intent(this, DetailActivity.class)
                 .setData(contentUri);
         startActivity(intent);
+    }
+
+    public void rotateFabForward() {
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.button_check);
+        ViewCompat.animate(fab)
+                .rotation(135.0F)
+                .withLayer()
+                .setDuration(300L)
+                .setInterpolator(new OvershootInterpolator(10.0F))
+                .start();
+    }
+
+    public void rotateFabBackward() {
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.button_check);
+        ViewCompat.animate(fab)
+                .rotation(0.0F)
+                .withLayer()
+                .setDuration(300L)
+                .setInterpolator(new OvershootInterpolator(10.0F))
+                .start();
     }
 }

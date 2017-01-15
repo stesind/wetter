@@ -2,7 +2,9 @@ package de.sindzinski.wetter;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
 
     // Flag to determine if we want to use a separate view for "today".
     private boolean mUseTodayLayout = true;
+    int position;
 
     /**
      * Cache of the children views for a forecast list item.
@@ -37,6 +40,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
         public final TextView mWindView;
         public final ImageView mIconCloudsView;
         public final TextView mCloudsView;
+        public final TextView mConditionView;
 
         public ViewHolder(View view) {
             mCityView = (TextView) view.findViewById(R.id.list_item_city_textview);
@@ -48,6 +52,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
             mWindView = (TextView) view.findViewById(R.id.list_item_wind_textview);
             mIconCloudsView = (ImageView) view.findViewById(R.id.list_item_icon_clouds);
             mCloudsView = (TextView) view.findViewById(R.id.list_item_clouds_textview);
+            mConditionView = (TextView) view.findViewById((R.id.list_item_condition_textview));
         }
     }
 
@@ -84,9 +89,11 @@ public class ForecastAdapterDaily extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        int viewType = getItemViewType(cursor.getPosition());
         int weatherId = cursor.getInt(ForecastDailyFragment.COL_WEATHER_CONDITION_ID);
         int defaultImage;
+
+        int viewType = getItemViewType(cursor.getPosition());
+
         switch (viewType) {
             case VIEW_TYPE_TODAY: {
                 // Get weather icon
@@ -94,14 +101,23 @@ public class ForecastAdapterDaily extends CursorAdapter {
 //                        cursor.getInt(ForecastDailyFragment.COL_WEATHER_CONDITION_ID)));
                 defaultImage = Utility.getArtResourceForWeatherCondition(weatherId);
                 viewHolder.mCityView.setText(cursor.getString(ForecastDailyFragment.COL_CITY_NAME));
+
                 break;
             }
             default: {
+                if (this.position == cursor.getPosition()) {
+                    view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
+                    viewHolder.mConditionView.setVisibility(View.VISIBLE);
+                } else {
+                    view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
+                    viewHolder.mConditionView.setVisibility(View.GONE);
+                }
                 // Get weather icon
                 defaultImage = Utility.getIconResourceForWeatherCondition(
                         weatherId);
                 viewHolder.mIconView.setImageResource(Utility.getIconResourceForWeatherCondition(
                         cursor.getInt(ForecastDailyFragment.COL_WEATHER_CONDITION_ID)));
+
                 break;
             }
         }
@@ -134,19 +150,23 @@ public class ForecastAdapterDaily extends CursorAdapter {
 
         if (viewType == VIEW_TYPE_TODAY) {
             // Read high temperature from cursor
+
+            viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
+            double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
+            viewHolder.mDayTempView.setText(Utility.formatTemperature(mContext, day, isMetric));
             double max = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MAX_TEMP);
             double min = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MIN_TEMP);
-            viewHolder.mDateView
+            viewHolder.mMinMaxTempView
                     .setText(Utility.formatTemperature(mContext, max, isMetric)
                             + " / " +
                             Utility.formatTemperature(mContext, min, isMetric));
 
             // Read day temperatures from cursor
             double morning = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MORNING_TEMP);
-            double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
+            day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
             double evening = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_EVENING_TEMP);
             double night = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_NIGHT_TEMP);
-            viewHolder.mMinMaxTempView.setText(
+            viewHolder.mConditionView.setText(
                     Utility.formatTemperature(mContext, morning, isMetric) + " / " +
                             Utility.formatTemperature(mContext, day, isMetric) + " / " +
                             Utility.formatTemperature(mContext, evening, isMetric) + " / " +
@@ -160,6 +180,15 @@ public class ForecastAdapterDaily extends CursorAdapter {
             double high = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MAX_TEMP);
             double low = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MIN_TEMP);
             viewHolder.mMinMaxTempView.setText(Utility.formatTemperature(mContext, high, isMetric)+ " / " + Utility.formatTemperature(mContext, low, isMetric) );
+            double morning = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MORNING_TEMP);
+            double evening = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_EVENING_TEMP);
+            double night = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_NIGHT_TEMP);
+            viewHolder.mConditionView.setText(
+                            Utility.formatTemperature(mContext, morning, isMetric) + " / " +
+                                    Utility.formatTemperature(mContext, day, isMetric) + " / " +
+                                    Utility.formatTemperature(mContext, evening, isMetric) + " / " +
+                                    Utility.formatTemperature(mContext, night, isMetric)
+            );
 
         }
         // Read wind speed and direction from cursor and update view
@@ -181,6 +210,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
 
     @Override
     public int getItemViewType(int position) {
+//        return (position == this.position && mUseTodayLayout) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
         return (position == 0 && mUseTodayLayout) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
     }
 
@@ -188,4 +218,11 @@ public class ForecastAdapterDaily extends CursorAdapter {
     public int getViewTypeCount() {
         return VIEW_TYPE_COUNT;
     }
+
+    public void selectedItem(int position)
+    {
+        this.position = position; //position must be a global variable
+    }
+
+
 }
