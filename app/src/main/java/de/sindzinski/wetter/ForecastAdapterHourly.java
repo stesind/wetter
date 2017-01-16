@@ -16,6 +16,8 @@ import com.bumptech.glide.Glide;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import static de.sindzinski.wetter.Utility.getHourString;
+
 /**
  * {@link ForecastAdapterHourly} exposes a list of weather forecasts
  * from a {@link Cursor} to a {@link android.widget.ListView}.
@@ -141,12 +143,10 @@ public class ForecastAdapterHourly extends CursorAdapter {
 //                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
             viewHolder.mCityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
 
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:MM");
-            long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_RISE);
-            String sunRise = shortenedDateFormat.format(timeInMillis);
-            long timeInMillis2 = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
-            String sunSet = shortenedDateFormat.format(timeInMillis2);
-            viewHolder.mDateView.setText(sunRise + " / " + sunSet);
+            long sunRise = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_RISE);
+            long sunSet = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
+
+            viewHolder.mDateView.setText(getHourString(mContext, sunRise) + " / " + getHourString(mContext, sunSet));
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView

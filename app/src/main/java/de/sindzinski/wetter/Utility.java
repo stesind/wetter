@@ -89,6 +89,20 @@ public class Utility {
      * @param timeInMillis The date in milliseconds
      * @return a user-friendly representation of the date.
      */
+
+    public static String getHourString(Context context, long timeInMillis) {
+
+        TimeZone timezone = TimeZone.getDefault();
+        SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:MM");
+        shortDateFormat.setTimeZone(timezone);
+        return shortDateFormat.format(timeInMillis);
+//        GregorianCalendar gregorianCalendar = new GregorianCalendar(timezone);
+//        gregorianCalendar.setTimeInMillis(timeInMillis);
+//        int hour = gregorianCalendar.get(Calendar.HOUR_OF_DAY);
+//        int minute = gregorianCalendar.get(Calendar.MINUTE);
+//        return hour + ":" + minute;
+    }
+
     @SuppressLint("StringFormatMatches")
     public static String getHourlyDayString(Context context, long timeInMillis) {
         // The day string for forecast uses the following logic:
@@ -107,7 +121,7 @@ public class Utility {
 
         Date time = gregorianCalendar.getTime();
         SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
-
+        shortDateFormat.setTimeZone(timezone);
         // If the date we're building the String for is today's date, the format
         // is "Today, June 24"
 
@@ -122,10 +136,12 @@ public class Utility {
         if (day < today + 2) {
             // If the input date is less than a week in the future, just return the day name.
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
+            shortDateFormat.setTimeZone(timezone);
             return shortenedDateFormat.format(timeInMillis);
         } else {
             // Otherwise, use the form "Mon Jun 3"
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
+            shortDateFormat.setTimeZone(timezone);
             return shortenedDateFormat.format(timeInMillis);
         }
     }
@@ -584,7 +600,7 @@ public class Utility {
                 stringId = R.string.condition_962;
                 break;
             default:
-                return context.getString(R.string.condition_unknown, weatherId);
+                return context.getString(R.string.condition_unknown);
         }
         return context.getString(stringId);
     }

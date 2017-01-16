@@ -52,6 +52,7 @@ import de.sindzinski.wetter.R;
 import de.sindzinski.wetter.Utility;
 import de.sindzinski.wetter.data.WeatherContract;
 
+import static de.sindzinski.wetter.Utility.getPreferredLocation;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
@@ -112,7 +113,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
         Log.d(LOG_TAG, "Starting sync");
-        String locationQuery = Utility.getPreferredLocation(getContext());
+        String locationSetting = getPreferredLocation(getContext());
+        long locationId = getPreferredLocationId(getContext());
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -125,19 +127,28 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         String format = "json";
         String units = "metric";
         int numDays = 14;
+        String locationQuery;
 
         try {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
 
-            final String QUERY_PARAM = "q";
+            String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "mode";
             final String UNITS_PARAM = "units";
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
             Uri builtUri = null;
 
+            // use the correct parameter if location is city name or id
+            if (locationId == 0) {
+                QUERY_PARAM = "q";
+                locationQuery = locationSetting;
+            } else {
+                QUERY_PARAM ="id";
+                locationQuery = Long.toString(locationId);
+            }
             if (type == TYPE_HOURLY) {
                 final String FORECAST_BASE_URL =
                         "http://api.openweathermap.org/data/2.5/forecast?";
@@ -198,11 +209,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             forecastJsonStr = buffer.toString();
             if (type == TYPE_HOURLY) {
-                getWeatherDataFromJsonHourly(forecastJsonStr, locationQuery);
+                getWeatherDataFromJsonHourly(forecastJsonStr, locationSetting);
             } else if (type == TYPE_DAILY) {
-                getWeatherDataFromJsonDaily(forecastJsonStr, locationQuery);
+                getWeatherDataFromJsonDaily(forecastJsonStr, locationSetting);
             } else if (type== TYPE_CURRENT) {
-                getWeatherDataFromJsonCurrent(forecastJsonStr, locationQuery);
+                getWeatherDataFromJsonCurrent(forecastJsonStr, locationSetting);
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -246,7 +257,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
         // These are the names of the JSON objects that need to be extracted.
         // Location information
-        String OWM_CITY = "id";
+        String OWM_CITY_ID = "id";
         String OWM_CITY_NAME = "name";
         String OWM_COORD = "coord";
 
@@ -306,7 +317,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
 
-            int cityID = forecastJson.getInt(OWM_CITY);
+            long cityId = forecastJson.getLong(OWM_CITY_ID);
             String cityName = forecastJson.getString(OWM_CITY_NAME);
 
             double cityLatitude = 0;
@@ -317,7 +328,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 cityLongitude = coord.getDouble(OWM_LONGITUDE);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
 
             long timeInMillis = 0;
 
@@ -376,8 +387,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             if (forecastJson.has(OWM_SYS)) {
                 JSONObject sysObject = forecastJson.getJSONObject(OWM_SYS);
-                sunRise = sysObject.has(OWM_SUN_RISE) ? sysObject.getLong(OWM_SUN_RISE) : 0;
-                sunSet = sysObject.has(OWM_SUN_SET) ? sysObject.getLong(OWM_SUN_SET) : 0;
+                sunRise = sysObject.has(OWM_SUN_RISE) ? (sysObject.getLong(OWM_SUN_RISE)*1000) : 0;
+                sunSet = sysObject.has(OWM_SUN_SET) ? (sysObject.getLong(OWM_SUN_SET)*1000) : 0;
             }
 
 
@@ -410,8 +421,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_CURRENT)};
+                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
+                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_CURRENT), Long.toString(locationId)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);
@@ -457,6 +469,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         // These are the names of the JSON objects that need to be extracted.
         // Location information
         String OWM_CITY = "city";
+        String OWM_CITY_ID = "id";
         String OWM_CITY_NAME = "name";
         String OWM_COORD = "coord";
 
@@ -518,6 +531,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
+            long cityId = cityJson.getLong(OWM_CITY_ID);
             String cityName = cityJson.getString(OWM_CITY_NAME);
 
             double cityLatitude = 0;
@@ -528,7 +542,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -646,8 +660,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
                 String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? AND " +
                         WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_DAILY)};
+                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Long.toString(locationId), Integer.toString(TYPE_DAILY)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);
@@ -682,6 +697,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
         // Location information
         String OWM_CITY = "city";
+        String OWM_CITY_ID = "id";
         String OWM_CITY_NAME = "name";
         String OWM_COORD = "coord";
 
@@ -744,6 +760,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
+            long cityId = cityJson.getLong(OWM_CITY_ID);
             String cityName = cityJson.getString(OWM_CITY_NAME);
 
             double cityLatitude = 0;
@@ -754,7 +771,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -859,8 +876,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLY)};
+                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
+                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLY), Long.toString(locationId)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);
@@ -911,7 +929,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             if (System.currentTimeMillis() - lastSync >= MINUTE_IN_MILLIS) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
-                String locationQuery = Utility.getPreferredLocation(context);
+                String locationQuery = getPreferredLocation(context);
 
                 Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationCurrent(locationQuery);
 
@@ -987,9 +1005,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param lon             the longitude of the city
      * @return the row ID of the added location.
      */
-    long addLocation(String locationSetting, String cityName, double lat, double lon) {
+    long addLocation(String locationSetting, String cityName, double lat, double lon, long city_id) {
         long locationId;
 
+        // locationid is the internal db primary key
+        // city_id is the owm id for the city
         // First, check if the location with this city name exists in the db
         Cursor locationCursor = getContext().getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
@@ -1012,6 +1032,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_ID, city_id);
 
             // Finally, insert location data into the database.
             Uri insertedUri = getContext().getContentResolver().insert(
@@ -1027,6 +1048,32 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         // Wait, that worked?  Yes!
         return locationId;
     }
+
+    private Long getPreferredLocationId(Context context) {
+        long locationId = 0;
+
+        String locationSetting = getPreferredLocation(context);
+        // locationid is the internal db primary key
+        // city_id is the owm id for the city
+        // First, check if the location with this city name exists in the db
+        Cursor locationCursor = getContext().getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry.COLUMN_CITY_ID},
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{locationSetting},
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_ID);
+            locationId = locationCursor.getLong(locationIdIndex);
+
+        }
+
+        locationCursor.close();
+
+        return locationId;
+    }
+
 
     /**
      * Helper method to schedule the sync adapter periodic execution
