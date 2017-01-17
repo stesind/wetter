@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements
 
         if (id == R.id.nav_about) {
         } else if (id == R.id.nav_add_location) {
-
+            addLocationSetting();
         } else if (id == R.id.nav_remove_current_location) {
             deleteCurrentLocation();
         } else if (id == R.id.nav_settings) {
@@ -194,8 +194,12 @@ public class MainActivity extends AppCompatActivity implements
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked OK, so save the mSelectedItems results somewhere
                 // or return them to the component that opened the dialog
-                String locationSetting = input.getText().toString();
-                if (locationSetting.compareTo("") == 0) {
+                String locationSetting = input
+                        .getText()
+                        .toString()
+                        .toLowerCase()
+                        .replaceAll("\\s+","");
+                if (locationSetting.compareTo("") != 0) {
                     Utility.setPreferredLocation(getApplicationContext(), locationSetting);
                 }
 
@@ -208,6 +212,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 });
         AlertDialog dialog = builder.create();
+        dialog.show();
 
     }
 
