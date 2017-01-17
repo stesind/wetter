@@ -9,6 +9,10 @@
             android:id="@+id/nav_add_location"
             android:icon="@drawable/ic_add_circle_black_24dp"
             android:title="@string/nav_add_location" />
+        <item
+            android:id="@+id/nav_remove_current_location"
+            android:icon="@drawable/ic_add_circle_black_24dp"
+            android:title="@string/nav_remove_current_location" />
     </group>
     <group android:id="@+id/group3"
         android:orderInCategory="999">

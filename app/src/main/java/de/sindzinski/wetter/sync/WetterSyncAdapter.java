@@ -23,12 +23,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.view.ViewCompat;
 import android.util.Log;
-import android.view.animation.OvershootInterpolator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -114,7 +111,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
         Log.d(LOG_TAG, "Starting sync");
         String locationSetting = getPreferredLocation(getContext());
-        long locationId = getPreferredLocationId(getContext(),locationSetting);
+        long locationId = getPreferredLocationCityId(getContext(),locationSetting);
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -1049,7 +1046,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         return locationId;
     }
 
-    public static Long getPreferredLocationId(Context context, String locationSetting) {
+    public static Long getPreferredLocationCityId(Context context, String locationSetting) {
         long locationId = 0;
 
         // locationid is the internal db primary key

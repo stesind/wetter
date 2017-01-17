@@ -17,6 +17,7 @@ package de.sindzinski.wetter;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -25,30 +26,25 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
-import android.widget.BaseAdapter;
-import android.widget.HeaderViewListAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.EditText;
 
 import com.facebook.stetho.Stetho;
 
@@ -57,9 +53,6 @@ import java.util.List;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
-
-import static de.sindzinski.wetter.R.string.pref_location_key;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -152,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements
                     locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_ID));
             String locationSetting = locationCursor.getString(
                     locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING));
-            menu.add(R.id.group1,i,Menu.NONE, locationSetting).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_remove_circle_black_24dp));
+            menu.add(R.id.group1,i,Menu.NONE, locationSetting).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_home_black_24dp));
         }
         locationCursor.close();
     }
@@ -164,27 +157,130 @@ public class MainActivity extends AppCompatActivity implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_about) {
+        if (id == R.id.nav_about) {
+        } else if (id == R.id.nav_add_location) {
 
+        } else if (id == R.id.nav_remove_current_location) {
+            deleteCurrentLocation();
         } else if (id == R.id.nav_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
         } else {
             String locationSetting = item.getTitle().toString();
-            long  locationId = WetterSyncAdapter.getPreferredLocationId(this,locationSetting);
+            long  locationId = WetterSyncAdapter.getPreferredLocationCityId(this,locationSetting);
             if (locationId !=0) {
-                //change the location
+                //change the location, sync and update adapters
                 Utility.setPreferredLocation(this, locationSetting);
                 Utility.resetLocationStatus(this);
                 WetterSyncAdapter.syncImmediately(this);
-
             }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    public void addLocationSettingDialog() {
+        String locationSetting = "";
+
+        final EditText input = new EditText(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dialog_title_add_location_setting);
+        builder.setView(input);
+        // Set the action buttons
+        builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK, so save the mSelectedItems results somewhere
+                // or return them to the component that opened the dialog
+                String locationSetting = input.getText().toString();
+                if (locationSetting.compareTo("") == 0) {
+                    Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                }
+
+            }
+        })
+                .setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog dialog = builder.create();
+
+    }
+
+    public void addLocationSetting() {
+        addLocationSettingDialog();
+        Utility.resetLocationStatus(this);
+        WetterSyncAdapter.syncImmediately(this);
+    }
+
+    public void deleteCurrentLocation() {
+        String currentLocationSetting = Utility.getPreferredLocation(this);
+        long locationId = getLocationId(currentLocationSetting);
+        deleteLocationWeatherData(locationId);
+        deleteLocationId(locationId);
+        String validLocationSetting = getValidLocationSetting();
+        Utility.setPreferredLocation(this,validLocationSetting);
+        Utility.resetLocationStatus(this);
+        WetterSyncAdapter.syncImmediately(this);
+    }
+
+    public long getLocationId(String locationSetting) {
+
+        long locationId=0;
+
+        Cursor locationCursor = this.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry._ID},
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{locationSetting},
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            locationId = locationCursor.getLong(locationIdIndex);
+        }
+
+        return locationId;
+    }
+
+    public void deleteLocationWeatherData(long locationId) {
+        //delete all old data of given type
+        String selection = WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
+        String[] selectionArgs = new String[]{Long.toString(locationId)};
+        this.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
+    }
+
+    public void deleteLocationId(long locationId) {
+        String selection = WeatherContract.LocationEntry._ID + " = ? ";
+        String[] selectionArgs = new String[]{Long.toString(locationId)};
+        this.getContentResolver().delete(WeatherContract.LocationEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
+    }
+
+    public String getValidLocationSetting() {
+        String validLocationSetting = "";
+
+        Cursor locationCursor = this.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry._ID,
+                        WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
+                null,
+                null,
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING);
+            validLocationSetting = locationCursor.getString(locationIdIndex);
+        }
+
+        return validLocationSetting;
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
