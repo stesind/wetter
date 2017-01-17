@@ -367,5 +367,8 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         if ( key.equals(getString(R.string.pref_location_status_key)) ) {
             updateEmptyView();
         }
+        if ( key.equals(getString(R.string.pref_location_key))) {
+            onLocationChanged();
+        }
     }
 }

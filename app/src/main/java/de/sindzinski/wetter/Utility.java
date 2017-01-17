@@ -41,6 +41,13 @@ public class Utility {
                 context.getString(R.string.pref_location_default));
     }
 
+    public static void setPreferredLocation(Context context, String locationSetting) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(context.getResources().getString(R.string.pref_location_key), locationSetting);
+        editor.apply();
+    }
+
     public static boolean getHourlyForecast(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(context.getString(R.string.pref_enable_hourly_forecast_key),

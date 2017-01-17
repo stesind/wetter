@@ -19,38 +19,53 @@ import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
+import android.widget.BaseAdapter;
+import android.widget.HeaderViewListAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import com.facebook.stetho.Stetho;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
+import static de.sindzinski.wetter.R.string.pref_location_key;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 
-public class MainActivity extends AppCompatActivity implements ForecastDailyFragment.CallbackDaily, ForecastHourlyFragment.CallbackHourly {
 
-//    static {
-//        AppCompatDelegate.setDefaultNightMode(
-//                AppCompatDelegate.MODE_NIGHT_AUTO);
-//    }
+public class MainActivity extends AppCompatActivity implements
+        ForecastDailyFragment.CallbackDaily,
+        ForecastHourlyFragment.CallbackHourly,
+        NavigationView.OnNavigationItemSelectedListener {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -65,26 +80,17 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
     public static final long SYNC_INTERVAL_IN_MINUTES = 10L;
     public static final long SYNC_INTERVAL = SYNC_INTERVAL_IN_MINUTES;
     ContentResolver mResolver;
+    protected ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+    private NavigationView mNavigationView;
+    private  NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
-        // Create an InitializerBuilder
-        Stetho.InitializerBuilder initializerBuilder =
-                Stetho.newInitializerBuilder(this);
-        // Enable Chrome DevTools
-        initializerBuilder.enableWebKitInspector(
-                Stetho.defaultInspectorModulesProvider(this)
-        );
-        // Enable command line interface
-        initializerBuilder.enableDumpapp(
-                Stetho.defaultDumperPluginsProvider(this)
-        );
-        // Use the InitializerBuilder to generate an Initializer
-        Stetho.Initializer initializer = initializerBuilder.build();
-        // Initialize Stetho with the Initializer
-        Stetho.initialize(initializer);
+        setUpStetho();
 
         mLocation = Utility.getPreferredLocation(this);
 
@@ -92,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -116,26 +122,69 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
 
         WetterSyncAdapter.initializeSyncAdapter(this);
 
-//        mResolver = getContentResolver();
-//        /*
-//         * Turn on periodic syncing
-//         */
-//        ContentResolver.addPeriodicSync(
-//                ACCOUNT,
-//                AUTHORITY,
-//                Bundle.EMPTY,
-//                SYNC_INTERVAL);
+        setUpTheme();
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String theme = prefs.getString(this.getString(R.string.pref_theme_key),
-                this.getString(R.string.pref_theme_night));
-        if (theme.equals(getString(R.string.pref_theme_night))) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else if (theme.equals(getString(R.string.pref_theme_day))) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        addLocationToNavigation();
+    }
+
+    private void addLocationToNavigation() {
+        Cursor locationCursor = this.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry.COLUMN_CITY_ID, WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
+                "",
+                new String[]{},
+                null);
+
+        final Menu menu = navigationView.getMenu();
+        int i = 0;
+        while (locationCursor.moveToNext()) {
+            i++;
+            long locationId = locationCursor.getLong(
+                    locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_ID));
+            String locationSetting = locationCursor.getString(
+                    locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING));
+            menu.add(R.id.group1,i,Menu.NONE, locationSetting).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_remove_circle_black_24dp));
         }
+        locationCursor.close();
+    }
+
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_home) {
+            // Handle the camera action
+        } else if (id == R.id.nav_about) {
+
+        } else if (id == R.id.nav_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+        } else {
+            String locationSetting = item.getTitle().toString();
+            long  locationId = WetterSyncAdapter.getPreferredLocationId(this,locationSetting);
+            if (locationId !=0) {
+                //change the location
+                Utility.setPreferredLocation(this, locationSetting);
+                Utility.resetLocationStatus(this);
+                WetterSyncAdapter.syncImmediately(this);
+
+            }
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -180,13 +229,14 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
+        switch (id) {
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            case R.id.action_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -241,5 +291,37 @@ public class MainActivity extends AppCompatActivity implements ForecastDailyFrag
                 .setDuration(300L)
                 .setInterpolator(new OvershootInterpolator(10.0F))
                 .start();
+    }
+
+
+    private void setUpStetho() {
+        // Create an InitializerBuilder
+        Stetho.InitializerBuilder initializerBuilder =
+                Stetho.newInitializerBuilder(this);
+        // Enable Chrome DevTools
+        initializerBuilder.enableWebKitInspector(
+                Stetho.defaultInspectorModulesProvider(this)
+        );
+        // Enable command line interface
+        initializerBuilder.enableDumpapp(
+                Stetho.defaultDumperPluginsProvider(this)
+        );
+        // Use the InitializerBuilder to generate an Initializer
+        Stetho.Initializer initializer = initializerBuilder.build();
+        // Initialize Stetho with the Initializer
+        Stetho.initialize(initializer);
+    }
+
+    private void setUpTheme() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = prefs.getString(this.getString(R.string.pref_theme_key),
+                this.getString(R.string.pref_theme_night));
+        if (theme.equals(getString(R.string.pref_theme_night))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else if (theme.equals(getString(R.string.pref_theme_day))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+        }
     }
 }

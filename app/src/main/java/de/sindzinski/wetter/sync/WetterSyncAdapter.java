@@ -114,7 +114,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
         Log.d(LOG_TAG, "Starting sync");
         String locationSetting = getPreferredLocation(getContext());
-        long locationId = getPreferredLocationId(getContext());
+        long locationId = getPreferredLocationId(getContext(),locationSetting);
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -369,8 +369,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             humidity = mainObject.getInt(OWM_HUMIDITY);
 
             JSONObject windObject = forecastJson.getJSONObject(OWM_WIND);
-            windSpeed = windObject.getDouble(OWM_WIND_SPEED);
-            windDirection = windObject.getDouble(OWM_WIND_DIRECTION);
+            windSpeed =  windObject.has(OWM_WIND_DIRECTION) ? windObject.getDouble(OWM_WIND_SPEED) : 0;
+            windDirection = windObject.has(OWM_WIND_DIRECTION) ? windObject.getDouble(OWM_WIND_DIRECTION) : 0;
 
             JSONObject cloudsObject = forecastJson.getJSONObject(OWM_CLOUDS);
             clouds = cloudsObject.getInt(OWM_CLOUDS_ALL);
@@ -1049,14 +1049,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         return locationId;
     }
 
-    private Long getPreferredLocationId(Context context) {
+    public static Long getPreferredLocationId(Context context, String locationSetting) {
         long locationId = 0;
 
-        String locationSetting = getPreferredLocation(context);
         // locationid is the internal db primary key
         // city_id is the owm id for the city
         // First, check if the location with this city name exists in the db
-        Cursor locationCursor = getContext().getContentResolver().query(
+        Cursor locationCursor = context.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
                 new String[]{WeatherContract.LocationEntry.COLUMN_CITY_ID},
                 WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
@@ -1066,7 +1065,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         if (locationCursor.moveToFirst()) {
             int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_ID);
             locationId = locationCursor.getLong(locationIdIndex);
-
         }
 
         locationCursor.close();
