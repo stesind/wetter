@@ -59,7 +59,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
     private static final String SELECTED_KEY = "selected_position";
 
-    private static final int FORECAST_LOADER = 0;
+    private static final int FORECAST_LOADER_HOURLY = 0;
     // For the forecast view we're showing only a small subset of the stored data.
     // Specify the columns we need.
     private static final String[] FORECAST_COLUMNS = {
@@ -212,14 +212,14 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(FORECAST_LOADER, null, this);
+        getLoaderManager().initLoader(FORECAST_LOADER_HOURLY, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     // since we read the location when we create the loader, all we need to do is restart things
     void onLocationChanged( ) {
         updateWeather();
-        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+        getLoaderManager().restartLoader(FORECAST_LOADER_HOURLY, null, this);
     }
 
     private void updateWeather() {
@@ -263,13 +263,15 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
         // This is called when a new Loader needs to be created.  This
         // fragment only uses one loader, so we don't care about checking the id.
 
         // To only show current and future dates, filter the query to return weather only for
         // dates after or including today.
-
+        if (id!=FORECAST_LOADER_HOURLY) {
+            return null;
+        }
         // get the time beginning of today
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY)-1);
@@ -296,13 +298,16 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mForecastAdapter.swapCursor(data);
-        if (mPosition != ListView.INVALID_POSITION) {
-            // If we don't need to restart the loader, and there's a desired position to restore
-            // to, do so now.
-            mListView.smoothScrollToPosition(mPosition);
+
+        if (loader.getId() == FORECAST_LOADER_HOURLY) {
+            mForecastAdapter.swapCursor(data);
+            if (mPosition != ListView.INVALID_POSITION) {
+                // If we don't need to restart the loader, and there's a desired position to restore
+                // to, do so now.
+                mListView.smoothScrollToPosition(mPosition);
+            }
+            updateEmptyView();
         }
-        updateEmptyView();
     }
 
     @Override

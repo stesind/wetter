@@ -151,6 +151,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    public void reInitializeNavigation() {
+        navigationView.getMenu().clear();
+        navigationView.inflateMenu(R.menu.drawer_view);
+        addLocationToNavigation();
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -201,6 +207,9 @@ public class MainActivity extends AppCompatActivity implements
                         .replaceAll("\\s+","");
                 if (locationSetting.compareTo("") != 0) {
                     Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                    Utility.resetLocationStatus(getApplicationContext());
+                    WetterSyncAdapter.syncImmediately(getApplicationContext());
+                    reInitializeNavigation();
                 }
 
             }
@@ -213,13 +222,10 @@ public class MainActivity extends AppCompatActivity implements
                 });
         AlertDialog dialog = builder.create();
         dialog.show();
-
     }
 
     public void addLocationSetting() {
         addLocationSettingDialog();
-        Utility.resetLocationStatus(this);
-        WetterSyncAdapter.syncImmediately(this);
     }
 
     public void deleteCurrentLocation() {
@@ -231,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements
         Utility.setPreferredLocation(this,validLocationSetting);
         Utility.resetLocationStatus(this);
         WetterSyncAdapter.syncImmediately(this);
+        reInitializeNavigation();
     }
 
     public long getLocationId(String locationSetting) {
