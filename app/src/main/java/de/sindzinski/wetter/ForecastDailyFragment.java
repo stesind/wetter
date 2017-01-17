@@ -370,5 +370,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         if ( key.equals(getString(R.string.pref_location_status_key)) ) {
             updateEmptyView();
         }
+        if ( key.equals(getString(R.string.pref_location_key))) {
+            onLocationChanged();
+        }
     }
 }

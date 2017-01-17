@@ -142,8 +142,8 @@ public class ForecastAdapterDaily extends CursorAdapter {
 
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
-
-            viewHolder.mCityView.setText(cursor.getString(ForecastDailyFragment.COL_CITY_NAME));
+            String cityName = cursor.getString(ForecastDailyFragment.COL_CITY_NAME);
+            viewHolder.mCityView.setText(cityName);
             // Read high temperature from cursor
             viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
             double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
