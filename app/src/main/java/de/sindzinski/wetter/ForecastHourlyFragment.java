@@ -137,10 +137,10 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         setHasOptionsMenu(true);
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.forecastfragment, menu);
-    }
+//    @Override
+//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//        inflater.inflate(R.menu.forecastfragment, menu);
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
