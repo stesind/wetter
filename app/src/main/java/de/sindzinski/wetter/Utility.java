@@ -22,8 +22,11 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.format.Time;
+import android.view.View;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -726,5 +729,14 @@ public class Utility {
         }
 
         return validLocationSetting;
+    }
+
+    public static void showSnackbar(Context context, View view, int stringRessource) {
+        Snackbar snackbar;
+        snackbar = Snackbar.make(view, stringRessource, Snackbar.LENGTH_SHORT);
+        snackbar.setDuration(Snackbar.LENGTH_LONG);
+        View sbView = snackbar.getView();
+        sbView.setBackgroundColor(ContextCompat.getColor(context,R.color.primary));
+        snackbar.show();
     }
 }

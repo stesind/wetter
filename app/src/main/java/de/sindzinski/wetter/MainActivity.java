@@ -17,6 +17,7 @@ package de.sindzinski.wetter;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +27,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -164,9 +166,13 @@ public class MainActivity extends AppCompatActivity implements
         if (id == R.id.nav_about) {
         } else if (id == R.id.nav_add_location) {
             addLocationSetting();
+            View view = findViewById(R.id.viewpager);
+            Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_added);
         } else if (id == R.id.nav_remove_current_location) {
             Utility.deleteCurrentLocation(this);
             reInitializeNavigation();
+            View view = findViewById(R.id.viewpager);
+            Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_removed);
         } else if (id == R.id.nav_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
         } else {
@@ -177,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements
                 Utility.setPreferredLocation(this, locationSetting);
                 Utility.resetLocationStatus(this);
                 WetterSyncAdapter.syncImmediately(this);
+                Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
             }
         }
 
