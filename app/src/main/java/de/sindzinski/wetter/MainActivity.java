@@ -58,7 +58,8 @@ import de.sindzinski.wetter.sync.WetterSyncAdapter;
 public class MainActivity extends AppCompatActivity implements
         ForecastDailyFragment.CallbackDaily,
         ForecastHourlyFragment.CallbackHourly,
-        NavigationView.OnNavigationItemSelectedListener {
+        NavigationView.OnNavigationItemSelectedListener,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -132,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements
     private void addLocationToNavigation() {
         Cursor locationCursor = this.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
-                new String[]{WeatherContract.LocationEntry.COLUMN_CITY_ID, WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
+                new String[]{WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
                 "",
                 new String[]{},
                 null);
@@ -141,15 +142,12 @@ public class MainActivity extends AppCompatActivity implements
         int i = 0;
         while (locationCursor.moveToNext()) {
             i++;
-            long locationId = locationCursor.getLong(
-                    locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_ID));
             String locationSetting = locationCursor.getString(
                     locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING));
             menu.add(R.id.group1,i,Menu.NONE, locationSetting).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_home_black_24dp));
         }
         locationCursor.close();
     }
-
 
     public void reInitializeNavigation() {
         navigationView.getMenu().clear();
@@ -167,7 +165,8 @@ public class MainActivity extends AppCompatActivity implements
         } else if (id == R.id.nav_add_location) {
             addLocationSetting();
         } else if (id == R.id.nav_remove_current_location) {
-            deleteCurrentLocation();
+            Utility.deleteCurrentLocation(this);
+            reInitializeNavigation();
         } else if (id == R.id.nav_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
         } else {
@@ -185,7 +184,6 @@ public class MainActivity extends AppCompatActivity implements
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
 
     public void addLocationSettingDialog() {
         String locationSetting = "";
@@ -228,73 +226,6 @@ public class MainActivity extends AppCompatActivity implements
         addLocationSettingDialog();
     }
 
-    public void deleteCurrentLocation() {
-        String currentLocationSetting = Utility.getPreferredLocation(this);
-        long locationId = getLocationId(currentLocationSetting);
-        deleteLocationWeatherData(locationId);
-        deleteLocationId(locationId);
-        String validLocationSetting = getValidLocationSetting();
-        Utility.setPreferredLocation(this,validLocationSetting);
-        Utility.resetLocationStatus(this);
-        WetterSyncAdapter.syncImmediately(this);
-        reInitializeNavigation();
-    }
-
-    public long getLocationId(String locationSetting) {
-
-        long locationId=0;
-
-        Cursor locationCursor = this.getContentResolver().query(
-                WeatherContract.LocationEntry.CONTENT_URI,
-                new String[]{WeatherContract.LocationEntry._ID},
-                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
-                new String[]{locationSetting},
-                null);
-
-        if (locationCursor.moveToFirst()) {
-            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
-            locationId = locationCursor.getLong(locationIdIndex);
-        }
-
-        return locationId;
-    }
-
-    public void deleteLocationWeatherData(long locationId) {
-        //delete all old data of given type
-        String selection = WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-        String[] selectionArgs = new String[]{Long.toString(locationId)};
-        this.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                selection,
-                selectionArgs);
-    }
-
-    public void deleteLocationId(long locationId) {
-        String selection = WeatherContract.LocationEntry._ID + " = ? ";
-        String[] selectionArgs = new String[]{Long.toString(locationId)};
-        this.getContentResolver().delete(WeatherContract.LocationEntry.CONTENT_URI,
-                selection,
-                selectionArgs);
-    }
-
-    public String getValidLocationSetting() {
-        String validLocationSetting = "";
-
-        Cursor locationCursor = this.getContentResolver().query(
-                WeatherContract.LocationEntry.CONTENT_URI,
-                new String[]{WeatherContract.LocationEntry._ID,
-                        WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
-                null,
-                null,
-                null);
-
-        if (locationCursor.moveToFirst()) {
-            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING);
-            validLocationSetting = locationCursor.getString(locationIdIndex);
-        }
-
-        return validLocationSetting;
-    }
-
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
@@ -324,30 +255,36 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.main, menu);
+//        return true;
+//    }
+
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//        switch (id) {
+//            case android.R.id.home:
+//                mDrawerLayout.openDrawer(GravityCompat.START);
+//                return true;
+//            case R.id.action_settings:
+//                startActivity(new Intent(this, SettingsActivity.class));
+//                return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        switch (id) {
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
-            case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
+    public void onPause() {
+        super.onPause();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.unregisterOnSharedPreferenceChangeListener(this);
     }
-
 
     @Override
     protected void onResume() {
@@ -365,6 +302,9 @@ public class MainActivity extends AppCompatActivity implements
             }
             mLocation = location;
         }
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -401,7 +341,6 @@ public class MainActivity extends AppCompatActivity implements
                 .start();
     }
 
-
     private void setUpStetho() {
         // Create an InitializerBuilder
         Stetho.InitializerBuilder initializerBuilder =
@@ -430,6 +369,13 @@ public class MainActivity extends AppCompatActivity implements
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if ( key.equals(getString(R.string.pref_location_key))) {
+            reInitializeNavigation();
         }
     }
 }

@@ -140,6 +140,14 @@ public class ForecastAdapterDaily extends CursorAdapter {
         float windDirStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_DEGREES);
         viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
 
+        if (this.position == cursor.getPosition()) {
+            view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
+            viewHolder.mConditionView.setVisibility(View.VISIBLE);
+        } else {
+            view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
+            viewHolder.mConditionView.setVisibility(View.GONE);
+        }
+
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
             String cityName = cursor.getString(ForecastDailyFragment.COL_CITY_NAME);
@@ -167,13 +175,6 @@ public class ForecastAdapterDaily extends CursorAdapter {
                             Utility.formatTemperature(mContext, night, isMetric)
             );
         } else {
-            if (this.position == cursor.getPosition()) {
-                view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
-                viewHolder.mConditionView.setVisibility(View.VISIBLE);
-            } else {
-                view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
-                viewHolder.mConditionView.setVisibility(View.GONE);
-            }
             // Read day temperature from cursor
             double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
             viewHolder.mDayTempView.setText(Utility.formatTemperature(mContext, day, isMetric));

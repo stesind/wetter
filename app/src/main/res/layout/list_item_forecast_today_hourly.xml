@@ -26,7 +26,7 @@
             android:id="@+id/list_item_date_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:textAppearanceLarge"
+            android:textAppearance="?android:textAppearanceSmall"
             android:fontFamily="sans-serif-condensed"
             android:textColor="@color/icons" />
 
@@ -36,14 +36,15 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-light"
-            android:textColor="@color/icons" />
+            android:textColor="@color/icons"
+            android:textSize="36sp" />
 
         <TextView
             android:id="@+id/list_item_cond_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/icons"
-            android:textAppearance="?android:textAppearanceMedium"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:visibility="gone"
             android:layout_marginLeft="8dp"/>
     </LinearLayout>
 
@@ -76,6 +77,6 @@
             android:layout_gravity="center"
             android:fontFamily="sans-serif-condensed"
             android:textColor="@color/icons"
-            android:textAppearance="?android:textAppearanceMedium" />
+            android:textAppearance="?android:textAppearanceSmall" />
     </LinearLayout>
 </LinearLayout>

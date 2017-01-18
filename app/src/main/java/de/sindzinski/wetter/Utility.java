@@ -18,6 +18,7 @@ package de.sindzinski.wetter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -32,6 +33,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
 public class Utility {
@@ -660,4 +662,69 @@ public class Utility {
         spe.apply();
     }
 
+    public static long getLocationId(Context context, String locationSetting) {
+
+        long locationId=0;
+
+        Cursor locationCursor = context.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry._ID},
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{locationSetting},
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            locationId = locationCursor.getLong(locationIdIndex);
+        }
+
+        return locationId;
+    }
+
+    public static void deleteLocationWeatherData(Context context, long locationId) {
+        //delete all old data of given type
+        String selection = WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
+        String[] selectionArgs = new String[]{Long.toString(locationId)};
+        context.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
+    }
+
+    public static void deleteLocationId(Context context, long locationId) {
+        String selection = WeatherContract.LocationEntry._ID + " = ? ";
+        String[] selectionArgs = new String[]{Long.toString(locationId)};
+        context.getContentResolver().delete(WeatherContract.LocationEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
+    }
+
+    public static void deleteCurrentLocation(Context context) {
+        String currentLocationSetting = Utility.getPreferredLocation(context);
+        long locationId = Utility.getLocationId(context, currentLocationSetting);
+        Utility.deleteLocationWeatherData(context, locationId);
+        Utility.deleteLocationId(context, locationId);
+        String validLocationSetting = Utility.getValidLocationSetting(context);
+        Utility.setPreferredLocation(context,validLocationSetting);
+        Utility.resetLocationStatus(context);
+        WetterSyncAdapter.syncImmediately(context);
+    }
+
+    public static String getValidLocationSetting(Context context) {
+        String validLocationSetting = "";
+
+        Cursor locationCursor = context.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry._ID,
+                        WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
+                null,
+                null,
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING);
+            validLocationSetting = locationCursor.getString(locationIdIndex);
+        }
+
+        return validLocationSetting;
+    }
 }
