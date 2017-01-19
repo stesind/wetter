@@ -212,41 +212,7 @@ public class Utility {
 
     }
 
-    /**
-     * Given a day, returns just the name to use for that day.
-     * E.g "today", "tomorrow", "wednesday".
-     *
-     * @param context      Context to use for resource localization
-     * @param dateInMillis The date in milliseconds
-     * @return
-     */
-    public static String getDayName(Context context, long dateInMillis) {
-        // If the date is today, return the localized version of "Today" instead of the actual
-        // day name.
-
-        Time t = new Time();
-        t.setToNow();
-        int julianDay = Time.getJulianDay(dateInMillis, t.gmtoff);
-        int currentJulianDay = Time.getJulianDay(System.currentTimeMillis(), t.gmtoff);
-        if (julianDay == currentJulianDay) {
-            return context.getString(R.string.today);
-        } else if (julianDay == currentJulianDay + 1) {
-            return context.getString(R.string.tomorrow);
-        } else {
-            Time time = new Time();
-            time.setToNow();
-            // Otherwise, the format is just the day of the week (e.g "Wednesday".
-            SimpleDateFormat dayFormat;
-            if (Utility.getHourlyForecast(context)) {
-                dayFormat = new SimpleDateFormat("EEE HH:MM");
-            } else {
-                dayFormat = new SimpleDateFormat("EEE");
-            }
-            return dayFormat.format(dateInMillis);
-        }
-    }
-
-    /**
+     /**
      * Converts db date format to the format "Month day", e.g "June 24".
      *
      * @param context      Context to use for resource localization
@@ -255,9 +221,6 @@ public class Utility {
      * @return The day in the form of a string formatted "December 6"
      */
     public static String getFormattedMonthDay(Context context, long dateInMillis) {
-        Time time = new Time();
-        time.setToNow();
-        SimpleDateFormat dbDateFormat = new SimpleDateFormat(Utility.DATE_FORMAT);
         SimpleDateFormat monthDayFormat = new SimpleDateFormat("MMMM dd");
         String monthDayString = monthDayFormat.format(dateInMillis);
         return monthDayString;
