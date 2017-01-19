@@ -718,4 +718,14 @@ public class Utility {
         }
         return views;
     }
+
+    public static String getApiKey(Context context) {
+        if (BuildConfig.OPEN_WEATHER_MAP_API_KEY.equals("")) {
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            String apiKey =  sp.getString(context.getString(R.string.pref_location_status_key), "");
+            return apiKey;
+        } else {
+            return BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+        }
+    }
 }

@@ -83,6 +83,10 @@
     <string name="pref_enable_hourly_forecast_false">Not Enabled</string>
     <string name="pref_enable_hourly_forecast_default" translatable="false">true</string>
 
+    <string name="pref_api_key_key" translatable="false">Openweathermap API key</string>
+    <string name="pref_api_key_label">Openweathermap API key</string>
+    <string name="dialog_api_key_title">Openweathermap API key</string>
+
     <!-- Strings used when displaying the state of the Location in settings -->
     <string name="pref_location_error_description">Invalid Location (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_unknown_description">Validating Location... (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
@@ -143,8 +147,7 @@
     Current: <xliff:g id="condition">%1$s</xliff:g> High: <xliff:g id="high">%2$s</xliff:g> Low: <xliff:g id="low">%3$s</xliff:g>
     </string>
     <!-- Strings related to Notification preference -->
-    <string name="pref_last_notification">last_notification
-    </string>
+    <string name="pref_last_sync">last_sync</string>
 
     <!-- Empty Weather Database -->
     <string name="empty_forecast_list">No Weather Information Available</string>

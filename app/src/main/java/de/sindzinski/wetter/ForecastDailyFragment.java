@@ -211,7 +211,11 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
                         // This method performs the actual data-refresh operation.
                         // The method calls setRefreshing(false) when it's finished.
-                        WetterSyncAdapter.syncImmediately(getActivity());
+                        if (!WetterSyncAdapter.syncImmediately(getActivity())) {
+                            if (mSwipeRefreshLayout.isRefreshing()) {
+                                mSwipeRefreshLayout.setRefreshing(false);
+                            }
+                        };
                     }
                 }
         );
@@ -395,7 +399,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         if ( key.equals(getString(R.string.pref_location_key))) {
             onLocationChanged();
         }
-        if (key.equals(this.getString(R.string.pref_last_notification))) {
+        if (key.equals(this.getString(R.string.pref_last_sync))) {
             if (mSwipeRefreshLayout.isRefreshing()) {
                 mSwipeRefreshLayout.setRefreshing(false);
             }

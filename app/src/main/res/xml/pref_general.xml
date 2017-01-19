@@ -4,6 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <de.sindzinski.wetter.ApiKeyEditTextPreference
+        android:title="@string/pref_api_key_label"
+        android:key="@string/pref_api_key_key"
+        android:defaultValue=""
+        android:inputType="text"
+        custom:minLength="10"
+        android:singleLine="true" />
+
     <de.sindzinski.wetter.LocationEditTextPreference
         android:title="@string/pref_location_label"
         android:key="@string/pref_location_key"

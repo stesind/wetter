@@ -62,7 +62,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final long HOUR_IN_MILLIS = 1000 * 60 * 60;
-    private static final long MINUTE_IN_MILLIS = 1000 * 60 ;
+    private static final long MINUTE_IN_MILLIS = 1000 * 60;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
 
 
@@ -111,7 +111,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
         Log.d(LOG_TAG, "Starting sync");
         String locationSetting = getPreferredLocation(getContext());
-        long locationId = getPreferredLocationCityId(getContext(),locationSetting);
+        long locationId = getPreferredLocationCityId(getContext(), locationSetting);
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -143,7 +143,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 QUERY_PARAM = "q";
                 locationQuery = locationSetting;
             } else {
-                QUERY_PARAM ="id";
+                QUERY_PARAM = "id";
                 locationQuery = Long.toString(locationId);
             }
             if (type == TYPE_HOURLY) {
@@ -153,7 +153,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendQueryParameter(QUERY_PARAM, locationQuery)
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
-                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .appendQueryParameter(APPID_PARAM, Utility.getApiKey(getContext()))
                         .build();
             } else if (type == TYPE_DAILY) {
                 final String FORECAST_BASE_URL =
@@ -163,7 +163,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .appendQueryParameter(APPID_PARAM, Utility.getApiKey(getContext()))
                         .build();
             } else if (type == TYPE_CURRENT) { //current
                 final String FORECAST_BASE_URL =
@@ -172,7 +172,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendQueryParameter(QUERY_PARAM, locationQuery)
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
-                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .appendQueryParameter(APPID_PARAM, Utility.getApiKey(getContext()))
                         .build();
             }
             URL url = new URL(builtUri.toString());
@@ -209,7 +209,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 getWeatherDataFromJsonHourly(forecastJsonStr, locationSetting);
             } else if (type == TYPE_DAILY) {
                 getWeatherDataFromJsonDaily(forecastJsonStr, locationSetting);
-            } else if (type== TYPE_CURRENT) {
+            } else if (type == TYPE_CURRENT) {
                 getWeatherDataFromJsonCurrent(forecastJsonStr, locationSetting);
             }
         } catch (IOException e) {
@@ -366,7 +366,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             humidity = mainObject.getInt(OWM_HUMIDITY);
 
             JSONObject windObject = forecastJson.getJSONObject(OWM_WIND);
-            windSpeed =  windObject.has(OWM_WIND_DIRECTION) ? windObject.getDouble(OWM_WIND_SPEED) : 0;
+            windSpeed = windObject.has(OWM_WIND_DIRECTION) ? windObject.getDouble(OWM_WIND_SPEED) : 0;
             windDirection = windObject.has(OWM_WIND_DIRECTION) ? windObject.getDouble(OWM_WIND_DIRECTION) : 0;
 
             JSONObject cloudsObject = forecastJson.getJSONObject(OWM_CLOUDS);
@@ -384,8 +384,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             if (forecastJson.has(OWM_SYS)) {
                 JSONObject sysObject = forecastJson.getJSONObject(OWM_SYS);
-                sunRise = sysObject.has(OWM_SUN_RISE) ? (sysObject.getLong(OWM_SUN_RISE)*1000) : 0;
-                sunSet = sysObject.has(OWM_SUN_SET) ? (sysObject.getLong(OWM_SUN_SET)*1000) : 0;
+                sunRise = sysObject.has(OWM_SUN_RISE) ? (sysObject.getLong(OWM_SUN_RISE) * 1000) : 0;
+                sunSet = sysObject.has(OWM_SUN_SET) ? (sysObject.getLong(OWM_SUN_SET) * 1000) : 0;
             }
 
 
@@ -419,7 +419,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 //delete all old data of given type
                 String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
-                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
+                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
                 String[] selectionArgs = new String[]{Integer.toString(TYPE_CURRENT), Long.toString(locationId)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
@@ -874,7 +874,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 //delete all old data of given type
                 String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
-                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
+                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
                 String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLY), Long.toString(locationId)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
@@ -918,12 +918,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         String displayNotificationsKey = context.getString(R.string.pref_enable_notifications_key);
         boolean displayNotifications = prefs.getBoolean(displayNotificationsKey,
                 Boolean.parseBoolean(context.getString(R.string.pref_enable_notifications_default)));
-        String lastNotificationKey = context.getString(R.string.pref_last_notification);
-        long lastSync = prefs.getLong(lastNotificationKey, 0);
+        String lastSyncKey = context.getString(R.string.pref_last_sync);
+        long lastSync = prefs.getLong(lastSyncKey, 0);
 
         if (displayNotifications) {
-
-
             if (System.currentTimeMillis() - lastSync >= MINUTE_IN_MILLIS) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = getPreferredLocation(context);
@@ -989,7 +987,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         }
         //refreshing last sync
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putLong(lastNotificationKey, System.currentTimeMillis());
+        editor.putLong(lastSyncKey, System.currentTimeMillis());
         editor.commit();
     }
 
@@ -1094,12 +1092,21 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      *
      * @param context The context used to access the account service
      */
-    public static void syncImmediately(Context context) {
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        ContentResolver.requestSync(getSyncAccount(context),
-                context.getString(R.string.content_authority), bundle);
+    public static boolean syncImmediately(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String lastSyncKey = context.getString(R.string.pref_last_sync);
+        long lastSync = prefs.getLong(lastSyncKey, 0);
+
+        if (System.currentTimeMillis() - lastSync >= MINUTE_IN_MILLIS * 10) {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+            bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+            ContentResolver.requestSync(getSyncAccount(context),
+                    context.getString(R.string.content_authority), bundle);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
