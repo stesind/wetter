@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 
 /**
@@ -143,8 +145,16 @@ public class ForecastAdapterDaily extends CursorAdapter {
         if (this.position == cursor.getPosition()) {
             view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
             viewHolder.mConditionView.setVisibility(View.VISIBLE);
+            HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);
+            for (TextView tv : textViews) {
+                tv.setTextColor(ContextCompat.getColor(mContext, R.color.icons));
+            }
         } else {
             view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
+            HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);
+            for (TextView tv : textViews) {
+                tv.setTextColor(ContextCompat.getColor(mContext, R.color.primary_text));
+            }
             viewHolder.mConditionView.setVisibility(View.GONE);
         }
 

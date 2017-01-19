@@ -27,12 +27,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.format.Time;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -738,5 +741,18 @@ public class Utility {
         View sbView = snackbar.getView();
         sbView.setBackgroundColor(ContextCompat.getColor(context,R.color.primary));
         snackbar.show();
+    }
+
+    public static HashSet<TextView> getTextViews(ViewGroup root){
+        HashSet<TextView> views=new HashSet<>();
+        for(int i=0;i<root.getChildCount();i++){
+            View v=root.getChildAt(i);
+            if(v instanceof TextView){
+                views.add((TextView)v);
+            }else if(v instanceof ViewGroup){
+                views.addAll(getTextViews((ViewGroup)v));
+            }
+        }
+        return views;
     }
 }
