@@ -149,7 +149,7 @@ public class Utility {
 //                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
 //                        shortenedDateFormat.format(timeInMillis)));
 //            } else
-        if (day < today + 2) {
+        if (day < today + 1) {
             // If the input date is less than a week in the future, just return the day name.
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
             shortDateFormat.setTimeZone(timezone);
