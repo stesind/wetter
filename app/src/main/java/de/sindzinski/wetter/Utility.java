@@ -199,11 +199,11 @@ public class Utility {
             return String.format(context.getString(
                     formatId,
                     "Today ",
-                    gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()),
+                    gregorianCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()),
                     shortenedDateFormat.format(timeInMillis)));
         } else if (day < today + 7) {
             // If the input date is less than a week in the future, just return the day name.
-            String dayName = gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());//Locale.US);
+            String dayName = gregorianCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());//Locale.US);
             return dayName;
         } else {
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");

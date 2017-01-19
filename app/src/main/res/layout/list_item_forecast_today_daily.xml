@@ -92,13 +92,15 @@
                 android:textColor="@color/icons" />
         </LinearLayout>
     </LinearLayout>
-
     <TextView
         android:id="@+id/list_item_condition_textview"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:fontFamily="sans-serif-condensed"
         android:visibility="gone"
+        android:background="@drawable/today_touch_selector"
+        android:gravity="center_horizontal"
+        android:textColor="@color/icons"
         android:textAppearance="?android:textAppearanceMedium" />
 </LinearLayout>

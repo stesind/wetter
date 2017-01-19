@@ -123,7 +123,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelectedDaily(Uri dateUri);
+        void onItemSelectedDaily(Uri dateUri);
     }
 
     public ForecastDailyFragment() {

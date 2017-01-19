@@ -124,7 +124,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelectedHourly(Uri dateUri);
+        void onItemSelectedHourly(Uri dateUri);
     }
 
     public ForecastHourlyFragment() {

@@ -142,24 +142,15 @@ public class ForecastAdapterDaily extends CursorAdapter {
         float windDirStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_DEGREES);
         viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
 
-        if (this.position == cursor.getPosition()) {
-            view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
-            viewHolder.mConditionView.setVisibility(View.VISIBLE);
-            HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);
-            for (TextView tv : textViews) {
-                tv.setTextColor(ContextCompat.getColor(mContext, R.color.icons));
-            }
-        } else {
-            view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
-            HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);
-            for (TextView tv : textViews) {
-                tv.setTextColor(ContextCompat.getColor(mContext, R.color.primary_text));
-            }
-            viewHolder.mConditionView.setVisibility(View.GONE);
-        }
-
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
+
+            if (this.position == cursor.getPosition()) {
+                viewHolder.mConditionView.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.mConditionView.setVisibility(View.GONE);
+            }
+
             String cityName = cursor.getString(ForecastDailyFragment.COL_CITY_NAME);
             viewHolder.mCityView.setText(cityName);
             // Read high temperature from cursor
@@ -185,6 +176,23 @@ public class ForecastAdapterDaily extends CursorAdapter {
                             Utility.formatTemperature(mContext, night, isMetric)
             );
         } else {
+
+            if (this.position == cursor.getPosition()) {
+                view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
+                viewHolder.mConditionView.setVisibility(View.VISIBLE);
+                HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);
+                for (TextView tv : textViews) {
+                    tv.setTextColor(ContextCompat.getColor(mContext, R.color.icons));
+                }
+            } else {
+                view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
+                HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);
+                for (TextView tv : textViews) {
+                    tv.setTextColor(ContextCompat.getColor(mContext, R.color.primary_text));
+                }
+                viewHolder.mConditionView.setVisibility(View.GONE);
+            }
+
             // Read day temperature from cursor
             double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
             viewHolder.mDayTempView.setText(Utility.formatTemperature(mContext, day, isMetric));
