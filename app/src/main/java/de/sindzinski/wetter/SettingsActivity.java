@@ -166,7 +166,8 @@ public class SettingsActivity extends Activity {
                 getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
             } else if (key.equals(getString((R.string.pref_theme_key)))) {
                 // toast restart app required
-                Toast.makeText(getActivity(), getString(R.string.notification_restart), Toast.LENGTH_SHORT).show();
+                //
+                // Toast.makeText(getActivity(), getString(R.string.notification_restart), Toast.LENGTH_SHORT).show();
 
             }
         }
