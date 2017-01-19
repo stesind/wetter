@@ -37,11 +37,13 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private  NavigationView navigationView;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,15 +109,29 @@ public class MainActivity extends AppCompatActivity implements
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        FloatingActionButton button = (FloatingActionButton) findViewById(R.id.button_check);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                rotateFabForward();
-                //rotateFabBackward();
-                WetterSyncAdapter.syncImmediately(getApplicationContext());
-            }
+//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+//        mSwipeRefreshLayout.setOnRefreshListener(
+//                new SwipeRefreshLayout.OnRefreshListener() {
+//                    @Override
+//                    public void onRefresh() {
+//                        Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout");
+//
+//                        // This method performs the actual data-refresh operation.
+//                        // The method calls setRefreshing(false) when it's finished.
+//                        WetterSyncAdapter.syncImmediately(getApplicationContext());
+//                    }
+//                }
+//        );
 
-        });
+//        FloatingActionButton button = (FloatingActionButton) findViewById(R.id.button_check);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                rotateFabForward();
+//                //rotateFabBackward();
+//                WetterSyncAdapter.syncImmediately(getApplicationContext());
+//            }
+//
+//        });
 
         WetterSyncAdapter.initializeSyncAdapter(this);
 
@@ -328,25 +345,25 @@ public class MainActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
-    public void rotateFabForward() {
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.button_check);
-        ViewCompat.animate(fab)
-                .rotation(135.0F)
-                .withLayer()
-                .setDuration(3000L)
-                .setInterpolator(new OvershootInterpolator(10.0F))
-                .start();
-    }
-
-    public void rotateFabBackward() {
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.button_check);
-        ViewCompat.animate(fab)
-                .rotation(0.0F)
-                .withLayer()
-                .setDuration(300L)
-                .setInterpolator(new OvershootInterpolator(10.0F))
-                .start();
-    }
+//    public void rotateFabForward() {
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.button_check);
+//        ViewCompat.animate(fab)
+//                .rotation(135.0F)
+//                .withLayer()
+//                .setDuration(3000L)
+//                .setInterpolator(new OvershootInterpolator(10.0F))
+//                .start();
+//    }
+//
+//    public void rotateFabBackward() {
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.button_check);
+//        ViewCompat.animate(fab)
+//                .rotation(0.0F)
+//                .withLayer()
+//                .setDuration(300L)
+//                .setInterpolator(new OvershootInterpolator(10.0F))
+//                .start();
+//    }
 
     private void setUpStetho() {
         // Create an InitializerBuilder
@@ -381,8 +398,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ( key.equals(getString(R.string.pref_location_key))) {
+        if ( key.equals(this.getString(R.string.pref_location_key))) {
             reInitializeNavigation();
         }
     }
+
+
 }

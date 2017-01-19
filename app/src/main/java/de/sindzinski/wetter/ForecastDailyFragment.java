@@ -25,6 +25,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -52,6 +53,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
     public static final String LOG_TAG = ForecastDailyFragment.class.getSimpleName();
     private ForecastAdapterDaily mForecastAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
@@ -193,6 +195,24 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
             }
         });
+
+                /*
+         * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+         * performs a swipe-to-refresh gesture.
+         */
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swiperefresh);
+        mSwipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout");
+
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        WetterSyncAdapter.syncImmediately(getActivity());
+                    }
+                }
+        );
 
         // If there's instance state, mine it for useful information.
         // The end-goal here is that the user never knows that turning their device sideways
@@ -372,6 +392,11 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         }
         if ( key.equals(getString(R.string.pref_location_key))) {
             onLocationChanged();
+        }
+        if (key.equals(this.getString(R.string.pref_last_notification))) {
+            if (mSwipeRefreshLayout.isRefreshing()) {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
         }
     }
 }

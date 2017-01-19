@@ -25,10 +25,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,6 +55,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
     private boolean mUseTodayLayout = true;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private static final String SELECTED_KEY = "selected_position";
 
@@ -194,6 +194,24 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             }
         });
 
+        /*
+         * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+         * performs a swipe-to-refresh gesture.
+         */
+        mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swiperefresh);
+        mSwipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout");
+
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        WetterSyncAdapter.syncImmediately(getActivity());
+                    }
+                }
+        );
+
         // If there's instance state, mine it for useful information.
         // The end-goal here is that the user never knows that turning their device sideways
         // does crazy lifecycle related things.  It should feel like some stuff stretched out,
@@ -217,7 +235,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     }
 
     // since we read the location when we create the loader, all we need to do is restart things
-    void onLocationChanged( ) {
+    void onLocationChanged() {
         updateWeather();
         getLoaderManager().restartLoader(FORECAST_LOADER_HOURLY, null, this);
     }
@@ -230,9 +248,9 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         // Using the URI scheme for showing a location found on a map.  This super-handy
         // intent can is detailed in the "Common Intents" page of Android's developer site:
         // http://developer.android.com/guide/components/intents-common.html#Maps
-        if ( null != mForecastAdapter ) {
+        if (null != mForecastAdapter) {
             Cursor c = mForecastAdapter.getCursor();
-            if ( null != c ) {
+            if (null != c) {
                 c.moveToPosition(0);
                 String posLat = c.getString(COL_COORD_LAT);
                 String posLong = c.getString(COL_COORD_LONG);
@@ -269,12 +287,12 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
         // To only show current and future dates, filter the query to return weather only for
         // dates after or including today.
-        if (id!=FORECAST_LOADER_HOURLY) {
+        if (id != FORECAST_LOADER_HOURLY) {
             return null;
         }
         // get the time beginning of today
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY)-1);
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) - 1);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
@@ -341,9 +359,9 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         use to determine why they aren't seeing weather.
      */
     private void updateEmptyView() {
-        if ( mForecastAdapter.getCount() == 0 ) {
+        if (mForecastAdapter.getCount() == 0) {
             TextView tv = (TextView) getView().findViewById(R.id.listview_forecast_empty);
-            if ( null != tv ) {
+            if (null != tv) {
                 // if cursor is empty, why? do we have an invalid location
                 int message = R.string.empty_forecast_list;
                 @WetterSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
@@ -358,7 +376,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                         message = R.string.pref_location_error_description;
                         break;
                     default:
-                        if (!Utility.isNetworkAvailable(getActivity()) ) {
+                        if (!Utility.isNetworkAvailable(getActivity())) {
                             message = R.string.empty_forecast_list_no_network;
                         }
                 }
@@ -369,11 +387,16 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ( key.equals(getString(R.string.pref_location_status_key)) ) {
+        if (key.equals(getString(R.string.pref_location_status_key))) {
             updateEmptyView();
         }
-        if ( key.equals(getString(R.string.pref_location_key))) {
+        if (key.equals(getString(R.string.pref_location_key))) {
             onLocationChanged();
+        }
+        if (key.equals(this.getString(R.string.pref_last_notification))) {
+            if (mSwipeRefreshLayout.isRefreshing()) {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
         }
     }
 }
