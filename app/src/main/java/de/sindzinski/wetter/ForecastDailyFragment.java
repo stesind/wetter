@@ -134,6 +134,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
 //    @Override
@@ -340,19 +342,19 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.unregisterOnSharedPreferenceChangeListener(this);
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.registerOnSharedPreferenceChangeListener(this);
+//    }
+//
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.unregisterOnSharedPreferenceChangeListener(this);
+//    }
 
     /*
         Updates the empty list view with contextually relevant information that the user can

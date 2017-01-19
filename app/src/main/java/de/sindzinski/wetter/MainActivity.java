@@ -147,6 +147,9 @@ public class MainActivity extends AppCompatActivity implements
         navigationView.setNavigationItemSelectedListener(this);
 
         addLocationToNavigation();
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     private void addLocationToNavigation() {
@@ -192,6 +195,8 @@ public class MainActivity extends AppCompatActivity implements
             Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_removed);
         } else if (id == R.id.nav_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
+//            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+//            sp.registerOnSharedPreferenceChangeListener(this);
         } else {
             String locationSetting = item.getTitle().toString();
             long  locationId = WetterSyncAdapter.getPreferredLocationCityId(this,locationSetting);
@@ -306,8 +311,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onPause() {
         super.onPause();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        sp.unregisterOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+//        sp.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -327,8 +332,8 @@ public class MainActivity extends AppCompatActivity implements
             mLocation = location;
         }
 
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        sp.registerOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+//        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -400,6 +405,10 @@ public class MainActivity extends AppCompatActivity implements
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if ( key.equals(this.getString(R.string.pref_location_key))) {
             reInitializeNavigation();
+        }
+
+        if (key.equals(this.getString(R.string.pref_theme_key))) {
+            setUpTheme();
         }
     }
 
