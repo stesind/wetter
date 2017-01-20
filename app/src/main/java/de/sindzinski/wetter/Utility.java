@@ -188,14 +188,14 @@ public class Utility {
         calendar.setTimeInMillis(timeInMillis);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
-
         // If the date we're building the String for is today's date, the format
         // is "Today, June 24"
 
         if (today == day) {
             int formatId = R.string.format_full_friendly_date;
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
+            shortenedDateFormat.setTimeZone(timezone);
+
             return String.format(context.getString(
                     formatId,
                     "Today ",
@@ -207,6 +207,7 @@ public class Utility {
             return dayName;
         } else {
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            shortenedDateFormat.setTimeZone(timezone);
             return shortenedDateFormat.format(timeInMillis);
         }
 
@@ -221,8 +222,10 @@ public class Utility {
      * @return The day in the form of a string formatted "December 6"
      */
     public static String getFormattedMonthDay(Context context, long dateInMillis) {
-        SimpleDateFormat monthDayFormat = new SimpleDateFormat("MMMM dd");
-        String monthDayString = monthDayFormat.format(dateInMillis);
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("MMMM dd");
+        TimeZone timezone = TimeZone.getDefault();
+        shortenedDateFormat.setTimeZone(timezone);
+        String monthDayString = shortenedDateFormat.format(dateInMillis);
         return monthDayString;
     }
 
@@ -695,6 +698,26 @@ public class Utility {
         }
 
         return validLocationSetting;
+    }
+
+    public static long getLastSync(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String lastSyncKey = context.getString(R.string.pref_last_sync);
+        return prefs.getLong(lastSyncKey, 0);
+    }
+
+    public static void setLastSync(Context context, long timeInMillis) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        String lastSyncKey = context.getString(R.string.pref_last_sync);
+        editor.putLong(lastSyncKey, timeInMillis);
+        editor.commit();
+    }
+    static private void setLocationStatus(Context c, int locationStatus) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
+        spe.commit();
     }
 
     public static void showSnackbar(Context context, View view, int stringRessource) {

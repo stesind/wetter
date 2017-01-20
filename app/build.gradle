@@ -1,19 +1,32 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'AndroidKey'
+            keyPassword '***REMOVED***'
+            storeFile file('/home/steffen/keystores/android.jks')
+            storePassword '***REMOVED***'
+        }
+    }
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "de.sindzinski.wetter"
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     buildTypes.each {
@@ -24,6 +37,7 @@ android {
     }
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_7
     }
 }
 
@@ -38,3 +52,8 @@ dependencies {
 dependencies {
     compile 'com.facebook.stetho:stetho:1.4.2'
 }
+dependencies {
+    compile 'com.google.firebase:firebase-crash:10.0.1'
+}
+// Add to the bottom of the file
+apply plugin: 'com.google.gms.google-services'

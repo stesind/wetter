@@ -49,7 +49,9 @@ import de.sindzinski.wetter.R;
 import de.sindzinski.wetter.Utility;
 import de.sindzinski.wetter.data.WeatherContract;
 
+import static de.sindzinski.wetter.Utility.getLastSync;
 import static de.sindzinski.wetter.Utility.getPreferredLocation;
+import static de.sindzinski.wetter.Utility.setLastSync;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
@@ -918,11 +920,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         String displayNotificationsKey = context.getString(R.string.pref_enable_notifications_key);
         boolean displayNotifications = prefs.getBoolean(displayNotificationsKey,
                 Boolean.parseBoolean(context.getString(R.string.pref_enable_notifications_default)));
-        String lastSyncKey = context.getString(R.string.pref_last_sync);
-        long lastSync = prefs.getLong(lastSyncKey, 0);
 
         if (displayNotifications) {
-            if (System.currentTimeMillis() - lastSync >= MINUTE_IN_MILLIS) {
+            if (System.currentTimeMillis() - getLastSync(context) >= MINUTE_IN_MILLIS) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = getPreferredLocation(context);
 
@@ -986,9 +986,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             }
         }
         //refreshing last sync
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putLong(lastSyncKey, System.currentTimeMillis());
-        editor.commit();
+        setLastSync(context, System.currentTimeMillis());
     }
 
     /**
@@ -1093,11 +1091,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param context The context used to access the account service
      */
     public static boolean syncImmediately(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String lastSyncKey = context.getString(R.string.pref_last_sync);
-        long lastSync = prefs.getLong(lastSyncKey, 0);
 
-        if (System.currentTimeMillis() - lastSync >= MINUTE_IN_MILLIS * 10) {
+        if (System.currentTimeMillis() - Utility.getLastSync(context) >= MINUTE_IN_MILLIS*5 ) {
             Bundle bundle = new Bundle();
             bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
             bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);

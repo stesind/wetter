@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements
                 //change the location, sync and update adapters
                 Utility.setPreferredLocation(this, locationSetting);
                 Utility.resetLocationStatus(this);
+                Utility.setLastSync(this,System.currentTimeMillis()-1000*60*10);
                 WetterSyncAdapter.syncImmediately(this);
                 Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
             }

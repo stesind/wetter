@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "496702603925",
+    "firebase_url": "https://wetter-150d7.firebaseio.com",
+    "project_id": "wetter-150d7",
+    "storage_bucket": "wetter-150d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496702603925:android:b0909662d5cf2764",
+        "android_client_info": {
+          "package_name": "de.sindzinski.wetter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496702603925-8pk8qvp9gouic4otrl73ad8kkhurqjc3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcgnkJ3C9z2ee2ZYkoSl5hDLg1JbhGVPc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
