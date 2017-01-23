@@ -1,14 +1,28 @@
 apply plugin: 'com.android.application'
 
+// Project dependend signing config
+//if(project.hasProperty("default.signing")
+//        && new File(project.property("default.signing") + ".gradle").exists()) {
+//    apply from: project.property("default.signing") + ".gradle";
+//}
+
+// Project independend signing config
 android {
     signingConfigs {
         config {
-            keyAlias 'AndroidKey'
-            keyPassword '***REMOVED***'
-            storeFile file('/home/steffen/keystores/android.jks')
-            storePassword '***REMOVED***'
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
         }
     }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.config
+        }
+    }
+}
+android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
@@ -23,10 +37,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
-        }
-        debug {
-            signingConfig signingConfigs.config
         }
     }
     buildTypes.each {
