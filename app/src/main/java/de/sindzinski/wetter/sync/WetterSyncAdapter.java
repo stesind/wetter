@@ -108,6 +108,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         syncAllSources(account, extras, authority, provider, syncResult, TYPE_CURRENT);
 
         notifyWeather();
+
     }
 
     private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
@@ -454,6 +455,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+            setLastSync(getContext(), System.currentTimeMillis());
         }
     }
 
@@ -673,6 +675,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+            setLastSync(getContext(), System.currentTimeMillis());
         }
     }
 
@@ -910,6 +913,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+            setLastSync(getContext(), System.currentTimeMillis());
         }
     }
 
