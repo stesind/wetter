@@ -55,4 +55,11 @@
         android:entryValues="@array/pref_theme_values"
         android:entries="@array/pref_theme_options" />
 
+    <ListPreference
+        android:title="@string/pref_provider_label"
+        android:key="@string/pref_provider_key"
+        android:defaultValue="@string/pref_provider_owm"
+        android:entryValues="@array/pref_provider_values"
+        android:entries="@array/pref_provider_options" />
+
 </PreferenceScreen>

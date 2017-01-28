@@ -23,6 +23,15 @@
         <item>@string/pref_theme_auto</item>
     </string-array>
 
+    <string-array name="pref_provider_options">
+        <item>@string/pref_provider_label_owm</item>
+        <item>@string/pref_provider_label_wunderground</item>
+    </string-array>
+
+    <string-array name="pref_provider_values">
+        <item>@string/pref_provider_owm</item>
+        <item>@string/pref_provider_wunderground</item>
+    </string-array>
 
     <!-- Names of the art packs available -->
     <string-array name="pref_art_pack_options">

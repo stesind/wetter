@@ -65,6 +65,13 @@
     <string name="pref_theme_day" translatable="false">day</string>
     <string name="pref_theme_auto" translatable="false">auto</string>
 
+    <string name="pref_provider_label">Theme</string>
+    <string name="pref_provider_label_owm">OWM</string>
+    <string name="pref_provider_label_wunderground">Wunderground</string>
+    <string name="pref_provider_key" translatable="false">provider</string>
+    <string name="pref_provider_owm" translatable="false">owm</string>
+    <string name="pref_provider_wunderground" translatable="false">wunderground</string>
+
     <string name="notification_restart" translatable="false">Restart required for applying new settings!</string>
 
     <!-- Strings related to Notification Enabled preference -->

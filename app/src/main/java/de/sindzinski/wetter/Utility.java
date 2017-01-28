@@ -57,6 +57,13 @@ public class Utility {
         editor.apply();
     }
 
+    public static String getProvider(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String provider = prefs.getString(context.getString(R.string.pref_provider_key),
+                context.getString(R.string.pref_provider_owm));
+        return provider;
+    }
+
     public static boolean getHourlyForecast(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(context.getString(R.string.pref_enable_hourly_forecast_key),
@@ -743,12 +750,16 @@ public class Utility {
     }
 
     public static String getApiKey(Context context) {
-        if (BuildConfig.OPEN_WEATHER_MAP_API_KEY.equals("")) {
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            String apiKey =  sp.getString(context.getString(R.string.pref_location_status_key), "");
-            return apiKey;
+        if (getProvider(context) == context.getString(R.string.pref_provider_owm)) {
+            if (BuildConfig.OPEN_WEATHER_MAP_API_KEY.equals("")) {
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+                String apiKey = sp.getString(context.getString(R.string.pref_location_status_key), "");
+                return apiKey;
+            } else {
+                return BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+            }
         } else {
-            return BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+            return BuildConfig.WUNDERGROUND_API_KEY;
         }
     }
 }
