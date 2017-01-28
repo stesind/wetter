@@ -44,17 +44,31 @@ import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
 public class Utility {
     public static String getPreferredLocation(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String location = prefs.getString(context.getString(R.string.pref_location_key),
-                context.getString(R.string.pref_location_default));
-        return location;
+        if (getProvider(context) == context.getString(R.string.pref_provider_owm)) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            String location = prefs.getString(context.getString(R.string.pref_location_key),
+                    context.getString(R.string.pref_location_default));
+            return location;
+        } else {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            String location = prefs.getString(context.getString(R.string.pref_location_wug_key),
+                    context.getString(R.string.pref_location_wug_default));
+            return location;
+        }
     }
 
     public static void setPreferredLocation(Context context, String locationSetting) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(context.getResources().getString(R.string.pref_location_key), locationSetting);
-        editor.apply();
+        if (getProvider(context) == context.getString(R.string.pref_provider_owm)) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(context.getResources().getString(R.string.pref_location_key), locationSetting);
+            editor.apply();
+        } else {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(context.getResources().getString(R.string.pref_location_wug_key), locationSetting);
+            editor.apply();
+        }
     }
 
     public static String getProvider(Context context) {

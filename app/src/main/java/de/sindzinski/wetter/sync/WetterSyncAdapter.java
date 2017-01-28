@@ -111,6 +111,134 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
     }
 
+    private void syncAllSourcesWUG(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
+        Log.d(LOG_TAG, "Starting sync");
+        String locationSetting = getPreferredLocation(getContext());
+        long locationId = getPreferredLocationCityId(getContext(), locationSetting);
+
+        // These two need to be declared outside the try/catch
+        // so that they can be closed in the finally block.
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+
+        // Will contain the raw JSON response as a string.
+        String forecastJsonStr = null;
+
+        String format = "json";
+        String units = "metric";
+        int numDays = 14;
+        String locationQuery;
+
+        try {
+            // Construct the URL for the OpenWeatherMap query
+            // Possible parameters are avaiable at OWM's forecast API page, at
+            // http://openweathermap.org/API#forecast
+
+            String QUERY_PARAM = "q";
+            final String FORMAT_PARAM = "mode";
+            final String UNITS_PARAM = "units";
+            final String DAYS_PARAM = "cnt";
+            final String APPID_PARAM = "APPID";
+            Uri builtUri = null;
+
+            // use the correct parameter if location is city name or id
+            if (locationId == 0) {
+                QUERY_PARAM = "q";
+                locationQuery = locationSetting;
+            } else {
+                QUERY_PARAM = "id";
+                locationQuery = Long.toString(locationId);
+            }
+            if (type == TYPE_HOURLY) {
+                final String FORECAST_BASE_URL =
+                        "http://api.openweathermap.org/data/2.5/forecast?";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM, locationQuery)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(APPID_PARAM, Utility.getApiKey(getContext()))
+                        .build();
+            } else if (type == TYPE_DAILY) {
+                final String FORECAST_BASE_URL =
+                        "http://api.openweathermap.org/data/2.5/forecast/daily?";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM, locationQuery)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM, Utility.getApiKey(getContext()))
+                        .build();
+            } else if (type == TYPE_CURRENT) { //current
+                final String FORECAST_BASE_URL =
+                        "http://api.openweathermap.org/data/2.5/weather?";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM, locationQuery)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(APPID_PARAM, Utility.getApiKey(getContext()))
+                        .build();
+            }
+            URL url = new URL(builtUri.toString());
+
+            // Create the request to OpenWeatherMap, and open the connection
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+                return;
+            }
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                // Stream was empty.  No point in parsing.
+                setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+                return;
+            }
+            forecastJsonStr = buffer.toString();
+            if (type == TYPE_HOURLY) {
+                getWeatherDataFromJsonHourly(forecastJsonStr, locationSetting);
+            } else if (type == TYPE_DAILY) {
+                getWeatherDataFromJsonDaily(forecastJsonStr, locationSetting);
+            } else if (type == TYPE_CURRENT) {
+                getWeatherDataFromJsonCurrent(forecastJsonStr, locationSetting);
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+            setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+        }
+        return;
+    }
+
     private void syncAllSources(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
         Log.d(LOG_TAG, "Starting sync");
         String locationSetting = getPreferredLocation(getContext());
