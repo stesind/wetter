@@ -411,6 +411,12 @@ public class MainActivity extends AppCompatActivity implements
         if (key.equals(this.getString(R.string.pref_theme_key))) {
             setUpTheme();
         }
+        if (key.equals(this.getString(R.string.pref_provider_key))) {
+            Utility.resetLocationStatus(this);
+            Utility.setLastSync(this,System.currentTimeMillis()-1000*60*10);
+            WetterSyncAdapter.syncImmediately(this);
+            Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
+        }
     }
 
 

@@ -30,9 +30,9 @@
     <string name="pref_location_status_key" translatable="false">loc-status</string>
     <string name="pref_location_default" translatable="false">teltow,de</string>
 
-    <string name="pref_location_wug_label">Location</string>
-    <string name="pref_location_wug_key" translatable="false">location</string>
-    <string name="pref_location_wug_status_key" translatable="false">loc-status</string>
+    <string name="pref_location_wug_label">Location WUG</string>
+    <string name="pref_location_wug_key" translatable="false">locationWUG</string>
+    <string name="pref_location_wug_status_key" translatable="false">loc-statusWUG</string>
     <string name="pref_location_wug_default" translatable="false">germany/teltow</string>
 
     <!-- Label for the temperature units preference [CHAR LIMIT=30] -->
@@ -62,12 +62,12 @@
     <string name="pref_theme_day" translatable="false">day</string>
     <string name="pref_theme_auto" translatable="false">auto</string>
 
-    <string name="pref_provider_label">Theme</string>
-    <string name="pref_provider_label_owm">OWM</string>
-    <string name="pref_provider_label_wunderground">Wunderground</string>
+    <string name="pref_provider_label">Weather Provider</string>
+    <string name="pref_provider_label_owm">OpenWeatherMap</string>
+    <string name="pref_provider_label_wug">Weather Underground</string>
     <string name="pref_provider_key" translatable="false">provider</string>
     <string name="pref_provider_owm" translatable="false">owm</string>
-    <string name="pref_provider_wunderground" translatable="false">wunderground</string>
+    <string name="pref_provider_wug" translatable="false">wug</string>
 
     <string name="notification_restart" translatable="false">Restart required for applying new settings!</string>
 

@@ -47,6 +47,9 @@ public class WeatherContract {
     public static final Integer TYPE_HOURLY = 1;
     public static final Integer TYPE_CURRENT = 2;
 
+    public static final Integer PROVIDER_OWM = 0;
+    public static final Integer PROVIDER_WUG = 1;
+
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
     public static long normalizeDate(long startDate) {
@@ -106,6 +109,7 @@ public class WeatherContract {
 
         // Column for identifinng the type.
         public static final String COLUMN_TYPE= "type";
+        public static final String COLUMN_PROVIDER= "provider";
 
         // Column with the foreign key into the location table.
         public static final String COLUMN_LOC_KEY = "location_id";
@@ -126,6 +130,8 @@ public class WeatherContract {
         public static final String COLUMN_EVENING_TEMP = "evening";
         public static final String COLUMN_NIGHT_TEMP = "night";
         public static final String COLUMN_TEMP = "temp";
+        public static final String COLUMN_FEELSLIKE = "feelslike";
+
         // Humidity is stored as a float representing percentage
         public static final String COLUMN_HUMIDITY = "humidity";
 
@@ -134,6 +140,7 @@ public class WeatherContract {
 
         // Windspeed is stored as a float representing windspeed  mph
         public static final String COLUMN_WIND_SPEED = "wind";
+        public static final String COLUMN_MAX_WIND_SPEED = "maxwind";
 
         // Degrees are meteorological degrees (e.g, 0 is north, 180 is south).  Stored as floats.
         public static final String COLUMN_DEGREES = "degrees";
@@ -142,6 +149,7 @@ public class WeatherContract {
         public static final String COLUMN_RAIN = "rain";
         public static final String COLUMN_SNOW = "snow";
         public static final String COLUMN_CLOUDS = "clouds";
+        public static final String COLUMN_UVI = "uvi";
 
         // the default icon to display
         public static final String COLUMN_ICON = "icon";

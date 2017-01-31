@@ -25,12 +25,12 @@
 
     <string-array name="pref_provider_options">
         <item>@string/pref_provider_label_owm</item>
-        <item>@string/pref_provider_label_wunderground</item>
+        <item>@string/pref_provider_label_wug</item>
     </string-array>
 
     <string-array name="pref_provider_values">
         <item>@string/pref_provider_owm</item>
-        <item>@string/pref_provider_wunderground</item>
+        <item>@string/pref_provider_wug</item>
     </string-array>
 
     <!-- Names of the art packs available -->

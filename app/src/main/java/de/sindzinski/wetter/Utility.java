@@ -26,6 +26,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -248,6 +249,26 @@ public class Utility {
         shortenedDateFormat.setTimeZone(timezone);
         String monthDayString = shortenedDateFormat.format(dateInMillis);
         return monthDayString;
+    }
+
+    public static String wordFirstCap(String str, String delimiter)
+    {
+        String[] words = str.trim().split(delimiter);
+        StringBuilder ret = new StringBuilder();
+        for(int i = 0; i < words.length; i++)
+        {
+            if(words[i].trim().length() > 0)
+            {
+                Log.e("words[i].trim",""+words[i].trim().charAt(0));
+                ret.append(Character.toUpperCase(words[i].trim().charAt(0)));
+                ret.append(words[i].trim().substring(1));
+                if(i < words.length - 1) {
+                    ret.append(delimiter);
+                }
+            }
+        }
+
+        return ret.toString();
     }
 
     public static String getSmallFormattedWind(Context context, float windSpeed, float degrees) {

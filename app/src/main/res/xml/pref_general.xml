@@ -20,7 +20,7 @@
         custom:minLength="4"
         android:singleLine="true" />
 
-    <de.sindzinski.wetter.LocationWUGEditTextPreference
+    <de.sindzinski.wetter.LocationEditTextPreference
         android:title="@string/pref_location_wug_label"
         android:key="@string/pref_location_wug_key"
         android:defaultValue="@string/pref_location_wug_default"

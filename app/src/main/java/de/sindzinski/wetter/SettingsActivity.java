@@ -65,10 +65,12 @@ public class SettingsActivity extends Activity {
             // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
             // updated when the preference changes.
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_wug_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_api_key_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_art_pack_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_theme_key)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_provider_key)));
 
             // set texts correctly
             onSharedPreferenceChanged(null, "");
@@ -133,6 +135,22 @@ public class SettingsActivity extends Activity {
                         // is valid
                         preference.setSummary(stringValue);
                 }
+                status = Utility.getLocationStatus(getActivity());
+                switch (status) {
+                    case WetterSyncAdapter.LOCATION_STATUS_OK:
+                        preference.setSummary(stringValue);
+                        break;
+                    case WetterSyncAdapter.LOCATION_STATUS_UNKNOWN:
+                        preference.setSummary(getString(R.string.pref_location_unknown_description, value.toString()));
+                        break;
+                    case WetterSyncAdapter.LOCATION_STATUS_INVALID:
+                        preference.setSummary(getString(R.string.pref_location_error_description, value.toString()));
+                        break;
+                    default:
+                        // Note --- if the server is down we still assume the value
+                        // is valid
+                        preference.setSummary(stringValue);
+                }
             } else {
                 // For other preferences, set the summary to the value's simple string representation.
                 preference.setSummary(stringValue);
@@ -142,6 +160,14 @@ public class SettingsActivity extends Activity {
         // This gets called before the preference is changed
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
+            String stringValue = value.toString();
+            String key = preference.getKey();
+            if (key.equals(getString(R.string.pref_location_wug_key))) {
+                String newValue = Utility.wordFirstCap(stringValue, "/");
+                SharedPreferences.Editor editor = preference.getEditor();
+                editor.putString(getResources().getString(R.string.pref_location_wug_key), newValue);
+                editor.commit();
+            }
             setPreferenceSummary(preference, value);
             return true;
         }
@@ -155,6 +181,9 @@ public class SettingsActivity extends Activity {
                 // first clear locationStatus
                 Utility.resetLocationStatus(getActivity());
                 WetterSyncAdapter.syncImmediately(getActivity());
+            } else if (key.equals(getString(R.string.pref_location_wug_key))) {
+                    Utility.resetLocationStatus(getActivity());
+                    WetterSyncAdapter.syncImmediately(getActivity());
             } else if (key.equals(getString(R.string.pref_units_key))) {
                 // units have changed. update lists of weather entries accordingly
                 getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
