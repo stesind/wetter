@@ -41,7 +41,9 @@ import java.util.TimeZone;
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT_HOURLY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_HOURLY;
 
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
@@ -188,9 +190,15 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
+                    Integer type;
+                    if (Utility.getProvider(getActivity()).equals(getActivity().getString(R.string.pref_provider_wug))) {
+                        type = WeatherContract.TYPE_WUG_HOURLY;
+                    } else {
+                        type = WeatherContract.TYPE_CURRENT_HOURLY;
+                    }
                     ((CallbackHourly) getActivity())
-                            .onItemSelectedHourly(WeatherContract.WeatherEntry.buildWeatherLocationWithDateHourly(
-                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)));
+                            .onItemSelectedHourly(WeatherContract.WeatherEntry.buildWeatherLocationWithDateType(
+                                    locationSetting, cursor.getLong(COL_WEATHER_DATE), type));
                 }
                 mPosition = position;
             }
@@ -308,9 +316,17 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_TYPE + " DESC," + WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
-        Integer type = TYPE_HOURLY;
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateCurrentHourly(
-                locationSetting, timeInMillis);
+
+        Integer type;
+//                if (Utility.getProvider(getActivity()).equals("wug")) {
+        if (Utility.getProvider(getActivity()).equals(getActivity().getString(R.string.pref_provider_wug))) {
+            type = TYPE_WUG_HOURLY;
+        } else {
+            type = TYPE_CURRENT_HOURLY;
+        }
+
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateType(
+                locationSetting, timeInMillis, type);
 
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,

@@ -114,8 +114,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
         defaultImage = Utility.getIconResourceForWeatherCondition(
                 weatherId);
 
-        if (Utility.getProvider(mContext).equals("wug")) {
-//        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_key))) {
+//        if (Utility.getProvider(mContext).equals("wug")) {
+        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_wug))) {
             String icon = cursor.getString(ForecastHourlyFragment.COL_WEATHER_ICON);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
             String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_wug_key),

@@ -101,8 +101,11 @@ public class ForecastAdapterDaily extends CursorAdapter {
         int defaultImage;
         defaultImage = Utility.getIconResourceForWeatherCondition(weatherId);
 
-        if (Utility.getProvider(mContext).equals("wug")) {
-//        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_key))) {
+        String prefProvider = Utility.getProvider(mContext);
+        String provider = mContext.getString(R.string.pref_provider_wug);
+
+//        if (Utility.getProvider(mContext).equals("wug")) {
+        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_wug))) {
             String icon = cursor.getString(ForecastDailyFragment.COL_WEATHER_ICON);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
             String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_wug_key),
@@ -158,7 +161,8 @@ public class ForecastAdapterDaily extends CursorAdapter {
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
 
-            if (this.position == cursor.getPosition()) {
+            if ((Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_owm)))
+                    && (this.position == cursor.getPosition())) {
                 viewHolder.mConditionView.setVisibility(View.VISIBLE);
             } else {
                 viewHolder.mConditionView.setVisibility(View.GONE);
@@ -190,7 +194,8 @@ public class ForecastAdapterDaily extends CursorAdapter {
             );
         } else {
 
-            if (this.position == cursor.getPosition()) {
+            if ((Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_owm))) &&
+                    (this.position == cursor.getPosition())) {
                 view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.primary));
                 viewHolder.mConditionView.setVisibility(View.VISIBLE);
                 HashSet<TextView> textViews = Utility.getTextViews((ViewGroup) view);

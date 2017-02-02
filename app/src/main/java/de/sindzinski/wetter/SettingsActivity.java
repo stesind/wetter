@@ -69,6 +69,7 @@ public class SettingsActivity extends Activity {
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_api_key_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_art_pack_key)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_art_pack_wug_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_theme_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_provider_key)));
 

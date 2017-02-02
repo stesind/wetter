@@ -46,9 +46,35 @@ public class WeatherContract {
     public static final Integer TYPE_DAILY = 0;
     public static final Integer TYPE_HOURLY = 1;
     public static final Integer TYPE_CURRENT = 2;
+    public static final Integer TYPE_WUG_DAILY = 3;
+    public static final Integer TYPE_WUG_HOURLY = 4;
+    public static final Integer TYPE_WUG_CURRENT = 5;
+    public static final Integer TYPE_CURRENT_HOURLY = 6;
 
     public static final Integer PROVIDER_OWM = 0;
     public static final Integer PROVIDER_WUG = 1;
+
+
+    public static String getTypeString(Integer type) {
+
+        if (type == TYPE_DAILY) {
+            return "daily";
+        } else if (type == TYPE_HOURLY) {
+            return "hourly";
+        } else if (type == TYPE_WUG_DAILY) {
+            return "daily_wug";
+        }else if (type == TYPE_WUG_HOURLY) {
+            return "hourly_wug";
+        }else if (type == TYPE_CURRENT) {
+            return "current";
+        }else if (type == TYPE_WUG_CURRENT) {
+            return "current_wug";
+        }else if (type == TYPE_CURRENT_HOURLY) {
+            return "current_hourly";
+        } else {
+            return "";
+        }
+    }
 
     // To make it easy to query for the exact date, we normalize all dates that go into
     // the database to the start of the the Julian day at UTC.
@@ -170,33 +196,18 @@ public class WeatherContract {
                     .appendPath(Long.toString(normalizeDate(date))).build();
         }
 
-        public static Uri buildWeatherLocationWithDateHourly(String locationSetting, long date) {
+        public static Uri buildWeatherLocationWithDateType(String locationSetting, long date, Integer type) {
             return CONTENT_URI.buildUpon()
                     .appendPath(locationSetting)
-                    .appendPath("hourly")
-                    .appendPath(Long.toString(normalizeDate(date)))
-                    .build();
-        }
-        public static Uri buildWeatherLocationWithDateDaily(String locationSetting, long date) {
-            return CONTENT_URI.buildUpon()
-                    .appendPath(locationSetting)
-                    .appendPath("daily")
+                    .appendPath(getTypeString(type))
                     .appendPath(Long.toString(normalizeDate(date)))
                     .build();
         }
 
-        public static Uri buildWeatherLocationWithDateCurrentHourly(String locationSetting, long date) {
+        public static Uri buildWeatherLocationType(String locationSetting, Integer type) {
             return CONTENT_URI.buildUpon()
                     .appendPath(locationSetting)
-                    .appendPath("currenthourly")
-                    .appendPath(Long.toString(normalizeDate(date)))
-                    .build();
-        }
-
-        public static Uri buildWeatherLocationCurrent(String locationSetting) {
-            return CONTENT_URI.buildUpon()
-                    .appendPath(locationSetting)
-                    .appendPath("current")
+                    .appendPath(getTypeString(type))
                     .build();
         }
 

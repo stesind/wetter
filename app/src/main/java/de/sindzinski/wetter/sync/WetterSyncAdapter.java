@@ -56,6 +56,8 @@ import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_WUG;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_DAILY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_HOURLY;
 
 public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = WetterSyncAdapter.class.getSimpleName();
@@ -1149,7 +1151,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_HOURLY);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_WUG_HOURLY);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PROVIDER, PROVIDER_WUG);
 
                 cVVector.add(weatherValues);
@@ -1316,7 +1318,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_DAILY);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_WUG_DAILY);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PROVIDER, PROVIDER_WUG);
 
                 cVVector.add(weatherValues);
@@ -1379,7 +1381,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = getPreferredLocation(context);
 
-                Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationCurrent(locationQuery);
+                Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationType(locationQuery, TYPE_CURRENT);
 
                 // we'll query our contentProvider, as always
                 Cursor cursor = context.getContentResolver().query(weatherUri, NOTIFY_WEATHER_PROJECTION, null, null, null);

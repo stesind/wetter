@@ -24,6 +24,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_DAILY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_HOURLY;
+
 public class WeatherProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
@@ -34,9 +39,11 @@ public class WeatherProvider extends ContentProvider {
     static final int WEATHER_WITH_LOCATION = 101;
     static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
     static final int WEATHER_WITH_LOCATION_AND_DATE_HOURLY = 103;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY = 104;
-    static final int WEATHER_WITH_LOCATION_CURRENT = 105;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 106;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG = 104;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY = 105;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG = 106;
+    static final int WEATHER_WITH_LOCATION_CURRENT = 107;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 108;
     static final int LOCATION = 300;
 
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
@@ -138,31 +145,16 @@ public class WeatherProvider extends ContentProvider {
         );
     }
 
-    private Cursor getWeatherByLocationSettingAndDateHourly(
-            Uri uri, String[] projection, String sortOrder) {
+    private Cursor getWeatherByLocationSettingAndDateType(
+            Uri uri, String[] projection, String sortOrder, Integer type) {
         String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        String type = WeatherContract.TYPE_HOURLY.toString();
+        String sType = type.toString();
         long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
 
         return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
                 sLocationSettingWithStartDateAndTypeSelection,
-                new String[]{locationSetting, Long.toString(date), type},
-                null,
-                null,
-                sortOrder
-        );
-    }
-    private Cursor getWeatherByLocationSettingAndDateDaily(
-            Uri uri, String[] projection, String sortOrder) {
-        String locationSetting = WeatherContract.WeatherEntry.getLocationSettingFromUri(uri);
-        String type = WeatherContract.TYPE_DAILY.toString();
-        long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
-
-        return sWeatherByLocationSettingQueryBuilder.query(mOpenHelper.getReadableDatabase(),
-                projection,
-                sLocationSettingWithStartDateAndTypeSelection,
-                new String[]{locationSetting, Long.toString(date), type},
+                new String[]{locationSetting, Long.toString(date), sType},
                 null,
                 null,
                 sortOrder
@@ -199,12 +191,7 @@ public class WeatherProvider extends ContentProvider {
                 sortOrder
         );
     }
-    /*
-        Students: Here is where you need to create the UriMatcher. This UriMatcher will
-        match each URI to the WEATHER, WEATHER_WITH_LOCATION, WEATHER_WITH_LOCATION_AND_DATE,
-        and LOCATION integer constants defined above.  You can test this by uncommenting the
-        testUriMatcher test within TestUriMatcher.
-     */
+
     static UriMatcher buildUriMatcher() {
         // I know what you're thinking.  Why create a UriMatcher when you can use regular
         // expressions instead?  Because you're not crazy, that's why.
@@ -222,7 +209,9 @@ public class WeatherProvider extends ContentProvider {
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*", WEATHER_WITH_LOCATION);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/#", WEATHER_WITH_LOCATION_AND_DATE);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/hourly/#", WEATHER_WITH_LOCATION_AND_DATE_HOURLY);
+        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/hourly_wug/#", WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/daily/#", WEATHER_WITH_LOCATION_AND_DATE_DAILY);
+        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/daily_wug/#", WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/current", WEATHER_WITH_LOCATION_CURRENT);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/currenthourly/#", WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY);
 
@@ -257,7 +246,11 @@ public class WeatherProvider extends ContentProvider {
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_HOURLY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
+            case WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG:
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
+                return WeatherContract.WeatherEntry.CONTENT_TYPE;
+            case WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
@@ -307,12 +300,22 @@ public class WeatherProvider extends ContentProvider {
             }
             case WEATHER_WITH_LOCATION_AND_DATE_HOURLY:
             {
-                retCursor = getWeatherByLocationSettingAndDateHourly(uri, projection, sortOrder);
+                retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_HOURLY);
+                break;
+            }
+            case WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG:
+            {
+                retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_WUG_HOURLY);
                 break;
             }
             case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
             {
-                retCursor = getWeatherByLocationSettingAndDateDaily(uri, projection, sortOrder);
+                retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_DAILY);
+                break;
+            }
+            case WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG:
+            {
+                retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_WUG_DAILY);
                 break;
             }
             case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
