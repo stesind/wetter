@@ -102,12 +102,13 @@ public class ForecastAdapterDaily extends CursorAdapter {
         defaultImage = Utility.getIconResourceForWeatherCondition(weatherId);
 
         if (Utility.getProvider(mContext).equals("wug")) {
-//        if (Utility.getProvider(mContext) == mContext.getString(R.string.pref_provider_key)) {
+//        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_key))) {
             String icon = cursor.getString(ForecastDailyFragment.COL_WEATHER_ICON);
-            String artPack = "https://icons.wxug.com/i/c/i/";
-            String iconUrl = artPack+icon+".gif";
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_wug_key),
+                    mContext.getString(R.string.pref_art_pack_wug_alt_black));
             Glide.with(mContext)
-                    .load(iconUrl)
+                    .load(String.format(Locale.US, artPack, icon))
                     //.error(defaultImage)
                     .crossFade()
                     .into(viewHolder.mIconView);

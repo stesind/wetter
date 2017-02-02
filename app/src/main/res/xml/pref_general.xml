@@ -12,6 +12,13 @@
         custom:minLength="10"
         android:singleLine="true" />
 
+    <ListPreference
+        android:title="@string/pref_provider_label"
+        android:key="@string/pref_provider_key"
+        android:defaultValue="@string/pref_provider_wug"
+        android:entryValues="@array/pref_provider_values"
+        android:entries="@array/pref_provider_options" />
+
     <de.sindzinski.wetter.LocationEditTextPreference
         android:title="@string/pref_location_label"
         android:key="@string/pref_location_key"
@@ -42,6 +49,13 @@
         android:entryValues="@array/pref_art_pack_values"
         android:entries="@array/pref_art_pack_options" />
 
+    <ListPreference
+        android:title="@string/pref_art_pack_wug_label"
+        android:key="@string/pref_art_pack_wug_key"
+        android:defaultValue="@string/pref_art_pack_wug_alt_black"
+        android:entryValues="@array/pref_art_pack_wug_values"
+        android:entries="@array/pref_art_pack_wug_options" />
+
     <CheckBoxPreference
         android:title="@string/pref_enable_notifications_label"
         android:key="@string/pref_enable_notifications_key"
@@ -62,12 +76,5 @@
         android:defaultValue="@string/pref_theme_night"
         android:entryValues="@array/pref_theme_values"
         android:entries="@array/pref_theme_options" />
-
-    <ListPreference
-        android:title="@string/pref_provider_label"
-        android:key="@string/pref_provider_key"
-        android:defaultValue="@string/pref_provider_owm"
-        android:entryValues="@array/pref_provider_values"
-        android:entries="@array/pref_provider_options" />
 
 </PreferenceScreen>

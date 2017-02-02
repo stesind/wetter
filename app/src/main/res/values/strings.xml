@@ -33,7 +33,7 @@
     <string name="pref_location_wug_label">Location WUG</string>
     <string name="pref_location_wug_key" translatable="false">locationWUG</string>
     <string name="pref_location_wug_status_key" translatable="false">loc-statusWUG</string>
-    <string name="pref_location_wug_default" translatable="false">germany/teltow</string>
+    <string name="pref_location_wug_default" translatable="false">Germany/Teltow</string>
 
     <!-- Label for the temperature units preference [CHAR LIMIT=30] -->
     <string name="pref_units_label">Temperature Units</string>
@@ -114,6 +114,15 @@
     <!-- Value in SharedPreferences for cute dogs art pack  option [CHAR LIMIT=NONE] -->
     <string name="pref_art_pack_cute_dogs" translatable="false">https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-mdpi/art_%s.png</string>
     <string name="pref_art_pack_owm" translatable="false">http://openweathermap.org/img/w/%s.png</string>
+
+    <string name="pref_art_pack_wug_label">WUG icons</string>
+    <string name="pref_art_pack_label_wug_alt_black">WUG alternative black icons</string>
+    <string name="pref_art_pack_label_wug_alt_white">WUG alternative white icons</string>
+    <string name="pref_art_pack_label_wug">WUG icons</string>
+    <string name="pref_art_pack_wug_key" translatable="false">art_pack</string>
+    <string name="pref_art_pack_wug" translatable="false">https://icons.wxug.com/i/c/i/%s.gif</string>
+    <string name="pref_art_pack_wug_alt_white" translatable="false">https://raw.githubusercontent.com/manifestinteractive/weather-underground-icons/master/dist/icons/white/png/128x128/%s.png</string>
+    <string name="pref_art_pack_wug_alt_black" translatable="false">https://raw.githubusercontent.com/manifestinteractive/weather-underground-icons/master/dist/icons/black/png/128x128/%s.png</string>
 
     <!-- Language-specific constants -->
     <string name="today">Today</string>

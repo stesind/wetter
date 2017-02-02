@@ -373,6 +373,10 @@ public class Utility {
         return -1;
     }
 
+    public static String getArtUrlWUG(Context context) {
+        return context.getString(R.string.pref_art_pack_wug);
+    }
+
     /**
      * Helper method to provide the art resource id according to the weather condition id returned
      * by the OpenWeatherMap call.
@@ -409,14 +413,6 @@ public class Utility {
         return -1;
     }
 
-    /**
-     * Helper method to provide the art urls according to the weather condition id returned
-     * by the OpenWeatherMap call.
-     *
-     * @param context Context to use for retrieving the URL format
-     * @param weatherId from OpenWeatherMap API response
-     * @return url for the corresponding weather artwork. null if no relation is found.
-     */
     public static String getArtUrlForWeatherCondition(Context context, int weatherId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String formatArtUrl = prefs.getString(context.getString(R.string.pref_art_pack_key),
@@ -796,5 +792,14 @@ public class Utility {
         } else {
             return BuildConfig.WUNDERGROUND_API_KEY;
         }
+    }
+
+    public static void deleteAllWeather(Context context) {
+        //delete all old data of given type
+        String selection = "";
+        String[] selectionArgs = new String[]{};
+        context.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
     }
 }

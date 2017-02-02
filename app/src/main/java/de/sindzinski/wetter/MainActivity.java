@@ -412,6 +412,7 @@ public class MainActivity extends AppCompatActivity implements
             setUpTheme();
         }
         if (key.equals(this.getString(R.string.pref_provider_key))) {
+            Utility.deleteAllWeather(this);
             Utility.resetLocationStatus(this);
             Utility.setLastSync(this,System.currentTimeMillis()-1000*60*10);
             WetterSyncAdapter.syncImmediately(this);

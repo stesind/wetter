@@ -46,4 +46,17 @@
         <item>@string/pref_art_pack_cute_dogs</item>
         <item>@string/pref_art_pack_owm</item>
     </string-array>
+
+    <string-array name="pref_art_pack_wug_options">
+        <item>@string/pref_art_pack_label_wug</item>
+        <item>@string/pref_art_pack_label_wug_alt_black</item>
+        <item>@string/pref_art_pack_label_wug_alt_white</item>
+    </string-array>
+
+    <!-- Format for retrieving art from an external source [CHAR LIMIT=NONE] -->
+    <string-array name="pref_art_pack_wug_values">
+        <item>@string/pref_art_pack_wug</item>
+        <item>@string/pref_art_pack_wug_alt_black</item>
+        <item>@string/pref_art_pack_wug_alt_white</item>
+    </string-array>
 </resources>
