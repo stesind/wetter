@@ -52,7 +52,7 @@
     <ListPreference
         android:title="@string/pref_art_pack_wug_label"
         android:key="@string/pref_art_pack_wug_key"
-        android:defaultValue="@string/pref_art_pack_wug_alt_black"
+        android:defaultValue="@string/pref_art_pack_wug_alt_white"
         android:entryValues="@array/pref_art_pack_wug_values"
         android:entries="@array/pref_art_pack_wug_options" />
 
@@ -77,4 +77,7 @@
         android:entryValues="@array/pref_theme_values"
         android:entries="@array/pref_theme_options" />
 
+    <Preference android:title="@string/pref_delete_data_label"
+        android:key="@string/pref_delete_data_key"
+        android:summary=""/>
 </PreferenceScreen>

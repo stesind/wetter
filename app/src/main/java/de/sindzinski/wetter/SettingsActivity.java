@@ -62,6 +62,19 @@ public class SettingsActivity extends Activity {
             // Add 'general' preferences, defined in the XML file
             addPreferencesFromResource(R.xml.pref_general);
 
+            Preference button = findPreference(getString(R.string.pref_delete_data_key));
+            button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    //code for what you want it to do
+                    SharedPreferences.Editor editor = preference.getEditor();
+                    editor.putLong(getString(R.string.pref_delete_data_key), System.currentTimeMillis());
+                    editor.commit();
+
+                    return true;
+                }
+            });
+
             // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
             // updated when the preference changes.
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));

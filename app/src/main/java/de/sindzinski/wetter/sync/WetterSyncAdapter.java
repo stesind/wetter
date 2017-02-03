@@ -103,7 +103,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
-        if (Utility.getProvider(getContext()) == getContext().getString(R.string.pref_provider_owm)) {
+        if (Utility.getProvider(getContext()).equals(getContext().getString(R.string.pref_provider_owm))) {
+//        if (Utility.getProvider(getContext()) == getContext().getString(R.string.pref_provider_owm)) {
 
             syncAllSources(account, extras, authority, provider, syncResult, TYPE_DAILY);
 
@@ -113,8 +114,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             syncAllSources(account, extras, authority, provider, syncResult, TYPE_CURRENT);
         } else {
-            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_HOURLY);
-            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_DAILY);
+            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_WUG_HOURLY);
+            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_WUG_DAILY);
         }
 
         notifyWeather();
@@ -146,7 +147,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             Uri builtUri = null;
 
-            if (type == TYPE_HOURLY) {
+            if (type == TYPE_WUG_HOURLY) {
                 final String TYPE_PATH = "hourly";
                 final String FORECAST_BASE_URL =
                         "http://api.wunderground.com/api/";
@@ -158,7 +159,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendPath("q")
                         .appendEncodedPath(Utility.getPreferredLocation(getContext()))
                         .build();
-            } else if (type == TYPE_DAILY) {
+            } else if (type == TYPE_WUG_DAILY) {
                 final String TYPE_PATH = "forecast10day";
                 final String FORECAST_BASE_URL =
                         "http://api.wunderground.com/api/";
@@ -201,9 +202,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
             forecastJsonStr = buffer.toString();
-            if (type == TYPE_HOURLY) {
+            if (type == TYPE_WUG_HOURLY) {
                 getWeatherDataFromJsonHourlyWUG(forecastJsonStr, locationSetting);
-            } else if (type == TYPE_DAILY) {
+            } else if (type == TYPE_WUG_DAILY) {
                 getWeatherDataFromJsonDailyWUG(forecastJsonStr, locationSetting);
             }
         } catch (IOException e) {
@@ -1164,7 +1165,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 //delete all old data of given type
                 String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
                         WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLY), Long.toString(locationId)};
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_WUG_HOURLY), Long.toString(locationId)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);
@@ -1309,7 +1310,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 //                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_UVI, uvi);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
-//                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TEMP, temp);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DAY_TEMP, high);
 //                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_FEELSLIKE, feelsLike);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, high);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
@@ -1331,7 +1332,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 //delete all old data of given type
                 String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
                         WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_DAILY), Long.toString(locationId)};
+                String[] selectionArgs = new String[]{Integer.toString(TYPE_WUG_DAILY), Long.toString(locationId)};
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         selection,
                         selectionArgs);

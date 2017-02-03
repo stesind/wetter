@@ -45,7 +45,7 @@ import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
 public class Utility {
     public static String getPreferredLocation(Context context) {
-        if (getProvider(context) == context.getString(R.string.pref_provider_owm)) {
+        if (Utility.getProvider(context).equals(context.getString(R.string.pref_provider_owm)))  {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             String location = prefs.getString(context.getString(R.string.pref_location_key),
                     context.getString(R.string.pref_location_default));
