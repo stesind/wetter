@@ -542,36 +542,15 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_CURRENT), Long.toString(locationId)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+                deleteOldWeatherData(getContext(), TYPE_CURRENT);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
-                // delete old data so we don't build up an endless history
-                // get the time beginning of today for daily
-                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                timeInMillis = cal.getTimeInMillis();
-
-//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_CURRENT)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
+                Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
+                setLocationStatus(getContext(), LOCATION_STATUS_OK);
             }
-            Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
-            setLocationStatus(getContext(), LOCATION_STATUS_OK);
-
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
@@ -761,34 +740,12 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                //delete all old data of given type
-//                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Integer.toString(type)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
+                deleteOldWeatherData(getContext(),TYPE_DAILY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
-                // delete old data so we don't build up an endless history
-                // get the time beginning of today for daily
-                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                timeInMillis = cal.getTimeInMillis();
-
-
-                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Long.toString(locationId), Integer.toString(TYPE_DAILY)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -1001,33 +958,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_HOURLY), Long.toString(locationId)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+                deleteOldWeatherData(getContext(),TYPE_HOURLY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
-                // delete old data so we don't build up an endless history
 
-                // get the time beginning of today for daily
-                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                timeInMillis = cal.getTimeInMillis();
-
-//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_DAILY)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -1163,12 +1100,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_WUG_HOURLY), Long.toString(locationId)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+                deleteOldWeatherData(getContext(),TYPE_WUG_HOURLY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1176,20 +1108,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 // delete old data so we don't build up an endless history
 
-                // get the time beginning of today for daily
-                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                timeInMillis = cal.getTimeInMillis();
-
-//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_DAILY)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -1329,13 +1247,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                //delete all old data of given type
-                String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? ";
-                String[] selectionArgs = new String[]{Integer.toString(TYPE_WUG_DAILY), Long.toString(locationId)};
-                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+                deleteOldWeatherData(getContext(),TYPE_WUG_DAILY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1343,20 +1255,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 // delete old data so we don't build up an endless history
 
-                // get the time beginning of today for daily
-                Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                long timeInMillis = cal.getTimeInMillis();
-
-//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(TYPE_DAILY)};
-//                getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
@@ -1634,4 +1532,37 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         spe.commit();
     }
 
+    static private void deleteOldWeatherData(Context mContext, Integer mType) {
+        // delete old data so we don't build up an endless history
+//        String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+//                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? AND " +
+//                WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+//        String[] selectionArgs = new String[]{Long.toString(timeInMillis), Long.toString(locationId), Integer.toString(TYPE_DAILY)};
+//        getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                selection,
+//                selectionArgs);
+        // get the time beginning of today for daily
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long timeInMillis = cal.getTimeInMillis();
+
+                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(mType)};
+                mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        selection,
+                        selectionArgs);
+    }
+    static private void deleteWeatherData(Context mContext, Integer mType) {
+        // delete old data so we don't build up an endless history
+
+        String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+        String[] selectionArgs = new String[]{Integer.toString(mType)};
+        mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
+    }
 }

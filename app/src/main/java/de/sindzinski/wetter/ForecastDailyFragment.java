@@ -358,15 +358,15 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.registerOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.unregisterOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /*
@@ -406,6 +406,9 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
             updateEmptyView();
         }
         if ( key.equals(getString(R.string.pref_location_key))) {
+            onLocationChanged();
+        }
+        if (key.equals(getString(R.string.pref_provider_key))) {
             onLocationChanged();
         }
         if (key.equals(this.getString(R.string.pref_last_sync))) {

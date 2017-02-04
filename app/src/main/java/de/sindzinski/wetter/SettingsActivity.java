@@ -66,7 +66,7 @@ public class SettingsActivity extends Activity {
             button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    //code for what you want it to do
+                    //set the current time to cause a pref changed event in main activity
                     SharedPreferences.Editor editor = preference.getEditor();
                     editor.putLong(getString(R.string.pref_delete_data_key), System.currentTimeMillis());
                     editor.commit();

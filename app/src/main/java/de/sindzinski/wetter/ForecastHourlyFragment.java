@@ -90,7 +90,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             WeatherContract.WeatherEntry.COLUMN_ICON,
             WeatherContract.WeatherEntry.COLUMN_SUN_RISE,
             WeatherContract.WeatherEntry.COLUMN_SUN_SET,
-            WeatherContract.WeatherEntry.COLUMN_TYPE
+            WeatherContract.WeatherEntry.COLUMN_TYPE,
 
     };
 
@@ -365,15 +365,15 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.registerOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.unregisterOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /*
@@ -413,6 +413,9 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             updateEmptyView();
         }
         if (key.equals(getString(R.string.pref_location_key))) {
+            onLocationChanged();
+        }
+        if (key.equals(getString(R.string.pref_provider_key))) {
             onLocationChanged();
         }
         if (key.equals(this.getString(R.string.pref_last_sync))) {

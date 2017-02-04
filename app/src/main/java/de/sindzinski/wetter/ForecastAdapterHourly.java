@@ -189,7 +189,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
             double rainSnow = (double) Math.round((rain + snow) * 100) / 100;
-            if ((rainSnow) > 0) {
+            if (((rainSnow) > 0) && (defaultImage != -1)) {
                 viewHolder.mIconCondView.setImageResource(defaultImage);
                 viewHolder.mCondView.setText(Double.toString(rainSnow) + "mm");
             }
