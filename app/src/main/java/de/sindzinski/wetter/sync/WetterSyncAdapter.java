@@ -542,7 +542,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), TYPE_CURRENT);
+                deleteOldWeatherData(getContext(), locationId, TYPE_CURRENT);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -740,7 +740,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                deleteOldWeatherData(getContext(),TYPE_DAILY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_DAILY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -958,7 +958,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(),TYPE_HOURLY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_HOURLY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1100,7 +1100,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(),TYPE_WUG_HOURLY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_WUG_HOURLY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1121,7 +1121,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void getWeatherDataFromJsonDailyWUG(String forecastJsonStr,
-                                                 String locationSetting)
+                                                String locationSetting)
             throws JSONException {
 
         // Now we have a String representing the complete forecast in JSON Format.
@@ -1247,7 +1247,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                deleteOldWeatherData(getContext(),TYPE_WUG_DAILY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_WUG_DAILY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1532,16 +1532,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         spe.commit();
     }
 
-    static private void deleteOldWeatherData(Context mContext, Integer mType) {
+    static private void deleteOldWeatherData(Context mContext, Long locationId, Integer mType) {
         // delete old data so we don't build up an endless history
-//        String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? AND " +
-//                WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//        String[] selectionArgs = new String[]{Long.toString(timeInMillis), Long.toString(locationId), Integer.toString(TYPE_DAILY)};
-//        getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                selection,
-//                selectionArgs);
-        // get the time beginning of today for daily
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
@@ -1549,13 +1541,29 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         cal.set(Calendar.MILLISECOND, 0);
         long timeInMillis = cal.getTimeInMillis();
 
-                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(mType)};
-                mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        selection,
-                        selectionArgs);
+        String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? AND " +
+                WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+        String[] selectionArgs = new String[]{Long.toString(timeInMillis), Long.toString(locationId), Integer.toString(TYPE_DAILY)};
+        mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                selection,
+                selectionArgs);
+        // get the time beginning of today for daily
+//        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+//        cal.set(Calendar.HOUR_OF_DAY, 0);
+//        cal.set(Calendar.MINUTE, 0);
+//        cal.set(Calendar.SECOND, 0);
+//        cal.set(Calendar.MILLISECOND, 0);
+//        long timeInMillis = cal.getTimeInMillis();
+//
+//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
+//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(mType)};
+//                mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+//                        selection,
+//                        selectionArgs);
     }
+
     static private void deleteWeatherData(Context mContext, Integer mType) {
         // delete old data so we don't build up an endless history
 
