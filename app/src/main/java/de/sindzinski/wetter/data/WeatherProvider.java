@@ -345,6 +345,9 @@ public class WeatherProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+        //notification uri of the fragments loader needs to be set to the uri used in the sync adapter
+        //otherwise the fragments adapter is not notified if new data is loaded by the sync adapter
+//        retCursor.setNotificationUri(getContext().getContentResolver(), WeatherContract.WeatherEntry.CONTENT_URI);
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
         return retCursor;
     }

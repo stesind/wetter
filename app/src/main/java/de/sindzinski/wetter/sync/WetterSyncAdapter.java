@@ -1341,6 +1341,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         }
         //refreshing last sync
         setLastSync(context, System.currentTimeMillis());
+
     }
 
     /**

@@ -62,7 +62,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
     private static final String SELECTED_KEY = "selected_position";
 
-    private static final int FORECAST_LOADER_DAILY = 1;
+    public static final int FORECAST_LOADER_DAILY = 1;
     // For the forecast view we're showing only a small subset of the stored data.
     // Specify the columns we need.
     private static final String[] FORECAST_COLUMNS = {
@@ -135,8 +135,8 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.registerOnSharedPreferenceChangeListener(this);
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
 //    @Override
@@ -358,15 +358,15 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onResume() {
         super.onResume();
-//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        sp.registerOnSharedPreferenceChangeListener(this);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        sp.unregisterOnSharedPreferenceChangeListener(this);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /*
@@ -409,7 +409,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
             onLocationChanged();
         }
         if (key.equals(getString(R.string.pref_provider_key))) {
-            onLocationChanged();
+//            onLocationChanged();
         }
         if (key.equals(this.getString(R.string.pref_last_sync))) {
             if (mSwipeRefreshLayout.isRefreshing()) {

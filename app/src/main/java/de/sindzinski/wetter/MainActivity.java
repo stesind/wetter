@@ -32,6 +32,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
@@ -47,6 +48,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements
     private NavigationView mNavigationView;
     private  NavigationView navigationView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,39 +102,15 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        mViewPager = (ViewPager) findViewById(R.id.viewpager);
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new ForecastHourlyFragment(), "Hourly Forecast");
         adapter.addFragment(new ForecastDailyFragment(), "Daily Forecast");
 
-        viewPager.setAdapter(adapter);
+        mViewPager.setAdapter(adapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-
-//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
-//        mSwipeRefreshLayout.setOnRefreshListener(
-//                new SwipeRefreshLayout.OnRefreshListener() {
-//                    @Override
-//                    public void onRefresh() {
-//                        Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout");
-//
-//                        // This method performs the actual data-refresh operation.
-//                        // The method calls setRefreshing(false) when it's finished.
-//                        WetterSyncAdapter.syncImmediately(getApplicationContext());
-//                    }
-//                }
-//        );
-
-//        FloatingActionButton button = (FloatingActionButton) findViewById(R.id.button_check);
-//        button.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                rotateFabForward();
-//                //rotateFabBackward();
-//                WetterSyncAdapter.syncImmediately(getApplicationContext());
-//            }
-//
-//        });
+        tabLayout.setupWithViewPager(mViewPager);
 
         WetterSyncAdapter.initializeSyncAdapter(this);
 
@@ -256,35 +235,6 @@ public class MainActivity extends AppCompatActivity implements
         addLocationSettingDialog();
     }
 
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
-
-        public ViewPagerAdapter(FragmentManager manager) {
-            super(manager);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragmentList.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragmentList.size();
-        }
-
-        public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
-        }
-    }
-
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
 //        // Inflate the menu; this adds items to the action bar if it is present.
@@ -402,6 +352,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if ( key.equals(this.getString(R.string.pref_location_key))) {
@@ -412,11 +363,12 @@ public class MainActivity extends AppCompatActivity implements
             setUpTheme();
         }
         if (key.equals(this.getString(R.string.pref_provider_key))) {
-            //Utility.deleteAllWeather(this);
+            Utility.deleteAllWeather(this);
             Utility.resetLocationStatus(this);
-            Utility.setLastSync(this,System.currentTimeMillis()-1000*60*10);
+            Utility.setLastSync(this,System.currentTimeMillis()-1000*60*20);
             WetterSyncAdapter.syncImmediately(this);
             Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
+
         }
         if (key.equals(this.getString(R.string.pref_delete_data_key))) {
             Utility.deleteAllWeather(this);
@@ -427,5 +379,56 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            if (mFragmentList.contains(object)) return mFragmentList.indexOf(object);
+            else return POSITION_NONE;
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
+
+        public Fragment getFragment(int position){
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            super.destroyItem(container, position, object);
+
+            if (position <= getCount()) {
+                FragmentManager manager = ((Fragment) object).getFragmentManager();
+                FragmentTransaction trans = manager.beginTransaction();
+                trans.remove((Fragment) object);
+                trans.commit();
+            }
+        }
+    }
 
 }

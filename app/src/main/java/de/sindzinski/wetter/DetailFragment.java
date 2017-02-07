@@ -16,9 +16,11 @@
 package de.sindzinski.wetter;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -35,6 +37,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+
+import java.util.Locale;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.data.WeatherContract.WeatherEntry;
@@ -66,6 +70,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             WeatherEntry.COLUMN_WIND_SPEED,
             WeatherEntry.COLUMN_DEGREES,
             WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherEntry.COLUMN_ICON,
             // This works because the WeatherProvider returns location data joined with
             // weather data, even though they're stored in two different tables.
             WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
@@ -83,6 +88,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public static final int COL_WEATHER_WIND_SPEED = 7;
     public static final int COL_WEATHER_DEGREES = 8;
     public static final int COL_WEATHER_CONDITION_ID = 9;
+    public static final int COL_WEATHER_ICON = 10;
 
     private ImageView mIconView;
     private TextView mFriendlyDateView;
@@ -185,15 +191,50 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             // Read weather condition ID from cursor
             int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
 
-            if ( Utility.usingLocalGraphics(getActivity()) ) {
-                mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
-            } else {
-                // Use weather art image
+//            if ( Utility.usingLocalGraphics(getActivity()) ) {
+//                mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+//            } else {
+//                // Use weather art image
+//                Glide.with(this)
+//                        .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherId))
+//                        .error(Utility.getArtResourceForWeatherCondition(weatherId))
+//                        .crossFade()
+//                        .into(mIconView);
+//            }
+
+
+            if (Utility.getProvider(getActivity()).equals(this.getString(R.string.pref_provider_wug))) {
+                String icon = data.getString(COL_WEATHER_ICON);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String artPack = prefs.getString(this.getString(R.string.pref_art_pack_wug_key),
+                        this.getString(R.string.pref_art_pack_wug_alt_black));
                 Glide.with(this)
-                        .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherId))
-                        .error(Utility.getArtResourceForWeatherCondition(weatherId))
+                        .load(String.format(Locale.US, artPack, icon))
+                        //.error(defaultImage)
                         .crossFade()
                         .into(mIconView);
+            } else {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String artPack = prefs.getString(this.getString(R.string.pref_art_pack_key),
+                        this.getString(R.string.pref_art_pack_sunshine));
+
+                if (artPack.equals(this.getString(R.string.pref_art_pack_owm))) {
+                    String icon = data.getString(COL_WEATHER_ICON);
+                    Glide.with(this)
+                            .load(String.format(Locale.US, artPack, icon))
+//                            .error(defaultImage)
+                            .crossFade()
+                            .into(mIconView);
+                } else if (artPack.equals(this.getString(R.string.pref_art_pack_cute_dogs))) {
+                    Glide.with(this)
+                            .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherId))
+//                            .error(defaultImage)
+                            .crossFade()
+                            .into(mIconView);
+                } else {
+                    // local images
+                    mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+                }
             }
 
             // Read date from cursor and update views for day of week and date

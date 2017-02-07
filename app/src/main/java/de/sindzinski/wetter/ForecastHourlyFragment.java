@@ -137,8 +137,6 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
 //    @Override
@@ -365,15 +363,15 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onResume() {
         super.onResume();
-//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        sp.registerOnSharedPreferenceChangeListener(this);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        sp.unregisterOnSharedPreferenceChangeListener(this);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /*
