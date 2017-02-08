@@ -46,9 +46,9 @@ public class WeatherContract {
     public static final Integer TYPE_DAILY = 0;
     public static final Integer TYPE_HOURLY = 1;
     public static final Integer TYPE_CURRENT = 2;
-    public static final Integer TYPE_WUG_DAILY = 3;
-    public static final Integer TYPE_WUG_HOURLY = 4;
-    public static final Integer TYPE_WUG_CURRENT = 5;
+    public static final Integer TYPE_WUG_DAILY = 0;
+    public static final Integer TYPE_WUG_HOURLY = 1;
+    public static final Integer TYPE_WUG_CURRENT = 2;
     public static final Integer TYPE_CURRENT_HOURLY = 6;
 
     public static final Integer PROVIDER_OWM = 0;

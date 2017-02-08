@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements
             Utility.deleteAllWeather(this);
             Utility.resetLocationStatus(this);
             Utility.setLastSync(this,System.currentTimeMillis()-1000*60*20);
-            WetterSyncAdapter.syncImmediately(this);
+            //WetterSyncAdapter.syncImmediately(this);
             Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
 
         }

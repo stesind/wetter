@@ -24,8 +24,6 @@ import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewCompat;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,17 +43,35 @@ import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
 public class Utility {
     public static String getPreferredLocation(Context context) {
-        if (Utility.getProvider(context).equals(context.getString(R.string.pref_provider_owm)))  {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            String location = prefs.getString(context.getString(R.string.pref_location_key),
-                    context.getString(R.string.pref_location_default));
-            return location;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String location = prefs.getString(context.getString(R.string.pref_location_key),
+                context.getString(R.string.pref_location_default));
+        return location;
+    }
+
+    public static String getLocationSetting(Context context) {
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String location = prefs.getString(context.getString(R.string.pref_location_key),
+                context.getString(R.string.pref_location_default));
+        if (Utility.getProvider(context).equals(context.getString(R.string.pref_provider_owm))) {
+            return convertLocation(location);
         } else {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            String location = prefs.getString(context.getString(R.string.pref_location_wug_key),
-                    context.getString(R.string.pref_location_wug_default));
             return location;
         }
+    }
+
+    //converts location from WUG to OWM
+    public static String convertLocation(String location) {
+
+        String[] words = location.trim().split("/");
+        StringBuilder ret = new StringBuilder();
+
+        ret.append(words[1].trim().toLowerCase());
+        ret.append(",");
+        ret.append(CountryCodes.getCode(words[0].trim()).toString().toLowerCase());
+        String convLocation = ret.toString();
+        return convLocation;
     }
 
     public static void setPreferredLocation(Context context, String locationSetting) {
@@ -75,7 +91,7 @@ public class Utility {
     public static String getProvider(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String provider = prefs.getString(context.getString(R.string.pref_provider_key),
-                context.getString(R.string.pref_provider_owm));
+                context.getString(R.string.pref_provider_wug));
         return provider;
     }
 
@@ -183,6 +199,7 @@ public class Utility {
             return shortenedDateFormat.format(timeInMillis);
         }
     }
+
     /**
      * Helper method to convert the database representation of the date into something to display
      * to users.  As classy and polished a user experience as "20140102" is, we can do better.
@@ -235,7 +252,7 @@ public class Utility {
 
     }
 
-     /**
+    /**
      * Converts db date format to the format "Month day", e.g "June 24".
      *
      * @param context      Context to use for resource localization
@@ -251,18 +268,15 @@ public class Utility {
         return monthDayString;
     }
 
-    public static String wordFirstCap(String str, String delimiter)
-    {
+    public static String wordFirstCap(String str, String delimiter) {
         String[] words = str.trim().split(delimiter);
         StringBuilder ret = new StringBuilder();
-        for(int i = 0; i < words.length; i++)
-        {
-            if(words[i].trim().length() > 0)
-            {
-                Log.e("words[i].trim",""+words[i].trim().charAt(0));
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].trim().length() > 0) {
+                Log.e("words[i].trim", "" + words[i].trim().charAt(0));
                 ret.append(Character.toUpperCase(words[i].trim().charAt(0)));
                 ret.append(words[i].trim().substring(1));
-                if(i < words.length - 1) {
+                if (i < words.length - 1) {
                     ret.append(delimiter);
                 }
             }
@@ -450,7 +464,8 @@ public class Utility {
     /**
      * Helper method to provide the string according to the weather
      * condition id returned by the OpenWeatherMap call.
-     * @param context Android context
+     *
+     * @param context   Android context
      * @param weatherId from OpenWeatherMap API response
      * @return string for the weather condition. null if no relation is found.
      */
@@ -462,7 +477,7 @@ public class Utility {
             stringId = R.string.condition_2xx;
         } else if (weatherId >= 300 && weatherId <= 321) {
             stringId = R.string.condition_3xx;
-        } else switch(weatherId) {
+        } else switch (weatherId) {
             case 500:
                 stringId = R.string.condition_500;
                 break;
@@ -674,7 +689,7 @@ public class Utility {
 
     public static long getLocationId(Context context, String locationSetting) {
 
-        long locationId=0;
+        long locationId = 0;
 
         Cursor locationCursor = context.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
@@ -714,7 +729,7 @@ public class Utility {
         Utility.deleteLocationWeatherData(context, locationId);
         Utility.deleteLocationId(context, locationId);
         String validLocationSetting = Utility.getValidLocationSetting(context);
-        Utility.setPreferredLocation(context,validLocationSetting);
+        Utility.setPreferredLocation(context, validLocationSetting);
         Utility.resetLocationStatus(context);
         WetterSyncAdapter.syncImmediately(context);
     }
@@ -751,6 +766,7 @@ public class Utility {
         editor.putLong(lastSyncKey, timeInMillis);
         editor.commit();
     }
+
     static private void setLocationStatus(Context c, int locationStatus) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
@@ -763,18 +779,18 @@ public class Utility {
         snackbar = Snackbar.make(view, stringRessource, Snackbar.LENGTH_SHORT);
         snackbar.setDuration(Snackbar.LENGTH_LONG);
         View sbView = snackbar.getView();
-        sbView.setBackgroundColor(ContextCompat.getColor(context,R.color.primary));
+        sbView.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
         snackbar.show();
     }
 
-    public static HashSet<TextView> getTextViews(ViewGroup root){
-        HashSet<TextView> views=new HashSet<>();
-        for(int i=0;i<root.getChildCount();i++){
-            View v=root.getChildAt(i);
-            if(v instanceof TextView){
-                views.add((TextView)v);
-            }else if(v instanceof ViewGroup){
-                views.addAll(getTextViews((ViewGroup)v));
+    public static HashSet<TextView> getTextViews(ViewGroup root) {
+        HashSet<TextView> views = new HashSet<>();
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View v = root.getChildAt(i);
+            if (v instanceof TextView) {
+                views.add((TextView) v);
+            } else if (v instanceof ViewGroup) {
+                views.addAll(getTextViews((ViewGroup) v));
             }
         }
         return views;

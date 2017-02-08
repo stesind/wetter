@@ -316,7 +316,6 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         String locationSetting = Utility.getPreferredLocation(getActivity());
 
         Integer type;
-//                if (Utility.getProvider(getActivity()).equals("wug")) {
         if (Utility.getProvider(getActivity()).equals(getActivity().getString(R.string.pref_provider_wug))) {
             type = TYPE_WUG_HOURLY;
         } else {

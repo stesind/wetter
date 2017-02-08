@@ -49,6 +49,7 @@ import de.sindzinski.wetter.Utility;
 import de.sindzinski.wetter.data.WeatherContract;
 
 import static de.sindzinski.wetter.Utility.getLastSync;
+import static de.sindzinski.wetter.Utility.getLocationSetting;
 import static de.sindzinski.wetter.Utility.getPreferredLocation;
 import static de.sindzinski.wetter.Utility.setLastSync;
 import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_OWM;
@@ -157,7 +158,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 //                        .appendPath("conditions")
                         .appendPath(TYPE_PATH)
                         .appendPath("q")
-                        .appendEncodedPath(Utility.getPreferredLocation(getContext()))
+                        .appendEncodedPath(getLocationSetting(getContext()))
                         .build();
             } else if (type == TYPE_WUG_DAILY) {
                 final String TYPE_PATH = "forecast10day";
@@ -169,7 +170,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 //                        .appendPath("conditions")
                         .appendPath(TYPE_PATH)
                         .appendPath("q")
-                        .appendEncodedPath(Utility.getPreferredLocation(getContext()))
+                        .appendEncodedPath(getLocationSetting(getContext()))
                         .build();
             }
             URL url = new URL(builtUri.toString() + ".json");
@@ -264,7 +265,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // use the correct parameter if location is city name or id
             if (locationId == 0) {
                 QUERY_PARAM = "q";
-                locationQuery = locationSetting;
+                locationQuery = getLocationSetting(getContext());
             } else {
                 QUERY_PARAM = "id";
                 locationQuery = Long.toString(locationId);
@@ -1019,7 +1020,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
                 double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
+                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0);
             } else {
                 locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0);
             }
@@ -1162,7 +1163,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
                 double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
+                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0);
             } else {
                 locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0);
             }
