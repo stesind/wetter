@@ -43,9 +43,6 @@ import java.util.TimeZone;
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_DAILY;
-
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -309,13 +306,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         // Sort order:  Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
-        int type;
-//                if (Utility.getProvider(getActivity()).equals("wug")) {
-        if (Utility.getProvider(getActivity()).equals(getActivity().getString(R.string.pref_provider_wug))) {
-            type = WeatherContract.TYPE_WUG_DAILY;
-        } else {
-            type = WeatherContract.TYPE_DAILY;
-        }
+        int type = WeatherContract.TYPE_DAILY;
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateType(

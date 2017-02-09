@@ -46,9 +46,6 @@ public class WeatherContract {
     public static final Integer TYPE_DAILY = 0;
     public static final Integer TYPE_HOURLY = 1;
     public static final Integer TYPE_CURRENT = 2;
-    public static final Integer TYPE_WUG_DAILY = 0;
-    public static final Integer TYPE_WUG_HOURLY = 1;
-    public static final Integer TYPE_WUG_CURRENT = 2;
     public static final Integer TYPE_CURRENT_HOURLY = 6;
 
     public static final Integer PROVIDER_OWM = 0;
@@ -61,14 +58,8 @@ public class WeatherContract {
             return "daily";
         } else if (type == TYPE_HOURLY) {
             return "hourly";
-        } else if (type == TYPE_WUG_DAILY) {
-            return "daily_wug";
-        }else if (type == TYPE_WUG_HOURLY) {
-            return "hourly_wug";
         }else if (type == TYPE_CURRENT) {
             return "current";
-        }else if (type == TYPE_WUG_CURRENT) {
-            return "current_wug";
         }else if (type == TYPE_CURRENT_HOURLY) {
             return "current_hourly";
         } else {

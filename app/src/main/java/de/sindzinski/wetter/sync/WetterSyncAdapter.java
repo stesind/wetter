@@ -27,6 +27,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +45,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import de.sindzinski.wetter.ForecastHourlyFragment;
 import de.sindzinski.wetter.MainActivity;
 import de.sindzinski.wetter.R;
 import de.sindzinski.wetter.Utility;
@@ -57,8 +60,9 @@ import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_WUG;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_DAILY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_HOURLY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
 
 public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = WetterSyncAdapter.class.getSimpleName();
@@ -70,21 +74,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final long HOUR_IN_MILLIS = 1000 * 60 * 60;
     private static final long MINUTE_IN_MILLIS = 1000 * 60;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
-
-
-    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
-            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-            WeatherContract.WeatherEntry.COLUMN_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC
-    };
-
-    // these indices must match the projection
-    private static final int INDEX_WEATHER_ID = 0;
-    private static final int INDEX_MAX_TEMP = 1;
-    private static final int INDEX_MIN_TEMP = 2;
-    private static final int INDEX_SHORT_DESC = 3;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
@@ -115,8 +104,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             syncAllSources(account, extras, authority, provider, syncResult, TYPE_CURRENT);
         } else {
-            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_WUG_HOURLY);
-            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_WUG_DAILY);
+            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_HOURLY);
+            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_CURRENT);
+            syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_DAILY);
         }
 
         notifyWeather();
@@ -148,7 +138,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             Uri builtUri = null;
 
-            if (type == TYPE_WUG_HOURLY) {
+            if (type == TYPE_HOURLY) {
                 final String TYPE_PATH = "hourly";
                 final String FORECAST_BASE_URL =
                         "http://api.wunderground.com/api/";
@@ -160,7 +150,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendPath("q")
                         .appendEncodedPath(getLocationSetting(getContext()))
                         .build();
-            } else if (type == TYPE_WUG_DAILY) {
+            } else if (type == TYPE_DAILY) {
                 final String TYPE_PATH = "forecast10day";
                 final String FORECAST_BASE_URL =
                         "http://api.wunderground.com/api/";
@@ -172,7 +162,20 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         .appendPath("q")
                         .appendEncodedPath(getLocationSetting(getContext()))
                         .build();
+            } else if (type == TYPE_CURRENT) {
+                final String TYPE_PATH = "conditions";
+                final String FORECAST_BASE_URL =
+                        "http://api.wunderground.com/api/";
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendPath(Utility.getApiKey(getContext()))
+//                        .appendPath("geolookup")
+//                        .appendPath("conditions")
+                        .appendPath(TYPE_PATH)
+                        .appendPath("q")
+                        .appendEncodedPath(getLocationSetting(getContext()))
+                        .build();
             }
+
             URL url = new URL(builtUri.toString() + ".json");
 
             // Create the request to OpenWeatherMap, and open the connection
@@ -203,10 +206,12 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
             forecastJsonStr = buffer.toString();
-            if (type == TYPE_WUG_HOURLY) {
+            if (type == TYPE_HOURLY) {
                 getWeatherDataFromJsonHourlyWUG(forecastJsonStr, locationSetting);
-            } else if (type == TYPE_WUG_DAILY) {
+            } else if (type == TYPE_DAILY) {
                 getWeatherDataFromJsonDailyWUG(forecastJsonStr, locationSetting);
+            } else if (type == TYPE_CURRENT) {
+                getWeatherDataFromJsonCurrentWUG(forecastJsonStr, locationSetting);
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -543,7 +548,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), locationId, TYPE_CURRENT);
+                deleteWeatherData(getContext(), locationId, TYPE_CURRENT);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -741,7 +746,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                deleteOldWeatherData(getContext(), locationId, TYPE_DAILY);
+                deleteWeatherData(getContext(), locationId, TYPE_DAILY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -959,7 +964,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), locationId, TYPE_HOURLY);
+                deleteWeatherData(getContext(), locationId, TYPE_HOURLY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -968,6 +973,97 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
+            setLocationStatus(getContext(), LOCATION_STATUS_OK);
+
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+            setLastSync(getContext(), System.currentTimeMillis());
+        }
+    }
+
+    private void getWeatherDataFromJsonCurrentWUG(String forecastJsonStr,
+                                                  String locationSetting)
+            throws JSONException {
+
+        try {
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+
+            // do we have an error?
+            if (forecastJson.has("Error")) {
+                String errorType = forecastJson.getString("type");
+                String errorDescription = forecastJson.getString("description");
+
+                switch (errorType) {
+                    case "querynotfound":
+                        setLocationStatus(getContext(), LOCATION_STATUS_INVALID);
+                        return;
+                    default:
+                        setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+                        return;
+                }
+            }
+
+            long locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0);
+
+            // Insert the new weather information into the database
+            JSONObject currentWeather = forecastJson.getJSONObject("current_observation");
+
+            long timeInMillis = currentWeather.getLong("local_epoch") * 1000;
+
+            String description = currentWeather.getString("weather");
+
+            String icon = currentWeather.getString("icon");
+
+            double temp = currentWeather.getDouble("temp_c");
+            double feelsLike = currentWeather.getDouble("feelslike_c");
+
+            int pressure = currentWeather.getInt("pressure_mb");
+            String humString = currentWeather.getString("relative_humidity");
+            int humidity = Integer.parseInt(humString.replaceAll("%", ""));
+
+            double windSpeed = currentWeather.getDouble("wind_kph");
+            double windDirection = currentWeather.getDouble("wind_degrees");
+
+            int clouds = currentWeather.has("sky") ? currentWeather.getInt("sky") : 0;
+            int uvi = currentWeather.has("UV") ? currentWeather.getInt("UV") : 0;
+
+            double rain = currentWeather.has("precip_1hr_metric") ? currentWeather.getDouble("precip_1hr_metric") : 0;
+            double snow = currentWeather.has("snow_1hr_metric") ? currentWeather.getDouble("snow_1hr_metric") : 0;
+
+            ContentValues weatherValues = new ContentValues();
+
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, timeInMillis);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_CLOUDS, clouds);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_UVI, uvi);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TEMP, temp);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_FEELSLIKE, feelsLike);
+//                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, null);
+//                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, null);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, 0);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_CURRENT);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PROVIDER, PROVIDER_WUG);
+
+
+            //delete all old data of given type
+            deleteWeatherData(getContext(), locationId, TYPE_CURRENT);
+
+            getContext().getContentResolver().insert(WeatherContract.WeatherEntry.CONTENT_URI, weatherValues);
+
+            // delete old data so we don't build up an endless history
+
+
+            Log.d(LOG_TAG, "Sync Complete. Current Weather Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
 
         } catch (JSONException e) {
@@ -1090,7 +1186,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_WUG_HOURLY);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_HOURLY);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PROVIDER, PROVIDER_WUG);
 
                 cVVector.add(weatherValues);
@@ -1101,7 +1197,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), locationId, TYPE_WUG_HOURLY);
+                deleteWeatherData(getContext(), locationId, TYPE_HOURLY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1238,7 +1334,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_ICON, icon);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_RAIN, rain);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SNOW, snow);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_WUG_DAILY);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_TYPE, TYPE_DAILY);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PROVIDER, PROVIDER_WUG);
 
                 cVVector.add(weatherValues);
@@ -1248,7 +1344,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                deleteOldWeatherData(getContext(), locationId, TYPE_WUG_DAILY);
+                deleteWeatherData(getContext(), locationId, TYPE_DAILY);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1269,6 +1365,25 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void notifyWeather() {
+        // these indices must match the projection
+        final int INDEX_WEATHER_ID = 0;
+        final int INDEX_TEMP = 1;
+        final int INDEX_MAX_TEMP = 2;
+        final int INDEX_MIN_TEMP = 3;
+        final int INDEX_SHORT_DESC = 4;
+        final int INDEX_ICON = 5;
+
+        final String TAG = "glide";
+
+        final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
+                WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+                WeatherContract.WeatherEntry.COLUMN_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+                WeatherContract.WeatherEntry.COLUMN_ICON
+        };
+
         Context context = getContext();
         //checking the last update and notify if it' the first of the day
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -1288,27 +1403,35 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (cursor.moveToFirst()) {
                     int weatherId = cursor.getInt(INDEX_WEATHER_ID);
+                    double temp = cursor.getDouble(INDEX_TEMP);
                     double high = cursor.getDouble(INDEX_MAX_TEMP);
                     double low = cursor.getDouble(INDEX_MIN_TEMP);
                     String desc = cursor.getString(INDEX_SHORT_DESC);
+                    int iconId =R.drawable.ic_clear;
+                    Bitmap largeIcon = null;
 
-                    int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
-                    Resources resources = context.getResources();
-                    Bitmap largeIcon = BitmapFactory.decodeResource(resources,
-                            Utility.getArtResourceForWeatherCondition(weatherId));
+                    if (Utility.getProvider(context).equals(context.getString(R.string.pref_provider_wug))) {
+                        String iconString = cursor.getString(INDEX_ICON);
+                    } else {
+                            iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+                            largeIcon = BitmapFactory.decodeResource(context.getResources(),
+                                Utility.getArtResourceForWeatherCondition(weatherId));
+                        }
+
+
                     String title = context.getString(R.string.app_name);
 
                     // Define the text of the forecast.
                     String contentText = String.format(context.getString(R.string.format_notification),
                             desc,
-                            Utility.formatTemperature(context, high, Utility.isMetric(context)),
-                            Utility.formatTemperature(context, low, Utility.isMetric(context)));
+                            Utility.formatTemperature(context, temp, Utility.isMetric(context))
+                            );
 
                     // NotificationCompatBuilder is a very convenient way to build backward-compatible
                     // notifications.  Just throw in some data.
                     NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(getContext())
-                                    .setColor(resources.getColor(R.color.primary))
+                                    .setColor(context.getResources().getColor(R.color.primary))
                                     .setSmallIcon(iconId)
                                     .setLargeIcon(largeIcon)
                                     .setContentTitle(title)
@@ -1537,10 +1660,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     static private void deleteOldWeatherData(Context mContext, Long locationId, Integer mType) {
         // delete old data so we don't build up an endless history
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
+//        cal.set(Calendar.HOUR_OF_DAY, cal.HOUR_OF_DAY-1);
+//        cal.set(Calendar.MINUTE, 0);
+//        cal.set(Calendar.SECOND, 0);
+//        cal.set(Calendar.MILLISECOND, 0);
         long timeInMillis = cal.getTimeInMillis();
 
         String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
@@ -1550,27 +1673,16 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                 selection,
                 selectionArgs);
-        // get the time beginning of today for daily
-//        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-//        cal.set(Calendar.HOUR_OF_DAY, 0);
-//        cal.set(Calendar.MINUTE, 0);
-//        cal.set(Calendar.SECOND, 0);
-//        cal.set(Calendar.MILLISECOND, 0);
-//        long timeInMillis = cal.getTimeInMillis();
-//
-//                String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-//                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-//                String[] selectionArgs = new String[]{Long.toString(timeInMillis), Integer.toString(mType)};
-//                mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-//                        selection,
-//                        selectionArgs);
+
     }
 
-    static private void deleteWeatherData(Context mContext, Integer mType) {
+    static private void deleteWeatherData(Context mContext, Long locationId, Integer mType) {
         // delete old data so we don't build up an endless history
 
-        String selection = WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
-        String[] selectionArgs = new String[]{Integer.toString(mType)};
+        String selection =
+                WeatherContract.WeatherEntry.COLUMN_LOC_KEY + " = ? AND " +
+                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+        String[] selectionArgs = new String[]{Long.toString(locationId), Integer.toString(mType)};
         mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                 selection,
                 selectionArgs);

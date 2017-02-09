@@ -26,8 +26,6 @@ import android.net.Uri;
 
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_DAILY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_HOURLY;
 
 public class WeatherProvider extends ContentProvider {
 
@@ -246,11 +244,7 @@ public class WeatherProvider extends ContentProvider {
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_HOURLY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
-            case WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG:
-                return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
-                return WeatherContract.WeatherEntry.CONTENT_TYPE;
-            case WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
             case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:
                 return WeatherContract.WeatherEntry.CONTENT_TYPE;
@@ -303,19 +297,9 @@ public class WeatherProvider extends ContentProvider {
                 retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_HOURLY);
                 break;
             }
-            case WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG:
-            {
-                retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_WUG_HOURLY);
-                break;
-            }
             case WEATHER_WITH_LOCATION_AND_DATE_DAILY:
             {
                 retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_DAILY);
-                break;
-            }
-            case WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG:
-            {
-                retCursor = getWeatherByLocationSettingAndDateType(uri, projection, sortOrder, TYPE_WUG_DAILY);
                 break;
             }
             case WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY:

@@ -54,7 +54,6 @@ public class ForecastAdapterHourly extends CursorAdapter {
             mCondView = (TextView) view.findViewById(R.id.list_item_cond_textview);
             mWindView = (TextView) view.findViewById(R.id.list_item_wind_textview);
             mIconCondView = (ImageView) view.findViewById(R.id.list_item_icon_cond);
-
         }
     }
 
@@ -160,7 +159,9 @@ public class ForecastAdapterHourly extends CursorAdapter {
             long sunRise = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_RISE);
             long sunSet = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
 
-            viewHolder.mDateView.setText(getHourString(mContext, sunRise) + " / " + getHourString(mContext, sunSet));
+            if (sunRise != sunSet) {
+                viewHolder.mDateView.setText(getHourString(mContext, sunRise) + " / " + getHourString(mContext, sunSet));
+            }
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView
@@ -170,12 +171,23 @@ public class ForecastAdapterHourly extends CursorAdapter {
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
             int clouds = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CLOUDS);
+            int feelslike = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_FEELSLIKE);
+            int uvi = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_UVI);
+
             if ((rain + snow) > 0) {
                 viewHolder.mCondView.setText(
                         (double) Math.round((rain) * 100) / 100 +
                                 " / " +
                                 (double) Math.round((snow) * 100) / 100);
+            } else {
+                viewHolder.mCondView.setText(
+                        "Feels like: " +
+                                feelslike
+//                                + " UVI: " +
+//                                uvi
+                );
             }
+
         } else {
 
             // Read date from cursor
@@ -188,10 +200,20 @@ public class ForecastAdapterHourly extends CursorAdapter {
 
             double rain = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_RAIN);
             double snow = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_SNOW);
+            int feelslike = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_FEELSLIKE);
+            int uvi = cursor.getInt(ForecastHourlyFragment.COL_WEATHER_UVI);
+
             double rainSnow = (double) Math.round((rain + snow) * 100) / 100;
             if (((rainSnow) > 0) && (defaultImage != -1)) {
                 viewHolder.mIconCondView.setImageResource(defaultImage);
                 viewHolder.mCondView.setText(Double.toString(rainSnow) + "mm");
+            }  else {
+                viewHolder.mCondView.setText(
+                        "Feels like: " +
+                                feelslike
+//                                + " UVI: " +
+//                                uvi
+                );
             }
         }
     }

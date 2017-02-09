@@ -260,7 +260,7 @@ public class CountryCodes {
     }
 
     public static String getCode(String country){
-        String countryFound = map.get(country);
+        String countryFound = map.get(country.trim().toString());
         if(countryFound==null){
             countryFound="DE";
         }

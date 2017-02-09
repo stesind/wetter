@@ -69,7 +69,7 @@ public class Utility {
 
         ret.append(words[1].trim().toLowerCase());
         ret.append(",");
-        ret.append(CountryCodes.getCode(words[0].trim()).toString().toLowerCase());
+        ret.append(CountryCodes.getCode(words[0].trim().toString()).toString().toLowerCase());
         String convLocation = ret.toString();
         return convLocation;
     }

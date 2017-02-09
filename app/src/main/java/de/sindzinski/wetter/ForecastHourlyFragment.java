@@ -42,9 +42,6 @@ import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT_HOURLY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_WUG_HOURLY;
-
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -90,6 +87,8 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             WeatherContract.WeatherEntry.COLUMN_ICON,
             WeatherContract.WeatherEntry.COLUMN_SUN_RISE,
             WeatherContract.WeatherEntry.COLUMN_SUN_SET,
+            WeatherContract.WeatherEntry.COLUMN_FEELSLIKE,
+            WeatherContract.WeatherEntry.COLUMN_UVI,
             WeatherContract.WeatherEntry.COLUMN_TYPE,
 
     };
@@ -115,7 +114,9 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     static final int COL_WEATHER_ICON = 16;
     static final int COL_WEATHER_SUN_RISE = 17;
     static final int COL_WEATHER_SUN_SET = 18;
-    static final int COL_TYPE = 19;
+    static final int COL_WEATHER_FEELSLIKE = 19;
+    static final int COL_WEATHER_UVI = 20;
+    static final int COL_TYPE = 21;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -190,7 +191,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                     String locationSetting = Utility.getPreferredLocation(getActivity());
                     Integer type;
                     if (Utility.getProvider(getActivity()).equals(getActivity().getString(R.string.pref_provider_wug))) {
-                        type = WeatherContract.TYPE_WUG_HOURLY;
+                        type = WeatherContract.TYPE_HOURLY;
                     } else {
                         type = WeatherContract.TYPE_CURRENT_HOURLY;
                     }
@@ -315,12 +316,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
         String locationSetting = Utility.getPreferredLocation(getActivity());
 
-        Integer type;
-        if (Utility.getProvider(getActivity()).equals(getActivity().getString(R.string.pref_provider_wug))) {
-            type = TYPE_WUG_HOURLY;
-        } else {
-            type = TYPE_CURRENT_HOURLY;
-        }
+        Integer type = TYPE_CURRENT_HOURLY;
 
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDateType(
                 locationSetting, timeInMillis, type);
