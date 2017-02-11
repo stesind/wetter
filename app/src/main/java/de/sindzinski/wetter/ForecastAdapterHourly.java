@@ -14,9 +14,12 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static de.sindzinski.wetter.Utility.getHourString;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 
 /**
  * {@link ForecastAdapterHourly} exposes a list of weather forecasts
@@ -63,6 +66,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
 
     @Override
     public View newView(Context mContext, Cursor cursor, ViewGroup parent) {
+
         // Choose the layout type
         int viewType = getItemViewType(cursor.getPosition());
         int layoutId = -1;

@@ -21,13 +21,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -35,7 +40,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -49,16 +53,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 
 import com.facebook.stetho.Stetho;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
+
+import static de.sindzinski.wetter.Utility.wordFirstCap;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -83,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements
     protected ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
-    private  NavigationView navigationView;
+    private NavigationView navigationView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ViewPager mViewPager;
 
@@ -145,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements
             i++;
             String locationSetting = locationCursor.getString(
                     locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING));
-            menu.add(R.id.group1,i,Menu.NONE, locationSetting).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_home_black_24dp));
+            menu.add(R.id.group1, i, Menu.NONE, locationSetting).setIcon(ContextCompat.getDrawable(this, R.drawable.ic_home_black_24dp));
         }
         locationCursor.close();
     }
@@ -178,12 +185,12 @@ public class MainActivity extends AppCompatActivity implements
 //            sp.registerOnSharedPreferenceChangeListener(this);
         } else {
             String locationSetting = item.getTitle().toString();
-            long  locationId = WetterSyncAdapter.getPreferredLocationCityId(this,locationSetting);
-            if (locationId !=0) {
+            long locationId = WetterSyncAdapter.getPreferredLocationCityId(this, locationSetting);
+            if (locationId != 0) {
                 //change the location, sync and update adapters
                 Utility.setPreferredLocation(this, locationSetting);
                 Utility.resetLocationStatus(this);
-                Utility.setLastSync(this,System.currentTimeMillis()-1000*60*10);
+                Utility.setLastSync(this, System.currentTimeMillis() - 1000 * 60 * 10);
                 WetterSyncAdapter.syncImmediately(this);
                 Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
             }
@@ -202,29 +209,45 @@ public class MainActivity extends AppCompatActivity implements
         builder.setTitle(R.string.dialog_title_add_location_setting);
         builder.setView(input);
         // Set the action buttons
-        builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked OK, so save the mSelectedItems results somewhere
-                // or return them to the component that opened the dialog
-                String locationSetting = input
-                        .getText()
-                        .toString()
-                        .toLowerCase()
-                        .replaceAll("\\s+","");
-                if (locationSetting.compareTo("") != 0) {
-                    Utility.setPreferredLocation(getApplicationContext(), locationSetting);
-                    Utility.resetLocationStatus(getApplicationContext());
-                    WetterSyncAdapter.syncImmediately(getApplicationContext());
-                    reInitializeNavigation();
-                }
+        builder
+                .setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked OK, so save the mSelectedItems results somewhere
+                        // or return them to the component that opened the dialog
+                        String locationSetting = input
+                                .getText()
+                                .toString()
+                                .toLowerCase()
+                                .replaceAll("\\s+", "");
+                        if (locationSetting.compareTo("") != 0) {
+                            Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                            Utility.resetLocationStatus(getApplicationContext());
+                            WetterSyncAdapter.syncImmediately(getApplicationContext());
+                            reInitializeNavigation();
+                        }
 
-            }
-        })
+                    }
+                })
                 .setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
+                    }
+                })
+                .setNeutralButton(R.string.dialog_auto, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked OK, so save the mSelectedItems results somewhere
+                        // or return them to the component that opened the dialog
+                        Location location= getLocation();
+                        String locationSetting = getLocationSetting(location);
+                        if (locationSetting.compareTo("") != 0) {
+                            Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                            Utility.resetLocationStatus(getApplicationContext());
+                            WetterSyncAdapter.syncImmediately(getApplicationContext());
+                            reInitializeNavigation();
+                        }
                     }
                 });
         AlertDialog dialog = builder.create();
@@ -233,6 +256,63 @@ public class MainActivity extends AppCompatActivity implements
 
     public void addLocationSetting() {
         addLocationSettingDialog();
+    }
+
+
+    public Location getLocation() {
+        Location location = null;
+        String provider = "";
+        String locationSetting = "";
+
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
+
+        try {
+            // Get the location manager
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            // Define the criteria how to select the locatioin provider -> use
+            // default
+            Criteria criteria = new Criteria();
+            if (locationManager != null) {
+                provider = locationManager.getBestProvider(criteria, false);
+                location = locationManager.getLastKnownLocation(provider);
+            }
+
+        } catch (Exception ex) {
+            Log.e(LOG_TAG, "Error creating location service: " + ex.getMessage());
+        }
+
+        return location;
+    }
+
+    public String getLocationSetting(Location location) {
+        String locationSetting="";
+        //locale must be set to us for getting english countey names
+        Geocoder geoCoder = new Geocoder(this, Locale.US);
+        StringBuilder builder = new StringBuilder();
+        try {
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+
+            List<Address> address = geoCoder.getFromLocation(lat, lng, 1);
+//            String countryCode = address.get(0).getCountryCode();
+            String country = address.get(0).getCountryName();
+//            String country = CountryCodes.getCountry(countryCode);
+            String city = address.get(0).getLocality();
+            builder
+                    .append(country)
+                    .append("/")
+                    .append(city);
+
+            locationSetting = builder.toString(); //This is the complete locationsetting as wug.
+            locationSetting = wordFirstCap(locationSetting,"/");
+        } catch (IOException e) {}
+        catch (NullPointerException e) {}
+
+        return locationSetting;
     }
 
 //    @Override
@@ -355,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ( key.equals(this.getString(R.string.pref_location_key))) {
+        if (key.equals(this.getString(R.string.pref_location_key))) {
             reInitializeNavigation();
         }
 
@@ -365,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements
         if (key.equals(this.getString(R.string.pref_provider_key))) {
             Utility.deleteAllWeather(this);
             Utility.resetLocationStatus(this);
-            Utility.setLastSync(this,System.currentTimeMillis()-1000*60*20);
+            Utility.setLastSync(this, System.currentTimeMillis() - 1000 * 60 * 20);
             WetterSyncAdapter.syncImmediately(this);
             Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
 
@@ -373,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements
         if (key.equals(this.getString(R.string.pref_delete_data_key))) {
             Utility.deleteAllWeather(this);
             Utility.resetLocationStatus(this);
-            Utility.setLastSync(this,System.currentTimeMillis()-1000*60*10);
+            Utility.setLastSync(this, System.currentTimeMillis() - 1000 * 60 * 10);
             WetterSyncAdapter.syncImmediately(this);
             Utility.showSnackbar(this, this.findViewById(R.id.viewpager), R.string.deleted_weather_data);
         }
@@ -414,7 +494,7 @@ public class MainActivity extends AppCompatActivity implements
             return mFragmentTitleList.get(position);
         }
 
-        public Fragment getFragment(int position){
+        public Fragment getFragment(int position) {
             return mFragmentList.get(position);
         }
 

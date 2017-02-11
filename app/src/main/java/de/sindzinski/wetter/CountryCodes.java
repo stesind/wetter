@@ -4,8 +4,11 @@ package de.sindzinski.wetter;
  * Created by steffen on 08.02.17.
  */
 
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 
 public class CountryCodes {
@@ -265,5 +268,19 @@ public class CountryCodes {
             countryFound="DE";
         }
         return countryFound;
+    }
+
+    public static String getCountry(String code){
+
+        Map<String, String> invHashMap = new HashMap<>();
+        for(Map.Entry<String, String> entry : map.entrySet()){
+            invHashMap.put(entry.getValue(), entry.getKey());
+        }
+
+        String country = invHashMap.get(code.trim().toString());
+        if(country==null){
+            country="Germany";
+        }
+        return country;
     }
 }

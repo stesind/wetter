@@ -43,6 +43,8 @@ import java.util.TimeZone;
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -351,6 +353,9 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         super.onResume();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.registerOnSharedPreferenceChangeListener(this);
+
+        //only display furure hourly items
+        WetterSyncAdapter.deleteOldWeatherData(getContext(),TYPE_HOURLY);
     }
 
     @Override

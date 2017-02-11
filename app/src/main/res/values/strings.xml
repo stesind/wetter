@@ -245,6 +245,7 @@
     <string name="dialog_title_add_location_setting">Enter a new location</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_auto">Detect Location</string>
 
 
 

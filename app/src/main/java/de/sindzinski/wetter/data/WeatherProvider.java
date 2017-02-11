@@ -37,11 +37,9 @@ public class WeatherProvider extends ContentProvider {
     static final int WEATHER_WITH_LOCATION = 101;
     static final int WEATHER_WITH_LOCATION_AND_DATE = 102;
     static final int WEATHER_WITH_LOCATION_AND_DATE_HOURLY = 103;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG = 104;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY = 105;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG = 106;
-    static final int WEATHER_WITH_LOCATION_CURRENT = 107;
-    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 108;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_DAILY = 104;
+    static final int WEATHER_WITH_LOCATION_CURRENT = 105;
+    static final int WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY = 106;
     static final int LOCATION = 300;
 
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
@@ -207,9 +205,7 @@ public class WeatherProvider extends ContentProvider {
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*", WEATHER_WITH_LOCATION);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/#", WEATHER_WITH_LOCATION_AND_DATE);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/hourly/#", WEATHER_WITH_LOCATION_AND_DATE_HOURLY);
-        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/hourly_wug/#", WEATHER_WITH_LOCATION_AND_DATE_HOURLY_WUG);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/daily/#", WEATHER_WITH_LOCATION_AND_DATE_DAILY);
-        matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/daily_wug/#", WEATHER_WITH_LOCATION_AND_DATE_DAILY_WUG);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/current", WEATHER_WITH_LOCATION_CURRENT);
         matcher.addURI(authority, WeatherContract.PATH_WEATHER + "/*/current_hourly/#", WEATHER_WITH_LOCATION_AND_DATE_CURRENTHOURLY);
 
