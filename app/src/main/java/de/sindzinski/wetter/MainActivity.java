@@ -15,7 +15,10 @@
  */
 package de.sindzinski.wetter;
 
+import android.*;
+import android.Manifest;
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,6 +37,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -93,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements
     private NavigationView navigationView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ViewPager mViewPager;
+    private final int PERMISSIONS_REQUEST_GET_LOCATION = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,15 +190,15 @@ public class MainActivity extends AppCompatActivity implements
 //            sp.registerOnSharedPreferenceChangeListener(this);
         } else {
             String locationSetting = item.getTitle().toString();
-            long locationId = WetterSyncAdapter.getPreferredLocationCityId(this, locationSetting);
-            if (locationId != 0) {
+//            long locationId = WetterSyncAdapter.getPreferredLocationCityId(this, locationSetting);
+//            if (locationId != 0) {
                 //change the location, sync and update adapters
                 Utility.setPreferredLocation(this, locationSetting);
                 Utility.resetLocationStatus(this);
                 Utility.setLastSync(this, System.currentTimeMillis() - 1000 * 60 * 10);
                 WetterSyncAdapter.syncImmediately(this);
                 Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
-            }
+//            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -240,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the mSelectedItems results somewhere
                         // or return them to the component that opened the dialog
-                        Location location= getLocation();
+                        Location location = getLocation();
                         String locationSetting = getLocationSetting(location);
                         if (locationSetting.compareTo("") != 0) {
                             Utility.setPreferredLocation(getApplicationContext(), locationSetting);
@@ -259,14 +264,100 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    public void askForPermissions() {
+        // Here, thisActivity is the current activity
+        if ((ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) &&
+                (ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED))
+                {
+
+            // Should we show an explanation?
+            if ((ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)) &&
+                    (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION)))
+                    {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{
+                                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSIONS_REQUEST_GET_LOCATION);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_GET_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    addLocationSetting();
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    /*
+    one time ask, but should be asked beforehand
+     */
+    public void checkAndAskForPermission() {
+        final Context context = this;
+        if ((ContextCompat.checkSelfPermission((Activity) context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
+                ContextCompat.checkSelfPermission((Activity) context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                    PERMISSIONS_REQUEST_GET_LOCATION);
+        }
+    }
+    public boolean checkForPermission() {
+
+        if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
+                ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public Location getLocation() {
         Location location = null;
         String provider = "";
         String locationSetting = "";
 
-        if (Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (!checkForPermission()) {
+            askForPermissions();
             return null;
         }
 
@@ -289,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public String getLocationSetting(Location location) {
-        String locationSetting="";
+        String locationSetting = "";
         //locale must be set to us for getting english countey names
         Geocoder geoCoder = new Geocoder(this, Locale.US);
         StringBuilder builder = new StringBuilder();
@@ -308,9 +399,10 @@ public class MainActivity extends AppCompatActivity implements
                     .append(city);
 
             locationSetting = builder.toString(); //This is the complete locationsetting as wug.
-            locationSetting = wordFirstCap(locationSetting,"/");
-        } catch (IOException e) {}
-        catch (NullPointerException e) {}
+            locationSetting = wordFirstCap(locationSetting, "/");
+        } catch (IOException e) {
+        } catch (NullPointerException e) {
+        }
 
         return locationSetting;
     }

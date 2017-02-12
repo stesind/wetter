@@ -75,17 +75,15 @@ public class Utility {
     }
 
     public static void setPreferredLocation(Context context, String locationSetting) {
-        if (getProvider(context) == context.getString(R.string.pref_provider_owm)) {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(context.getResources().getString(R.string.pref_location_key), locationSetting);
-            editor.apply();
+        // if there is no valid location remove the key to read the de
+        if (locationSetting.equals("")) {
+            editor.remove(context.getResources().getString(R.string.pref_location_key));
         } else {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(context.getResources().getString(R.string.pref_location_wug_key), locationSetting);
-            editor.apply();
+            editor.putString(context.getResources().getString(R.string.pref_location_key), locationSetting);
         }
+            editor.apply();
     }
 
     public static String getProvider(Context context) {

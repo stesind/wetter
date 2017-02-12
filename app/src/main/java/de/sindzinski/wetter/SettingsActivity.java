@@ -175,12 +175,6 @@ public class SettingsActivity extends Activity {
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
             String key = preference.getKey();
-            if (key.equals(getString(R.string.pref_location_wug_key))) {
-                String newValue = Utility.wordFirstCap(stringValue, "/");
-                SharedPreferences.Editor editor = preference.getEditor();
-                editor.putString(getResources().getString(R.string.pref_location_wug_key), newValue);
-                editor.commit();
-            }
             setPreferenceSummary(preference, value);
             return true;
         }
@@ -194,9 +188,6 @@ public class SettingsActivity extends Activity {
                 // first clear locationStatus
                 Utility.resetLocationStatus(getActivity());
                 WetterSyncAdapter.syncImmediately(getActivity());
-            } else if (key.equals(getString(R.string.pref_location_wug_key))) {
-                    Utility.resetLocationStatus(getActivity());
-                    WetterSyncAdapter.syncImmediately(getActivity());
             } else if (key.equals(getString(R.string.pref_units_key))) {
                 // units have changed. update lists of weather entries accordingly
                 getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
