@@ -270,17 +270,17 @@ public class CountryCodes {
         return countryFound;
     }
 
-    public static String getCountry(String code){
-
-        Map<String, String> invHashMap = new HashMap<>();
-        for(Map.Entry<String, String> entry : map.entrySet()){
-            invHashMap.put(entry.getValue(), entry.getKey());
-        }
-
-        String country = invHashMap.get(code.trim().toString());
-        if(country==null){
-            country="Germany";
-        }
-        return country;
-    }
+//    public static String getCountry(String code){
+//
+//        Map<String, String> invHashMap = new HashMap<>();
+//        for(Map.Entry<String, String> entry : map.entrySet()){
+//            invHashMap.put(entry.getValue(), entry.getKey());
+//        }
+//
+//        String country = invHashMap.get(code.trim().toString());
+//        if(country==null){
+//            country="Germany";
+//        }
+//        return country;
+//    }
 }

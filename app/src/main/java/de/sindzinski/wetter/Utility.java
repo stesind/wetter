@@ -18,6 +18,7 @@ package de.sindzinski.wetter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -28,6 +29,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -42,6 +45,8 @@ import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 
 public class Utility {
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String location = prefs.getString(context.getString(R.string.pref_location_key),
@@ -815,5 +820,44 @@ public class Utility {
         context.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                 selection,
                 selectionArgs);
+    }
+
+    public static boolean getUiModeNight(Context mContext) {
+
+        int currentNightMode = mContext.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        switch (currentNightMode)
+        {
+            case Configuration.UI_MODE_NIGHT_NO:
+                Log.i(TAG, "Night mode is not active, we're in day time");
+                return false;
+            case Configuration.UI_MODE_NIGHT_YES:
+                Log.i(TAG, "Night mode is active, we're at night!");
+                return true;
+            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+                Log.i(TAG, "We don't know what mode we're in, assume notnight");
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    public static String getWeatherArtPack(Context mContext) {
+        String artPack;
+
+        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_wug))) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_wug_key),
+                    mContext.getString(R.string.pref_art_pack_wug_alt_black));
+        } else {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_key),
+                    mContext.getString(R.string.pref_art_pack_sunshine));
+
+        }
+
+        if (artPack.equals(R.string.pref_art_pack_wug_alt_white) && (!getUiModeNight(mContext))) {
+            artPack = mContext.getString(R.string.pref_art_pack_wug_alt_black);
+        }
+        return artPack;
     }
 }

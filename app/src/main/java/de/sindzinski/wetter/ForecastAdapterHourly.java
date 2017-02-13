@@ -1,9 +1,7 @@
 package de.sindzinski.wetter;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +11,9 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import static de.sindzinski.wetter.Utility.getHourString;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 
 /**
  * {@link ForecastAdapterHourly} exposes a list of weather forecasts
@@ -117,39 +111,32 @@ public class ForecastAdapterHourly extends CursorAdapter {
         defaultImage = Utility.getIconResourceForWeatherCondition(
                 weatherId);
 
-//        if (Utility.getProvider(mContext).equals("wug")) {
-        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_wug))) {
+        String artPack = Utility.getWeatherArtPack(mContext);
+        if (artPack.equals(mContext.getString(R.string.pref_art_pack_owm))) {
             String icon = cursor.getString(ForecastHourlyFragment.COL_WEATHER_ICON);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_wug_key),
-                    mContext.getString(R.string.pref_art_pack_wug_alt_black));
+            Glide.with(mContext)
+                    .load(String.format(Locale.US, artPack, icon))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        } else if (artPack.equals(mContext.getString(R.string.pref_art_pack_cute_dogs))) {
+            Glide.with(mContext)
+                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        } else if (artPack.isEmpty()) {
+                if (defaultImage>0) {
+                    // local images
+                    viewHolder.mIconView.setImageResource(defaultImage);
+                }
+        } else {
+            String icon = cursor.getString(ForecastHourlyFragment.COL_WEATHER_ICON);
             Glide.with(mContext)
                     .load(String.format(Locale.US, artPack, icon))
                     //.error(defaultImage)
                     .crossFade()
                     .into(viewHolder.mIconView);
-        } else {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_key),
-                    mContext.getString(R.string.pref_art_pack_sunshine));
-
-            if (artPack.equals(mContext.getString(R.string.pref_art_pack_owm))) {
-                String icon = cursor.getString(ForecastHourlyFragment.COL_WEATHER_ICON);
-                Glide.with(mContext)
-                        .load(String.format(Locale.US, artPack, icon))
-                        .error(defaultImage)
-                        .crossFade()
-                        .into(viewHolder.mIconView);
-            } else if (artPack.equals(mContext.getString(R.string.pref_art_pack_cute_dogs))) {
-                Glide.with(mContext)
-                        .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
-                        .error(defaultImage)
-                        .crossFade()
-                        .into(viewHolder.mIconView);
-            } else {
-                // local images
-                viewHolder.mIconView.setImageResource(defaultImage);
-            }
         }
 
         int viewType = getItemViewType(cursor.getPosition());
@@ -211,7 +198,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
             if (((rainSnow) > 0) && (defaultImage != -1)) {
                 viewHolder.mIconCondView.setImageResource(defaultImage);
                 viewHolder.mCondView.setText(Double.toString(rainSnow) + "mm");
-            }  else {
+            } else {
                 viewHolder.mCondView.setText(
                         "Feels like: " +
                                 feelslike

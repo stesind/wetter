@@ -104,39 +104,32 @@ public class ForecastAdapterDaily extends CursorAdapter {
         String prefProvider = Utility.getProvider(mContext);
         String provider = mContext.getString(R.string.pref_provider_wug);
 
-//        if (Utility.getProvider(mContext).equals("wug")) {
-        if (Utility.getProvider(mContext).equals(mContext.getString(R.string.pref_provider_wug))) {
+        String artPack = Utility.getWeatherArtPack(mContext);
+        if (artPack.equals(mContext.getString(R.string.pref_art_pack_owm))) {
             String icon = cursor.getString(ForecastDailyFragment.COL_WEATHER_ICON);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_wug_key),
-                    mContext.getString(R.string.pref_art_pack_wug_alt_black));
+            Glide.with(mContext)
+                    .load(String.format(Locale.US, artPack, icon))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        } else if (artPack.equals(mContext.getString(R.string.pref_art_pack_cute_dogs))) {
+            Glide.with(mContext)
+                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+                    .error(defaultImage)
+                    .crossFade()
+                    .into(viewHolder.mIconView);
+        } else if (artPack.isEmpty()) {
+            if (defaultImage>0) {
+                // local images
+                viewHolder.mIconView.setImageResource(defaultImage);
+            }
+        } else {
+            String icon = cursor.getString(ForecastDailyFragment.COL_WEATHER_ICON);
             Glide.with(mContext)
                     .load(String.format(Locale.US, artPack, icon))
                     //.error(defaultImage)
                     .crossFade()
                     .into(viewHolder.mIconView);
-        } else {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            String artPack = prefs.getString(mContext.getString(R.string.pref_art_pack_key),
-                    mContext.getString(R.string.pref_art_pack_sunshine));
-
-            if (artPack.equals(mContext.getString(R.string.pref_art_pack_owm))) {
-                String icon = cursor.getString(ForecastDailyFragment.COL_WEATHER_ICON);
-                Glide.with(mContext)
-                        .load(String.format(Locale.US, artPack, icon))
-                        .error(defaultImage)
-                        .crossFade()
-                        .into(viewHolder.mIconView);
-            } else if (artPack.equals(mContext.getString(R.string.pref_art_pack_cute_dogs))) {
-                Glide.with(mContext)
-                        .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
-                        .error(defaultImage)
-                        .crossFade()
-                        .into(viewHolder.mIconView);
-            } else {
-                // local images
-                viewHolder.mIconView.setImageResource(defaultImage);
-            }
         }
 
         // Read date from cursor
