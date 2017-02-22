@@ -6,9 +6,9 @@
     <color name="grey_700">#646464</color>
     <color name="black">#000000</color>
 
-    <!--<color name="sunshine_light_blue">#FF7137D4</color>-->
-    <!--<color name="sunshine_blue">#5d38a6</color>-->
-    <!--<color name="sunshine_dark_blue">#FF361968</color>-->
+    <color name="sunshine_light_blue">#FF7137D4</color>
+    <color name="sunshine_blue">#5d38a6</color>
+    <color name="sunshine_dark_blue">#FF361968</color>
     FF5D38A6
     <!-- Main theme colors -->
 
