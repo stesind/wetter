@@ -15,8 +15,11 @@
  */
 package de.sindzinski.wetter;
 
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,6 +43,7 @@ import java.util.TimeZone;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
+import de.sindzinski.wetter.util.Utility;
 
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT_HOURLY;
 /**
@@ -51,10 +55,12 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     public static final String LOG_TAG = ForecastHourlyFragment.class.getSimpleName();
     private ForecastAdapterHourly mForecastAdapter;
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private Object syncObserverHandle;
+
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
     private boolean mUseTodayLayout = true;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private static final String SELECTED_KEY = "selected_position";
 
@@ -203,7 +209,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             }
         });
 
-        /*
+                        /*
          * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
          * performs a swipe-to-refresh gesture.
          */
@@ -216,13 +222,24 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
 
                         // This method performs the actual data-refresh operation.
                         // The method calls setRefreshing(false) when it's finished.
+                        // get the new data from you data source
                         if (!WetterSyncAdapter.syncImmediately(getActivity())) {
                             if (mSwipeRefreshLayout.isRefreshing()) {
                                 mSwipeRefreshLayout.setRefreshing(false);
                             }
                         };
+
+                        /* our swipeRefreshLayout needs to be notified when the data is
+                        returned in order for it to stop the animation */
+//                        mHandler.post(refreshing);
                     }
                 }
+        );
+        // sets the colors used in the refresh animation
+        mSwipeRefreshLayout.setColorSchemeResources(
+                R.color.primary,
+                R.color.primary_dark,
+                R.color.primary_light
         );
 
         // If there's instance state, mine it for useful information.
@@ -360,6 +377,11 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         super.onResume();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.registerOnSharedPreferenceChangeListener(this);
+
+        syncObserverHandle = ContentResolver.addStatusChangeListener(
+                ContentResolver.SYNC_OBSERVER_TYPE_PENDING
+                        | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE,
+                new ForecastHourlyFragment.MySyncStatusObserver());
     }
 
     @Override
@@ -367,6 +389,11 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         super.onPause();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.unregisterOnSharedPreferenceChangeListener(this);
+
+        if (syncObserverHandle != null) {
+            ContentResolver.removeStatusChangeListener(syncObserverHandle);
+            syncObserverHandle = null;
+        }
     }
 
     /*
@@ -411,10 +438,52 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
         if (key.equals(getString(R.string.pref_provider_key))) {
             onLocationChanged();
         }
-        if (key.equals(this.getString(R.string.pref_last_sync))) {
-            if (mSwipeRefreshLayout.isRefreshing()) {
-                mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+
+    private class MySyncStatusObserver implements SyncStatusObserver {
+        @Override
+        public void onStatusChanged(int which) {
+            Account mAccount = WetterSyncAdapter.getSyncAccount(getContext());
+            String mAuthority =  getString(R.string.content_authority);
+            if (which == ContentResolver.SYNC_OBSERVER_TYPE_PENDING) {
+                // 'Pending' state changed.
+                if (ContentResolver.isSyncPending(mAccount, mAuthority)) {
+                    // There is now a pending sync.
+                    Log.d(LOG_TAG, "Sync is pending" );
+                } else {
+                    // There is no longer a pending sync.
+                    Log.d(LOG_TAG, "Sync is not longer pending" );
+                }
+            } else if (which == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE) {
+                // 'Active' state changed.
+                if (ContentResolver.isSyncActive(mAccount, mAuthority)) {
+                    // There is now an active sync.
+                    Log.d(LOG_TAG, "Sync is active" );
+                } else {
+                    Log.d(LOG_TAG, "Sync is not longer active" );
+                    updateRefresh(false);
+//                    if (mSwipeRefreshLayout.isRefreshing()) {
+//                        mSwipeRefreshLayout.setRefreshing(false);
+//                    }
+                    // There is no longer an active sync.
+                }
             }
         }
+    }
+    private void updateRefresh(final boolean isSyncing) {
+        getActivity().runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!isSyncing) {
+                    if (mSwipeRefreshLayout.isRefreshing()) {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                } else {
+//                    mRefreshMenu.setActionView(null);
+                }
+            }
+        });
     }
 }

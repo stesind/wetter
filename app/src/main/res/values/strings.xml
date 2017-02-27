@@ -242,8 +242,6 @@
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_auto">Detect Location</string>
 
-
-
     <string name="nav_home">Home</string>
     <string name="nav_add_location">Add location</string>
     <string name="nav_remove_current_location">Remove current location</string>

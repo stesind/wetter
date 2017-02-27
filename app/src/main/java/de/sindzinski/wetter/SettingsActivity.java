@@ -26,10 +26,14 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
+
+import javax.net.ssl.ExtendedSSLSession;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
+import de.sindzinski.wetter.util.EspressoIdlingResource;
+import de.sindzinski.wetter.util.Utility;
+
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -176,6 +180,8 @@ public class SettingsActivity extends Activity {
             String stringValue = value.toString();
             String key = preference.getKey();
             setPreferenceSummary(preference, value);
+
+//            EspressoIdlingResource.increment(); // App is busy until further notice for testing
             return true;
         }
 
@@ -183,6 +189,8 @@ public class SettingsActivity extends Activity {
         // start our synchronization here
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//                EspressoIdlingResource.decrement(); // Set app as idle for testing.
+
             if (key.equals(getString(R.string.pref_location_key))) {
                 // we've changed the location
                 // first clear locationStatus

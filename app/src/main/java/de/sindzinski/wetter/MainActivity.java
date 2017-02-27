@@ -15,7 +15,6 @@
  */
 package de.sindzinski.wetter;
 
-import android.*;
 import android.Manifest;
 import android.accounts.Account;
 import android.app.Activity;
@@ -24,8 +23,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.location.Address;
 import android.location.Criteria;
@@ -33,7 +32,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -48,6 +46,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -69,8 +68,9 @@ import java.util.Locale;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
+import de.sindzinski.wetter.util.Utility;
 
-import static de.sindzinski.wetter.Utility.wordFirstCap;
+import static de.sindzinski.wetter.util.Utility.wordFirstCap;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -114,7 +114,9 @@ public class MainActivity extends AppCompatActivity implements
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar ab = getSupportActionBar();
+        ab.setHomeAsUpIndicator(R.drawable.ic_menu);
+        ab.setDisplayHomeAsUpEnabled(true);
 
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -143,8 +145,8 @@ public class MainActivity extends AppCompatActivity implements
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.registerOnSharedPreferenceChangeListener(this);
-    }
 
+    }
     private void addLocationToNavigation() {
         Cursor locationCursor = this.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
@@ -603,5 +605,4 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     }
-
 }

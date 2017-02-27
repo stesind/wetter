@@ -13,7 +13,9 @@ import com.bumptech.glide.Glide;
 
 import java.util.Locale;
 
-import static de.sindzinski.wetter.Utility.getHourString;
+import de.sindzinski.wetter.util.Utility;
+
+import static de.sindzinski.wetter.util.Utility.getHourString;
 
 /**
  * {@link ForecastAdapterHourly} exposes a list of weather forecasts

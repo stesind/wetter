@@ -15,11 +15,15 @@
  */
 package de.sindzinski.wetter;
 
+import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -28,8 +32,6 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +44,7 @@ import java.util.TimeZone;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
+import de.sindzinski.wetter.util.Utility;
 
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
 
@@ -53,10 +56,13 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
     public static final String LOG_TAG = ForecastDailyFragment.class.getSimpleName();
     private ForecastAdapterDaily mForecastAdapter;
+
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private Object syncObserverHandle;
 
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
+
     private boolean mUseTodayLayout = true;
 
     private static final String SELECTED_KEY = "selected_position";
@@ -211,14 +217,25 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
                         // This method performs the actual data-refresh operation.
                         // The method calls setRefreshing(false) when it's finished.
+                        // get the new data from you data source
                         if (!WetterSyncAdapter.syncImmediately(getActivity())) {
                             if (mSwipeRefreshLayout.isRefreshing()) {
                                 mSwipeRefreshLayout.setRefreshing(false);
                             }
                         };
+
+                        /* our swipeRefreshLayout needs to be notified when the data is
+                        returned in order for it to stop the animation */
+//                        mHandler.post(refreshing);
                     }
                 }
         );
+        // sets the colors used in the refresh animation
+        mSwipeRefreshLayout.setColorSchemeResources(
+                R.color.primary,
+                R.color.primary_dark,
+                R.color.primary_light
+                );
 
         // If there's instance state, mine it for useful information.
         // The end-goal here is that the user never knows that turning their device sideways
@@ -243,7 +260,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
     }
 
     // since we read the location when we create the loader, all we need to do is restart things
-    void onLocationChanged( ) {
+    void onLocationChanged() {
         updateWeather();
         getLoaderManager().restartLoader(FORECAST_LOADER_DAILY, null, this);
     }
@@ -256,9 +273,9 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         // Using the URI scheme for showing a location found on a map.  This super-handy
         // intent can is detailed in the "Common Intents" page of Android's developer site:
         // http://developer.android.com/guide/components/intents-common.html#Maps
-        if ( null != mForecastAdapter ) {
+        if (null != mForecastAdapter) {
             Cursor c = mForecastAdapter.getCursor();
-            if ( null != c ) {
+            if (null != c) {
                 c.moveToPosition(0);
                 String posLat = c.getString(COL_COORD_LAT);
                 String posLong = c.getString(COL_COORD_LONG);
@@ -355,7 +372,12 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         sp.registerOnSharedPreferenceChangeListener(this);
 
         //only display furure hourly items
-        WetterSyncAdapter.deleteOldWeatherData(getContext(),TYPE_HOURLY);
+        WetterSyncAdapter.deleteOldWeatherData(getContext(), TYPE_HOURLY);
+
+        syncObserverHandle = ContentResolver.addStatusChangeListener(
+                ContentResolver.SYNC_OBSERVER_TYPE_PENDING
+                        | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE,
+                new MySyncStatusObserver());
     }
 
     @Override
@@ -363,6 +385,11 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         super.onPause();
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.unregisterOnSharedPreferenceChangeListener(this);
+
+        if (syncObserverHandle != null) {
+            ContentResolver.removeStatusChangeListener(syncObserverHandle);
+            syncObserverHandle = null;
+        }
     }
 
     /*
@@ -370,9 +397,9 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         use to determine why they aren't seeing weather.
      */
     private void updateEmptyView() {
-        if ( mForecastAdapter.getCount() == 0 ) {
+        if (mForecastAdapter.getCount() == 0) {
             TextView tv = (TextView) getView().findViewById(R.id.listview_forecast_empty);
-            if ( null != tv ) {
+            if (null != tv) {
                 // if cursor is empty, why? do we have an invalid location
                 int message = R.string.empty_forecast_list;
                 @WetterSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
@@ -387,7 +414,7 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
                         message = R.string.pref_location_error_description;
                         break;
                     default:
-                        if (!Utility.isNetworkAvailable(getActivity()) ) {
+                        if (!Utility.isNetworkAvailable(getActivity())) {
                             message = R.string.empty_forecast_list_no_network;
                         }
                 }
@@ -398,19 +425,60 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ( key.equals(getString(R.string.pref_location_status_key)) ) {
+        if (key.equals(getString(R.string.pref_location_status_key))) {
             updateEmptyView();
         }
-        if ( key.equals(getString(R.string.pref_location_key))) {
+        if (key.equals(getString(R.string.pref_location_key))) {
             onLocationChanged();
         }
         if (key.equals(getString(R.string.pref_provider_key))) {
 //            onLocationChanged();
         }
-        if (key.equals(this.getString(R.string.pref_last_sync))) {
-            if (mSwipeRefreshLayout.isRefreshing()) {
-                mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    private class MySyncStatusObserver implements SyncStatusObserver {
+        @Override
+        public void onStatusChanged(int which) {
+            Account mAccount = WetterSyncAdapter.getSyncAccount(getContext());
+            String mAuthority =  getString(R.string.content_authority);
+            if (which == ContentResolver.SYNC_OBSERVER_TYPE_PENDING) {
+                // 'Pending' state changed.
+                if (ContentResolver.isSyncPending(mAccount, mAuthority)) {
+                    // There is now a pending sync.
+                    Log.d(LOG_TAG, "Sync is pending" );
+                } else {
+                    // There is no longer a pending sync.
+                    Log.d(LOG_TAG, "Sync is not longer pending" );
+                }
+            } else if (which == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE) {
+                // 'Active' state changed.
+                if (ContentResolver.isSyncActive(mAccount, mAuthority)) {
+                    // There is now an active sync.
+                    Log.d(LOG_TAG, "Sync is active" );
+                } else {
+                    Log.d(LOG_TAG, "Sync is not longer active" );
+                    updateRefresh(false);
+//                    if (mSwipeRefreshLayout.isRefreshing()) {
+//                        mSwipeRefreshLayout.setRefreshing(false);
+//                    }
+                    // There is no longer an active sync.
+                }
             }
         }
+    }
+    private void updateRefresh(final boolean isSyncing) {
+        getActivity().runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!isSyncing) {
+                    if (mSwipeRefreshLayout.isRefreshing()) {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                } else {
+//                    mRefreshMenu.setActionView(null);
+                }
+            }
+        });
     }
 }

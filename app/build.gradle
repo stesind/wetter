@@ -1,12 +1,10 @@
 apply plugin: 'com.android.application'
-
 // Project dependend signing config
 //if(project.hasProperty("default.signing")
 //        && new File(project.property("default.signing") + ".gradle").exists()) {
 //    apply from: project.property("default.signing") + ".gradle";
 //}
 
-// Project independend signing config
 android {
     signingConfigs {
         config {
@@ -16,19 +14,10 @@ android {
             keyPassword RELEASE_KEY_PASSWORD
         }
     }
-    buildTypes {
-        release {
-            signingConfig signingConfigs.config
-        }
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_7
     }
-}
-android {
-    lintOptions {
-        abortOnError false
-    }
-}
-
-android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
@@ -38,9 +27,16 @@ android {
         versionCode 1
         versionName "1.0"
         signingConfig signingConfigs.config
+
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+
+//        jackOptions {
+//            enabled true
+//        }
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.config
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -50,7 +46,6 @@ android {
         it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', OpenWeatherMapApiKey
         it.buildConfigField 'String', 'WUNDERGROUND_API_KEY', WundergroundApiKey
     }
-
     // If you need to add more flavors, consider using flavor dimensions.
     productFlavors {
         mock {
@@ -59,21 +54,21 @@ android {
         prod {
         }
     }
-
-    compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_7
-        sourceCompatibility JavaVersion.VERSION_1_7
+    lintOptions {
+        abortOnError false
     }
 }
+
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:25.2.0'
+    //    compile 'com.android.support:support-annotations:25.2.0'
     compile 'com.android.support:design:25.2.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    // App's dependencies, including test
-    //    compile "com.google.guava:guava:$rootProject.guavaVersion"
-    //    compile "com.android.support.test.espresso:espresso-idling-resource:$rootProject.ext.espressoVersion"
+    compile 'com.google.guava:guava:18.0'   //
+//            compile "com.google.guava:guava:25.2.0"
+    compile 'com.android.support.test.espresso:espresso-idling-resource:2.2.2'
     // Dependencies for local unit tests
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.10.19'
@@ -88,6 +83,7 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
     // espreso-contrib requires 23.1.1 support libs - exclude this dependencies
     androidTestCompile('com.android.support.test.espresso:espresso-contrib:2.2.2') {
+        exclude group: 'com.android.support'
         exclude module: 'support-annotations'
         exclude module: 'support-v4'
         exclude module: 'support-v13'
@@ -95,8 +91,28 @@ dependencies {
         exclude module: 'design'
     }
     androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
+
+}
+/*
+Resolves dependency versions across test and production APKs, specifically, transitive
+dependencies. This is required since Espresso internally has a dependency on support-annotations.
+*/
+configurations.all {
+    resolutionStrategy.force "com.android.support:support-annotations:25.2.0"
 }
 
+/*
+All direct/transitive dependencies shared between your test and production APKs need to be
+excluded from the test APK! This is necessary because both APKs will contain the same classes. Not
+excluding these dependencies from your test configuration will result in an dex pre-verifier error
+at runtime. More info in this tools bug: (https://code.google.com/p/android/issues/detail?id=192497)
+*/
+configurations.compile.dependencies.each { compileDependency ->
+    println "Excluding compile dependency: ${compileDependency.getName()}"
+    configurations.androidTestCompile.dependencies.each { androidTestCompileDependency ->
+        configurations.androidTestCompile.exclude module: "${compileDependency.getName()}"
+    }
+}
 
 dependencies {
     compile 'com.facebook.stetho:stetho:1.4.2'
@@ -106,3 +122,4 @@ dependencies {
 }
 // Add to the bottom of the file
 apply plugin: 'com.google.gms.google-services'
+

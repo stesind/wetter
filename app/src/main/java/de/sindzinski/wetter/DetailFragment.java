@@ -42,6 +42,7 @@ import java.util.Locale;
 
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.data.WeatherContract.WeatherEntry;
+import de.sindzinski.wetter.util.Utility;
 
 /**
  * A placeholder fragment containing a simple view.

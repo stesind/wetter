@@ -1,9 +1,7 @@
 package de.sindzinski.wetter;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
@@ -15,8 +13,9 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
+
+import de.sindzinski.wetter.util.Utility;
 
 /**
  * {@link ForecastAdapterDaily} exposes a list of weather forecasts

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.sindzinski.wetter;
+package de.sindzinski.wetter.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -30,8 +30,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,6 +39,10 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import de.sindzinski.wetter.BuildConfig;
+import de.sindzinski.wetter.CountryCodes;
+import de.sindzinski.wetter.MainActivity;
+import de.sindzinski.wetter.R;
 import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 

@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncRequest;
 import android.content.SyncResult;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,8 +25,6 @@ import android.support.annotation.IntDef;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-
-import com.bumptech.glide.Glide;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,27 +42,24 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Vector;
 
-import de.sindzinski.wetter.ForecastHourlyFragment;
 import de.sindzinski.wetter.MainActivity;
 import de.sindzinski.wetter.R;
-import de.sindzinski.wetter.Utility;
+import de.sindzinski.wetter.util.Utility;
 import de.sindzinski.wetter.data.WeatherContract;
 
-import static de.sindzinski.wetter.Utility.getLastSync;
-import static de.sindzinski.wetter.Utility.getLocationSetting;
-import static de.sindzinski.wetter.Utility.getPreferredLocation;
-import static de.sindzinski.wetter.Utility.setLastSync;
+import static de.sindzinski.wetter.util.Utility.getLastSync;
+import static de.sindzinski.wetter.util.Utility.getLocationSetting;
+import static de.sindzinski.wetter.util.Utility.getPreferredLocation;
+import static de.sindzinski.wetter.util.Utility.setLastSync;
 import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_OWM;
 import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_WUG;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
-import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
 
 public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = WetterSyncAdapter.class.getSimpleName();
+
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
     public static final int SYNC_INTERVAL = 60 * 180;
@@ -92,7 +86,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-
         if (Utility.getProvider(getContext()).equals(getContext().getString(R.string.pref_provider_owm))) {
 //        if (Utility.getProvider(getContext()) == getContext().getString(R.string.pref_provider_owm)) {
 
@@ -110,7 +103,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         notifyWeather();
-
     }
 
     private void syncAllSourcesWUG(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult, Integer type) {
@@ -1571,7 +1563,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public static boolean syncImmediately(Context context) {
 
-        if (System.currentTimeMillis() - Utility.getLastSync(context) >= MINUTE_IN_MILLIS * 5) {
+        if (System.currentTimeMillis() - Utility.getLastSync(context) >= MINUTE_IN_MILLIS * 1) {
             Bundle bundle = new Bundle();
             bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
             bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
