@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private final String LOG_TAG = this.getClass().getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     private String mLocation;
@@ -445,19 +445,19 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        String location = Utility.getPreferredLocation(this);
-        // update the location in our second pane using the fragment manager
-        if (location != null && !location.equals(mLocation)) {
-            ForecastHourlyFragment ff = (ForecastHourlyFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
-            if (null != ff) {
-                ff.onLocationChanged();
-            }
-            DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
-            if (null != df) {
-                df.onLocationChanged(location);
-            }
-            mLocation = location;
-        }
+//        String location = Utility.getPreferredLocation(this);
+//        // update the location in our second pane using the fragment manager
+//        if (location != null && !location.equals(mLocation)) {
+//            ForecastHourlyFragment ff = (ForecastHourlyFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+//            if (null != ff) {
+//                ff.onLocationChanged();
+//            }
+//            DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+//            if (null != df) {
+//                df.onLocationChanged(location);
+//            }
+//            mLocation = location;
+//        }
 
 //        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 //        sp.registerOnSharedPreferenceChangeListener(this);

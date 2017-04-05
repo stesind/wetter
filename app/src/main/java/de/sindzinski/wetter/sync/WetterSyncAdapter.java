@@ -62,12 +62,16 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
-    public static final int SYNC_INTERVAL = 60 * 180;
-    public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
-    private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
-    private static final long HOUR_IN_MILLIS = 1000 * 60 * 60;
-    private static final long MINUTE_IN_MILLIS = 1000 * 60;
+    public static final long SYNC_INTERVAL = 60L * 60L;
+//    public static final int SYNC_INTERVAL = 60 * 180;
+    public static final long SYNC_FLEXTIME = SYNC_INTERVAL / 3;
+    private static final long DAY_IN_MILLIS = 1000L * 60L * 60L * 24L;
+    private static final long HOUR_IN_MILLIS = 1000L * 60L * 60L;
+    private static final long MINUTE_IN_MILLIS = 1000L * 60L;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
+
+    public static final String ACTION_DATA_UPDATED =
+            "de.sindzinski.wetter.ACTION_DATA_UPDATED";
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
@@ -102,6 +106,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             syncAllSourcesWUG(account, extras, authority, provider, syncResult, TYPE_DAILY);
         }
 
+        updateWidgets();
         notifyWeather();
     }
 
@@ -540,7 +545,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), locationId, TYPE_CURRENT);
+                deleteOldWeatherData(getContext(), locationId, TYPE_CURRENT, 0);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -738,7 +743,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                deleteOldWeatherData(getContext(), locationId, TYPE_DAILY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_DAILY, 0);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -956,7 +961,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), locationId, TYPE_HOURLY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_HOURLY, 0);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1048,7 +1053,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
             //delete all old data of given type
-            deleteOldWeatherData(getContext(), locationId, TYPE_CURRENT);
+            deleteOldWeatherData(getContext(), locationId, TYPE_CURRENT, 0);
 
             getContext().getContentResolver().insert(WeatherContract.WeatherEntry.CONTENT_URI, weatherValues);
 
@@ -1189,7 +1194,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
 
                 //delete all old data of given type
-                deleteOldWeatherData(getContext(), locationId, TYPE_HOURLY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_HOURLY, 0);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1336,7 +1341,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             // add to database
             if (cVVector.size() > 0) {
 
-                deleteOldWeatherData(getContext(), locationId, TYPE_DAILY);
+                deleteOldWeatherData(getContext(), locationId, TYPE_DAILY, 0);
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
                 cVVector.toArray(cvArray);
@@ -1354,6 +1359,14 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
             setLastSync(getContext(), System.currentTimeMillis());
         }
+    }
+
+    private void updateWidgets() {
+        Context context = getContext();
+        // Setting the package ensures that only components in our app will receive the broadcast
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+                .setPackage(context.getPackageName());
+        context.sendBroadcast(dataUpdatedIntent);
     }
 
     private void notifyWeather() {
@@ -1540,7 +1553,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     /**
      * Helper method to schedule the sync adapter periodic execution
      */
-    public static void configurePeriodicSync(Context context, int syncInterval, int flexTime) {
+    public static void configurePeriodicSync(Context context, long syncInterval, long flexTime) {
         Account account = getSyncAccount(context);
         String authority = context.getString(R.string.content_authority);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -1555,6 +1568,33 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                     authority, new Bundle(), syncInterval);
         }
     }
+
+    public static void setSyncInterval(Context context) {
+        Account account = getSyncAccount(context);
+        String authority = context.getString(R.string.content_authority);
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        long syncInterval = Long.parseLong(sp.getString(context.getString(R.string.pref_sync_key), context.getString(R.string.pref_sync_default)));
+
+        //convert sync interval from minutes to seconds
+        syncInterval = syncInterval * 60;
+        // Global variables
+        // A content resolver for accessing the provider
+        ContentResolver mResolver;
+        // Get the content resolver for your app
+        mResolver = context.getContentResolver();
+        /*
+         * Turn on periodic syncing
+         */
+
+
+        ContentResolver.addPeriodicSync(
+                account,
+                authority,
+                Bundle.EMPTY,
+                syncInterval);
+    }
+
 
     /**
      * Helper method to have the sync adapter sync immediately
@@ -1649,13 +1689,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         spe.commit();
     }
 
-    static public void deleteOldWeatherData(Context mContext, Long locationId, Integer mType) {
+    static public void deleteOldWeatherData(Context mContext, Long locationId, Integer mType, Integer mOffset) {
         // delete old data so we don't build up an endless history
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-//        cal.set(Calendar.HOUR_OF_DAY, cal.HOUR_OF_DAY-1);
-//        cal.set(Calendar.MINUTE, 0);
-//        cal.set(Calendar.SECOND, 0);
-//        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + mOffset);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         long timeInMillis = cal.getTimeInMillis();
 
         String selection = WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
@@ -1666,13 +1706,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 selection,
                 selectionArgs);
     }
-    static public void deleteOldWeatherData(Context mContext, Integer mType) {
+    static public void deleteOldWeatherData(Context mContext, Integer mType, Integer mOffset) {
         // delete old data so we don't build up an endless history
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-//        cal.set(Calendar.HOUR_OF_DAY, cal.HOUR_OF_DAY-1);
-//        cal.set(Calendar.MINUTE, 0);
-//        cal.set(Calendar.SECOND, 0);
-//        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY) + mOffset);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         long timeInMillis = cal.getTimeInMillis();
 
         String selection =

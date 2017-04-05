@@ -371,9 +371,6 @@ public class ForecastDailyFragment extends Fragment implements LoaderManager.Loa
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.registerOnSharedPreferenceChangeListener(this);
 
-        //only display furure hourly items
-        WetterSyncAdapter.deleteOldWeatherData(getContext(), TYPE_HOURLY);
-
         syncObserverHandle = ContentResolver.addStatusChangeListener(
                 ContentResolver.SYNC_OBSERVER_TYPE_PENDING
                         | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE,

@@ -273,6 +273,14 @@ public class Utility {
         return monthDayString;
     }
 
+    public static String getShortWeekDay(Context context, long dateInMillis) {
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE");
+        TimeZone timezone = TimeZone.getDefault();
+        shortenedDateFormat.setTimeZone(timezone);
+        String monthDayString = shortenedDateFormat.format(dateInMillis);
+        return monthDayString;
+    }
+
     public static String wordFirstCap(String str, String delimiter) {
         String[] words = str.trim().split(delimiter);
         StringBuilder ret = new StringBuilder();

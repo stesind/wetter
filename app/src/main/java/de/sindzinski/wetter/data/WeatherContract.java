@@ -46,6 +46,7 @@ public class WeatherContract {
     public static final Integer TYPE_DAILY = 0;
     public static final Integer TYPE_HOURLY = 1;
     public static final Integer TYPE_CURRENT = 2;
+    //current_hourly is not used in db only in provider!!!
     public static final Integer TYPE_CURRENT_HOURLY = 6;
 
     public static final Integer PROVIDER_OWM = 0;
@@ -180,6 +181,15 @@ public class WeatherContract {
 
         public static Uri buildWeatherLocation(String locationSetting) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
+        }
+
+        public static Uri buildWeatherLocationWithStartDate(
+                String locationSetting, long startDate, Integer type) {
+            long normalizedDate = normalizeDate(startDate);
+            return CONTENT_URI.buildUpon()
+                    .appendPath(locationSetting)
+                    .appendPath(getTypeString(type))
+                    .appendQueryParameter(COLUMN_DATE, Long.toString(normalizedDate)).build();
         }
 
         public static Uri buildWeatherLocationWithDate(String locationSetting, long date) {

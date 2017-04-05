@@ -27,6 +27,14 @@
         custom:minLength="4"
         android:singleLine="true" />
 
+    <EditTextPreference
+        android:title="@string/pref_sync_label"
+        android:key="@string/pref_sync_key"
+        android:defaultValue="@string/pref_sync_default"
+        android:inputType="number"
+        custom:minLength="2"
+        android:singleLine="true" />
+
     <ListPreference
         android:title="@string/pref_units_label"
         android:key="@string/pref_units_key"

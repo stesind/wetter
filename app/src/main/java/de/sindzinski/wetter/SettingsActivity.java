@@ -82,6 +82,7 @@ public class SettingsActivity extends Activity {
             // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
             // updated when the preference changes.
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_api_key_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_art_pack_key)));
@@ -196,6 +197,9 @@ public class SettingsActivity extends Activity {
                 // first clear locationStatus
                 Utility.resetLocationStatus(getActivity());
                 WetterSyncAdapter.syncImmediately(getActivity());
+            } else if (key.equals(getString(R.string.pref_sync_key))) {
+                WetterSyncAdapter.setSyncInterval(getActivity());
+//                WetterSyncAdapter.setSyncInterval(getContext(), Integer.parseInt(sharedPreferences.getString(getString(R.string.pref_sync_key)), Integer.parseInt(getString(R.string.pref_sync_default))));
             } else if (key.equals(getString(R.string.pref_units_key))) {
                 // units have changed. update lists of weather entries accordingly
                 getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);

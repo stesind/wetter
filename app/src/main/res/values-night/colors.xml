@@ -6,13 +6,7 @@
     <color name="grey_700">#646464</color>
     <color name="black">#000000</color>
 
-    <color name="sunshine_light_blue">#FF7137D4</color>
-    <color name="sunshine_blue">#5d38a6</color>
-    <color name="sunshine_dark_blue">#FF361968</color>
-    FF5D38A6
     <!-- Main theme colors -->
-
-
     <color name="primary">#673AB7</color>
     <color name="primary_dark">#512DA8</color>
     <color name="primary_light">#D1C4E9</color>
@@ -24,4 +18,12 @@
 
     <color name="background">#FF303030</color>
     <color name="navigation_bar_color">#FF000000</color>
+
+    <!-- the activated state color -->
+    <color name="activated">#E0E0E0</color>
+
+    <color name="widget_text">#FFFFFF</color>
+
+
+
 </resources>

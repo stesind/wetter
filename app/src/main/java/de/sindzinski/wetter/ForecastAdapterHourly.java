@@ -2,7 +2,9 @@ package de.sindzinski.wetter;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import java.util.Locale;
 
 import de.sindzinski.wetter.util.Utility;
 
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.util.Utility.getHourString;
 
 /**
@@ -23,13 +26,14 @@ import static de.sindzinski.wetter.util.Utility.getHourString;
  */
 public class ForecastAdapterHourly extends CursorAdapter {
 
+    public static final String LOG_TAG = ForecastHourlyFragment.class.getSimpleName();
+
     private static final int VIEW_TYPE_COUNT = 2;
     private static final int VIEW_TYPE_TODAY = 0;
-    private static final int VIEW_TYPE_FUTURE_DAY = 1;
 
+    private static final int VIEW_TYPE_FUTURE_DAY = 1;
     // Flag to determine if we want to use a separate view for "today".
     private boolean mUseTodayLayout = true;
-
     /**
      * Cache of the children views for a forecast list item.
      */
@@ -62,6 +66,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
 
     @Override
     public View newView(Context mContext, Cursor cursor, ViewGroup parent) {
+
+        Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
 
         // Choose the layout type
         int viewType = getItemViewType(cursor.getPosition());
@@ -147,7 +153,21 @@ public class ForecastAdapterHourly extends CursorAdapter {
             // Get weather icon
 //                viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(
 //                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
-            viewHolder.mCityView.setText(cursor.getString(ForecastHourlyFragment.COL_CITY_NAME));
+            String cityText;
+            if (cursor.getInt(ForecastHourlyFragment.COL_TYPE) == TYPE_CURRENT) {
+                long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
+                cityText = cursor.getString(ForecastHourlyFragment.COL_CITY_NAME)
+                        + ", "
+                        + "now ("
+                        + Utility.getHourString(mContext, timeInMillis)
+                        + ")";
+            } else {
+                long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
+                cityText = cursor.getString(ForecastHourlyFragment.COL_CITY_NAME)
+                        + ", "
+                        + Utility.getHourlyDayString(mContext, timeInMillis);
+            }
+            viewHolder.mCityView.setText(cityText);
 
             long sunRise = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_RISE);
             long sunSet = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
@@ -185,8 +205,8 @@ public class ForecastAdapterHourly extends CursorAdapter {
 
             // Read date from cursor
             long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
-            // Find TextView and set formatted date on it
-            viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
+
+                viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView.setText(Utility.formatTemperature(mContext, temp, isMetric));

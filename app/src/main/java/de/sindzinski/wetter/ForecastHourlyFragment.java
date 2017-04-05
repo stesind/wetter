@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -45,7 +46,10 @@ import de.sindzinski.wetter.data.WeatherContract;
 import de.sindzinski.wetter.sync.WetterSyncAdapter;
 import de.sindzinski.wetter.util.Utility;
 
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT_HOURLY;
+import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
@@ -357,6 +361,8 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                 mListView.smoothScrollToPosition(mPosition);
             }
             updateEmptyView();
+
+//            Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
         }
     }
 
@@ -382,6 +388,12 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
                 ContentResolver.SYNC_OBSERVER_TYPE_PENDING
                         | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE,
                 new ForecastHourlyFragment.MySyncStatusObserver());
+
+        //only display furure hourly items
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        WetterSyncAdapter.deleteOldWeatherData(getContext(), Utility.getLocationId(getContext(), locationSetting), TYPE_HOURLY, 0);
+        WetterSyncAdapter.deleteOldWeatherData(getContext(), Utility.getLocationId(getContext(), locationSetting), TYPE_CURRENT, -1);
+
     }
 
     @Override
