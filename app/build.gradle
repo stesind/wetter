@@ -45,6 +45,7 @@ android {
         // getting from gradle.properties in the users home folder
         it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', OpenWeatherMapApiKey
         it.buildConfigField 'String', 'WUNDERGROUND_API_KEY', WundergroundApiKey
+        it.buildConfigField 'String', 'GOOGLE_MAPS_TIMEZONE_API_KEY', GoogleMapsTimeZoneApiKey
     }
     // If you need to add more flavors, consider using flavor dimensions.
     productFlavors {

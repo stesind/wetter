@@ -198,8 +198,11 @@ public class SettingsActivity extends Activity {
                 Utility.resetLocationStatus(getActivity());
                 WetterSyncAdapter.syncImmediately(getActivity());
             } else if (key.equals(getString(R.string.pref_sync_key))) {
-                WetterSyncAdapter.setSyncInterval(getActivity());
-//                WetterSyncAdapter.setSyncInterval(getContext(), Integer.parseInt(sharedPreferences.getString(getString(R.string.pref_sync_key)), Integer.parseInt(getString(R.string.pref_sync_default))));
+//                WetterSyncAdapter.setSyncInterval(getActivity());
+                long syncInterval = Long.parseLong(sharedPreferences.getString(getActivity().getString(R.string.pref_sync_key), getActivity().getString(R.string.pref_sync_default)));
+                long flexTime = syncInterval/3;
+                WetterSyncAdapter.configurePeriodicSync(getActivity(), syncInterval, flexTime);
+//                WetterSyncAdapter.setSyncInterval(getActivity(),Long.parseLong(sharedPreferences.getString(getActivity().getString(R.string.pref_sync_key), getActivity().getString(R.string.pref_sync_default))));
             } else if (key.equals(getString(R.string.pref_units_key))) {
                 // units have changed. update lists of weather entries accordingly
                 getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);

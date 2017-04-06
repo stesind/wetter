@@ -42,6 +42,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Vector;
 
+//import de.sindzinski.wetter.BuildConfig;
 import de.sindzinski.wetter.MainActivity;
 import de.sindzinski.wetter.R;
 import de.sindzinski.wetter.util.Utility;
@@ -451,6 +452,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 cityLongitude = coord.getDouble(OWM_LONGITUDE);
             }
 
+            String timeZone = getTimeZone(cityLatitude, cityLongitude);
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
 
             long timeInMillis = 0;
@@ -1551,7 +1553,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
     /**
-     * Helper method to schedule the sync adapter periodic execution
+     * Helper method to schedule the sync adapter periodic execution, called from on account created
      */
     public static void configurePeriodicSync(Context context, long syncInterval, long flexTime) {
         Account account = getSyncAccount(context);
@@ -1569,12 +1571,12 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public static void setSyncInterval(Context context) {
+    public static void setSyncInterval(Context context, long syncInterval) {
         Account account = getSyncAccount(context);
         String authority = context.getString(R.string.content_authority);
 
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        long syncInterval = Long.parseLong(sp.getString(context.getString(R.string.pref_sync_key), context.getString(R.string.pref_sync_default)));
+//        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+//        long syncInterval = Long.parseLong(sp.getString(context.getString(R.string.pref_sync_key), context.getString(R.string.pref_sync_default)));
 
         //convert sync interval from minutes to seconds
         syncInterval = syncInterval * 60;
@@ -1658,7 +1660,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         /*
          * Since we've created an account
          */
-        WetterSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        long syncInterval = Long.parseLong(sp.getString(context.getString(R.string.pref_sync_key), context.getString(R.string.pref_sync_default)));
+        long flexTime = syncInterval/3;
+        WetterSyncAdapter.configurePeriodicSync(context, syncInterval, flexTime);
 
         /*
          * Without calling setSyncAutomatically, our periodic sync will not be enabled.
@@ -1737,5 +1742,89 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         mContext.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                 selection,
                 selectionArgs);
+    }
+
+    public static String getTimeZone(double lat, double lon) {
+//        final String LOG_TAG = "timeZone";
+//        String timeZone = null;
+//        HttpURLConnection urlConnection = null;
+//        BufferedReader reader = null;
+//
+//        try {
+//
+//            final String BASE_URL = "https://maps.googleapis.com/maps/api/timezone/json?";
+//
+//            final String API_KEY = BuildConfig.GOOGLE_MAPS_TIMEZONE_API_KEY;
+//            Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+//                    .appendPath(API_KEY)
+//                    .appendQueryParameter("location", Double.toString(lat) + "," + Double.toHexString(lon))
+//                    .appendQueryParameter("timestamp", Long.toString(System.currentTimeMillis() / 1000))
+//                    .appendQueryParameter("key", API_KEY)
+//                    .build();
+//            URL url = new URL(builtUri.toString());
+//
+//            // Create the request to OpenWeatherMap, and open the connection
+//            urlConnection = (HttpURLConnection) url.openConnection();
+//            urlConnection.setRequestMethod("GET");
+//            urlConnection.connect();
+//
+//            // Read the input stream into a String
+//            InputStream inputStream = urlConnection.getInputStream();
+//            StringBuffer buffer = new StringBuffer();
+//            if (inputStream == null) {
+//                // Nothing to do.
+//                return null;
+//            }
+//            reader = new BufferedReader(new InputStreamReader(inputStream));
+//
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+//                // But it does make debugging a *lot* easier if you print out the completed
+//                // buffer for debugging.
+//                buffer.append(line + "\n");
+//            }
+//
+//            if (buffer.length() == 0) {
+//                // Stream was empty.  No point in parsing.
+//                return null;
+//            }
+//
+//
+//            JSONObject jsonResponse = new JSONObject(buffer.toString());
+//            String timeZoneName = jsonResponse.getString("timeZoneName");
+//
+//
+//            for (int i = 0; i < timeZoneName.length(); i++) {
+//                if (Character.isUpperCase(timeZoneName.charAt(i))) {
+//                    char c = timeZoneName.charAt(i);
+//                    timeZone = timeZone + c;
+//                }
+//            }
+//
+//            return timeZone;
+//
+//        } catch (IOException e) {
+//            Log.e(LOG_TAG, "Error ", e);
+//            // If the code didn't successfully get the weather data, there's no point in attempting
+//            // to parse it.
+//        } catch (JSONException e) {
+//            Log.e(LOG_TAG, e.getMessage(), e);
+//            e.printStackTrace();
+//
+//        } finally {
+//            if (urlConnection != null) {
+//                urlConnection.disconnect();
+//            }
+//            if (reader != null) {
+//                try {
+//                    reader.close();
+//                } catch (final IOException e) {
+//                    Log.e(LOG_TAG, "Error closing stream", e);
+//                }
+//            }
+//            return null;
+//        }
+        return null;
     }
 }

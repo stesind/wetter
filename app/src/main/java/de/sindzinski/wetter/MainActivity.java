@@ -229,6 +229,8 @@ public class MainActivity extends AppCompatActivity implements
                                 .toString()
                                 .toLowerCase()
                                 .replaceAll("\\s+", "");
+                        locationSetting = Utility.wordFirstCap(locationSetting,"/");
+                        locationSetting = Utility.wordFirstCap(locationSetting,",");
                         if (locationSetting.compareTo("") != 0) {
                             Utility.setPreferredLocation(getApplicationContext(), locationSetting);
                             Utility.resetLocationStatus(getApplicationContext());
