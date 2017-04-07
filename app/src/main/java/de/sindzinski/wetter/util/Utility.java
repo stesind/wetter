@@ -82,15 +82,15 @@ public class Utility {
     }
 
     public static void setPreferredLocation(Context context, String locationSetting) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-            SharedPreferences.Editor editor = preferences.edit();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
         // if there is no valid location remove the key to read the de
         if (locationSetting.equals("")) {
             editor.remove(context.getResources().getString(R.string.pref_location_key));
         } else {
             editor.putString(context.getResources().getString(R.string.pref_location_key), locationSetting);
         }
-            editor.apply();
+        editor.apply();
     }
 
     public static String getProvider(Context context) {
@@ -149,12 +149,26 @@ public class Utility {
      * @return a user-friendly representation of the date.
      */
 
-    public static String getHourString(Context context, long timeInMillis) {
+    public static String getHourString(Context context, long timeInMillis, String timeZoneId) {
 
-        TimeZone timezone = TimeZone.getDefault();
-        SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:MM");
-        shortDateFormat.setTimeZone(timezone);
-        return shortDateFormat.format(timeInMillis);
+        TimeZone timeZone;
+        if (timeZoneId.equals("")) {
+            timeZone = TimeZone.getDefault();
+        } else {
+            timeZone = TimeZone.getTimeZone(timeZoneId);
+        }
+        try {
+            SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:MM z");
+            shortDateFormat.setTimeZone(timeZone);
+            String dsorig = shortDateFormat.format(timeInMillis);
+            Date dconv = shortDateFormat.parse(dsorig);
+            String sconv = shortDateFormat.format(dconv);
+            return sconv;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+
 //        GregorianCalendar gregorianCalendar = new GregorianCalendar(timezone);
 //        gregorianCalendar.setTimeInMillis(timeInMillis);
 //        int hour = gregorianCalendar.get(Calendar.HOUR_OF_DAY);
@@ -163,15 +177,20 @@ public class Utility {
     }
 
     @SuppressLint("StringFormatMatches")
-    public static String getHourlyDayString(Context context, long timeInMillis) {
+    public static String getHourlyDayString(Context context, long timeInMillis, String timeZoneId) {
         // The day string for forecast uses the following logic:
         // For today: "Today, June 8"
         // For tomorrow:  "Tomorrow"
         // For the next 5 days: "Wednesday
         // " (just the day name)
         // For all days after that: "Mon Jun 8"
-        TimeZone timezone = TimeZone.getDefault();
-        GregorianCalendar gregorianCalendar = new GregorianCalendar(timezone);
+        TimeZone timeZone;
+        if (timeZoneId.equals("")) {
+            timeZone = TimeZone.getDefault();
+        } else {
+            timeZone = TimeZone.getTimeZone(timeZoneId);
+        }
+        GregorianCalendar gregorianCalendar = new GregorianCalendar(timeZone);
         gregorianCalendar.setTimeInMillis(timeInMillis);
         int day = gregorianCalendar.get(Calendar.DAY_OF_MONTH);
         //code for formatting the date
@@ -180,7 +199,7 @@ public class Utility {
 
         Date time = gregorianCalendar.getTime();
         SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
-        shortDateFormat.setTimeZone(timezone);
+        shortDateFormat.setTimeZone(timeZone);
         // If the date we're building the String for is today's date, the format
         // is "Today, June 24"
 
@@ -194,14 +213,31 @@ public class Utility {
 //            } else
         if (day < today + 1) {
             // If the input date is less than a week in the future, just return the day name.
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
-            shortDateFormat.setTimeZone(timezone);
-            return shortenedDateFormat.format(timeInMillis);
+            try {
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
+                shortDateFormat.setTimeZone(timeZone);
+                String dsorig = shortDateFormat.format(timeInMillis);
+                Date dconv = shortDateFormat.parse(dsorig);
+                String sconv = shortDateFormat.format(dconv);
+                return sconv;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "";
+            }
         } else {
             // Otherwise, use the form "Mon Jun 3"
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
-            shortDateFormat.setTimeZone(timezone);
-            return shortenedDateFormat.format(timeInMillis);
+            try {
+                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
+                shortDateFormat.setTimeZone(timeZone);
+                String dsorig = shortDateFormat.format(timeInMillis);
+                Date dconv = shortDateFormat.parse(dsorig);
+                String sconv = shortDateFormat.format(dconv);
+                return sconv;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "";
+            }
+
         }
     }
 
@@ -214,15 +250,21 @@ public class Utility {
      * @return a user-friendly representation of the date.
      */
     @SuppressLint("StringFormatMatches")
-    public static String getDailyDayString(Context context, long timeInMillis) {
+    public static String getDailyDayString(Context context, long timeInMillis, String timeZoneId) {
         // The day string for forecast uses the following logic:
         // For today: "Today, June 8"
         // For tomorrow:  "Tomorrow"
         // For the next 5 days: "Wednesday
         // " (just the day name)
         // For all days after that: "Mon Jun 8"
-        TimeZone timezone = TimeZone.getDefault();
-        GregorianCalendar gregorianCalendar = new GregorianCalendar(timezone);
+//        Log.d("test timezone", timeZoneId);
+        TimeZone timeZone;
+        if (timeZoneId.equals("")) {
+            timeZone = TimeZone.getDefault();
+        } else {
+            timeZone = TimeZone.getTimeZone(timeZoneId);
+        }
+        GregorianCalendar gregorianCalendar = new GregorianCalendar(timeZone);
         gregorianCalendar.setTimeInMillis(timeInMillis);
 //        int day = gregorianCalendar.get(GregorianCalendar.DAY_OF_MONTH);
 
@@ -238,7 +280,7 @@ public class Utility {
         if (today == day) {
             int formatId = R.string.format_full_friendly_date;
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
-            shortenedDateFormat.setTimeZone(timezone);
+            shortenedDateFormat.setTimeZone(timeZone);
 
             return String.format(context.getString(
                     formatId,
@@ -250,9 +292,17 @@ public class Utility {
             String dayName = gregorianCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());//Locale.US);
             return dayName;
         } else {
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-            shortenedDateFormat.setTimeZone(timezone);
-            return shortenedDateFormat.format(timeInMillis);
+            try {
+                SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd");
+                shortDateFormat.setTimeZone(timeZone);
+                String dsorig = shortDateFormat.format(timeInMillis);
+                Date dconv = shortDateFormat.parse(dsorig);
+                String sconv = shortDateFormat.format(dconv);
+                return sconv;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "";
+            }
         }
 
     }
@@ -265,18 +315,28 @@ public class Utility {
      *                     in Utility.DATE_FORMAT
      * @return The day in the form of a string formatted "December 6"
      */
-    public static String getFormattedMonthDay(Context context, long dateInMillis) {
+    public static String getFormattedMonthDay(Context context, long dateInMillis, String timeZoneId) {
         SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("MMMM dd");
-        TimeZone timezone = TimeZone.getDefault();
-        shortenedDateFormat.setTimeZone(timezone);
+        TimeZone timeZone;
+        if (timeZoneId.equals("")) {
+            timeZone = TimeZone.getDefault();
+        } else {
+            timeZone = TimeZone.getTimeZone(timeZoneId);
+        }
+        shortenedDateFormat.setTimeZone(timeZone);
         String monthDayString = shortenedDateFormat.format(dateInMillis);
         return monthDayString;
     }
 
-    public static String getShortWeekDay(Context context, long dateInMillis) {
+    public static String getShortWeekDay(Context context, long dateInMillis, String timeZoneId) {
         SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE");
-        TimeZone timezone = TimeZone.getDefault();
-        shortenedDateFormat.setTimeZone(timezone);
+        TimeZone timeZone;
+        if (timeZoneId.equals("")) {
+            timeZone = TimeZone.getDefault();
+        } else {
+            timeZone = TimeZone.getTimeZone(timeZoneId);
+        }
+        shortenedDateFormat.setTimeZone(timeZone);
         String monthDayString = shortenedDateFormat.format(dateInMillis);
         return monthDayString;
     }
@@ -835,8 +895,7 @@ public class Utility {
     public static boolean getUiModeNight(Context mContext) {
 
         int currentNightMode = mContext.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        switch (currentNightMode)
-        {
+        switch (currentNightMode) {
             case Configuration.UI_MODE_NIGHT_NO:
                 Log.i(TAG, "Night mode is not active, we're in day time");
                 return false;

@@ -133,10 +133,11 @@ public class ForecastAdapterDaily extends CursorAdapter {
 
         // Read date from cursor
         long timeInMillis = cursor.getLong(ForecastDailyFragment.COL_WEATHER_DATE);
+        String timeZoneName = cursor.getString(ForecastDailyFragment.COL_TIME_ZONE);
         Integer type = cursor.getInt(ForecastDailyFragment.COL_TYPE);
 
         // Find TextView and set formatted date on it
-        viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
+        viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis, timeZoneName));
         // Read weather forecast from cursor
         String description = cursor.getString(ForecastDailyFragment.COL_WEATHER_DESC);
         // Find TextView and set weather forecast on it
@@ -163,7 +164,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
             String cityName = cursor.getString(ForecastDailyFragment.COL_CITY_NAME);
             viewHolder.mCityView.setText(cityName);
             // Read high temperature from cursor
-            viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis));
+            viewHolder.mDateView.setText(Utility.getDailyDayString(mContext, timeInMillis, timeZoneName));
             double day = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_DAY_TEMP);
             viewHolder.mDayTempView.setText(Utility.formatTemperature(mContext, day, isMetric));
             double max = cursor.getDouble(ForecastDailyFragment.COL_WEATHER_MAX_TEMP);

@@ -44,7 +44,8 @@ public class TodayWidgetIntentService extends IntentService {
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_ICON
+            WeatherContract.WeatherEntry.COLUMN_ICON,
+            WeatherContract.LocationEntry.COLUMN_TIME_ZONE
     };
     // these indices must match the projection
     private static final int INDEX_DATE = 0;
@@ -53,6 +54,7 @@ public class TodayWidgetIntentService extends IntentService {
     private static final int INDEX_MAX_TEMP = 3;
     private static final int INDEX_MIN_TEMP = 4;
     private static final int INDEX_ICON = 5;
+    private static final int INDEX_TIME_ZONE = 6;
 
     public TodayWidgetIntentService() {
         super("TodayWidgetIntentService");
@@ -91,7 +93,8 @@ public class TodayWidgetIntentService extends IntentService {
         double minTemp = data.getDouble(INDEX_MIN_TEMP);
         String formattedMaxTemperature = Utility.formatTemperature(this, maxTemp, true);
         String formattedMinTemperature = Utility.formatTemperature(this, minTemp, true);
-        final String icon = data.getString(INDEX_ICON);
+        String icon = data.getString(INDEX_ICON);
+        String timeZoneName = data.getString(INDEX_TIME_ZONE);
         data.close();
 
         // Perform this loop procedure for each Today widget
@@ -169,7 +172,7 @@ public class TodayWidgetIntentService extends IntentService {
 
 //          remoteViews.setImageViewResource(R.id.widget_icon, weatherArtResourceId);
             remoteViews.setTextViewText(R.id.widget_description, description);
-            remoteViews.setTextViewText(R.id.widget_day, Utility.getShortWeekDay(mContext, timeInMillis ));
+            remoteViews.setTextViewText(R.id.widget_day, Utility.getShortWeekDay(mContext, timeInMillis, timeZoneName ));
             remoteViews.setTextViewText(R.id.widget_temperature, formattedMaxTemperature + " / " + formattedMinTemperature);
 
 //            // Create an Intent to launch MainActivity

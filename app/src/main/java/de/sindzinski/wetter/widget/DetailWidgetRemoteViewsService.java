@@ -40,7 +40,8 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_ICON
+            WeatherContract.WeatherEntry.COLUMN_ICON,
+            WeatherContract.LocationEntry.COLUMN_TIME_ZONE
     };
     // these indices must match the projection
     static final int INDEX_WEATHER_ID = 0;
@@ -50,6 +51,7 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
     static final int INDEX_WEATHER_MAX_TEMP = 4;
     static final int INDEX_WEATHER_MIN_TEMP = 5;
     static final int INDEX_ICON = 6;
+    private static final int INDEX_TIME_ZONE = 6;
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
@@ -159,8 +161,9 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
 
                 String description = data.getString(INDEX_WEATHER_DESC);
                 long dateInMillis = data.getLong(INDEX_WEATHER_DATE);
+                String timeZoneName = data.getString(INDEX_TIME_ZONE);
                 String formattedDate = Utility.getShortWeekDay(
-                        DetailWidgetRemoteViewsService.this, dateInMillis);
+                        DetailWidgetRemoteViewsService.this, dateInMillis, timeZoneName);
                 double maxTemp = data.getDouble(INDEX_WEATHER_MAX_TEMP);
                 double minTemp = data.getDouble(INDEX_WEATHER_MIN_TEMP);
                 String formattedMaxTemperature =

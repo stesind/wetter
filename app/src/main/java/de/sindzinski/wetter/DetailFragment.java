@@ -74,7 +74,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             WeatherEntry.COLUMN_ICON,
             // This works because the WeatherProvider returns location data joined with
             // weather data, even though they're stored in two different tables.
-            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+            WeatherContract.LocationEntry.COLUMN_TIME_ZONE
     };
 
     // These indices are tied to DETAIL_COLUMNS.  If DETAIL_COLUMNS changes, these
@@ -90,6 +91,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public static final int COL_WEATHER_DEGREES = 8;
     public static final int COL_WEATHER_CONDITION_ID = 9;
     public static final int COL_WEATHER_ICON = 10;
+    public static final int COL_TIME_ZONE = 11;
 
     private ImageView mIconView;
     private TextView mFriendlyDateView;
@@ -240,8 +242,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
             // Read date from cursor and update views for day of week and date
             long date = data.getLong(COL_WEATHER_DATE);
-            String friendlyDateText = Utility.getDailyDayString(getActivity(), date);
-            String dateText = Utility.getFormattedMonthDay(getActivity(), date);
+            String timeZoneName = data.getString(COL_TIME_ZONE);
+            String friendlyDateText = Utility.getDailyDayString(getActivity(), date, timeZoneName);
+            String dateText = Utility.getFormattedMonthDay(getActivity(), date, timeZoneName);
             mFriendlyDateView.setText(friendlyDateText);
             mDateView.setText(dateText);
 

@@ -452,10 +452,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 cityLongitude = coord.getDouble(OWM_LONGITUDE);
             }
 
-            String timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
-            Log.d(LOG_TAG, timeZoneName);
+            String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
+            Log.d(LOG_TAG, timeZoneId);
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneName);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneId);
 
             long timeInMillis = 0;
 
@@ -644,17 +644,17 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             double cityLatitude = 0;
             double cityLongitude = 0;
-            String timeZoneName ="";
+            String timeZoneId ="";
             if (cityJson.has(OWM_COORD)) {
                 JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
                 cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
                 cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
 
-                timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneName);
+                timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneId);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneName);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneId);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -857,16 +857,16 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             double cityLatitude = 0;
             double cityLongitude = 0;
-            String timeZoneName = "";
+            String timeZoneId = "";
             if (cityJson.has(OWM_COORD)) {
                 JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
                 cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
                 cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
-                timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneName);
+                timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneId);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneName);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneId);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -1125,10 +1125,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
                 double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
 
-                String timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneName);
+                String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneId);
 
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneName);
+                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneId);
             } else {
                 locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
             }
@@ -1272,10 +1272,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
                 double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
 
-                String timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneName);
+                String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneId);
 
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneName);
+                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneId);
             } else {
                 locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
             }
@@ -1501,7 +1501,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param lon             the longitude of the city
      * @return the row ID of the added location.
      */
-    long addLocation(String locationSetting, String cityName, double lat, double lon, long city_id, String timeZoneName) {
+    long addLocation(String locationSetting, String cityName, double lat, double lon, long city_id, String timeZoneId) {
         long locationId;
 
         // locationid is the internal db primary key
@@ -1528,7 +1528,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
-            locationValues.put(WeatherContract.LocationEntry.COLUMN_TIME_ZONE, timeZoneName);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_TIME_ZONE, timeZoneId);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_ID, city_id);
 
             // Finally, insert location data into the database.
@@ -1762,9 +1762,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 selectionArgs);
     }
 
-    public static String getTimeZoneName(double lat, double lon) {
-        final String LOG_TAG = "timeZoneName";
-        String timeZoneName = "";
+    public static String gettimeZoneId(double lat, double lon) {
+        final String LOG_TAG = "timeZoneId";
+        String timeZoneId = "";
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
@@ -1795,7 +1795,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                return timeZoneName;
+                return timeZoneId;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -1809,23 +1809,24 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return timeZoneName;
+                return timeZoneId;
             }
 
 
             JSONObject jsonResponse = new JSONObject(buffer.toString());
-            String responseString = jsonResponse.getString("timeZoneName");
+            String responseString = jsonResponse.getString("timeZoneId");
 
 
-            for (int i = 0; i < responseString.length(); i++) {
-                if (Character.isUpperCase(responseString.charAt(i))) {
-                    char c = responseString.charAt(i);
-                    timeZoneName = timeZoneName + c;
-                }
-            }
+//            for (int i = 0; i < responseString.length(); i++) {
+//                if (Character.isUpperCase(responseString.charAt(i))) {
+//                    char c = responseString.charAt(i);
+//                    timeZoneId = timeZoneId + c;
+//                }
+//            }
 
-            Log.d(LOG_TAG, timeZoneName);
-            return timeZoneName;
+            timeZoneId = responseString;
+            Log.d(LOG_TAG, timeZoneId);
+            return timeZoneId;
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -1846,7 +1847,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                     Log.e(LOG_TAG, "Error closing stream", e);
                 }
             }
-            return timeZoneName;
+            return timeZoneId;
         }
     }
 }

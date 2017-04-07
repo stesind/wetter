@@ -89,6 +89,7 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
             WeatherContract.LocationEntry.COLUMN_COORD_LAT,
             WeatherContract.LocationEntry.COLUMN_COORD_LONG,
             WeatherContract.LocationEntry.COLUMN_CITY_NAME,
+            WeatherContract.LocationEntry.COLUMN_TIME_ZONE,
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
             WeatherContract.WeatherEntry.COLUMN_DEGREES,
             WeatherContract.WeatherEntry.COLUMN_CLOUDS,
@@ -116,17 +117,18 @@ public class ForecastHourlyFragment extends Fragment implements LoaderManager.Lo
     static final int COL_COORD_LAT = 8;
     static final int COL_COORD_LONG = 9;
     static final int COL_CITY_NAME = 10;
-    static final int COL_WEATHER_WIND_SPEED = 11;
-    static final int COL_WEATHER_DEGREES = 12;
-    static final int COL_WEATHER_CLOUDS = 13;
-    static final int COL_WEATHER_RAIN = 14;
-    static final int COL_WEATHER_SNOW = 15;
-    static final int COL_WEATHER_ICON = 16;
-    static final int COL_WEATHER_SUN_RISE = 17;
-    static final int COL_WEATHER_SUN_SET = 18;
-    static final int COL_WEATHER_FEELSLIKE = 19;
-    static final int COL_WEATHER_UVI = 20;
-    static final int COL_TYPE = 21;
+    static final int COL_TIME_ZONE = 11;
+    static final int COL_WEATHER_WIND_SPEED = 12;
+    static final int COL_WEATHER_DEGREES = 13;
+    static final int COL_WEATHER_CLOUDS = 14;
+    static final int COL_WEATHER_RAIN = 15;
+    static final int COL_WEATHER_SNOW = 16;
+    static final int COL_WEATHER_ICON = 17;
+    static final int COL_WEATHER_SUN_RISE = 18;
+    static final int COL_WEATHER_SUN_SET = 19;
+    static final int COL_WEATHER_FEELSLIKE = 20;
+    static final int COL_WEATHER_UVI = 21;
+    static final int COL_TYPE = 22;
 
     /**
      * A callback interface that all activities containing this fragment must

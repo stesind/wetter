@@ -148,24 +148,25 @@ public class ForecastAdapterHourly extends CursorAdapter {
         }
 
         int viewType = getItemViewType(cursor.getPosition());
+        String timeZoneId = cursor.getString(ForecastHourlyFragment.COL_TIME_ZONE);
+        long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
         if (viewType == VIEW_TYPE_TODAY) {
 
             // Get weather icon
 //                viewHolder.mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(
 //                        cursor.getInt(ForecastHourlyFragment.COL_WEATHER_CONDITION_ID)));
             String cityText;
+
             if (cursor.getInt(ForecastHourlyFragment.COL_TYPE) == TYPE_CURRENT) {
-                long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
                 cityText = cursor.getString(ForecastHourlyFragment.COL_CITY_NAME)
                         + ", "
                         + "now ("
-                        + Utility.getHourString(mContext, timeInMillis)
+                        + Utility.getHourString(mContext, timeInMillis, timeZoneId)
                         + ")";
             } else {
-                long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
                 cityText = cursor.getString(ForecastHourlyFragment.COL_CITY_NAME)
                         + ", "
-                        + Utility.getHourlyDayString(mContext, timeInMillis);
+                        + Utility.getHourlyDayString(mContext, timeInMillis, timeZoneId);
             }
             viewHolder.mCityView.setText(cityText);
 
@@ -173,7 +174,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
             long sunSet = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_SUN_SET);
 
             if (sunRise != sunSet) {
-                viewHolder.mDateView.setText(getHourString(mContext, sunRise) + " / " + getHourString(mContext, sunSet));
+                viewHolder.mDateView.setText(getHourString(mContext, sunRise, timeZoneId) + " / " + getHourString(mContext, sunSet, timeZoneId));
             }
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
@@ -203,10 +204,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
 
         } else {
 
-            // Read date from cursor
-            long timeInMillis = cursor.getLong(ForecastHourlyFragment.COL_WEATHER_DATE);
-
-                viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis));
+                viewHolder.mDateView.setText(Utility.getHourlyDayString(mContext, timeInMillis, timeZoneId));
             // Read high temperature from cursor
             double temp = cursor.getDouble(ForecastHourlyFragment.COL_WEATHER_TEMP);
             viewHolder.mTempView.setText(Utility.formatTemperature(mContext, temp, isMetric));
