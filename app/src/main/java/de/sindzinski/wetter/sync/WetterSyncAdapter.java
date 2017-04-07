@@ -42,7 +42,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Vector;
 
-//import de.sindzinski.wetter.BuildConfig;
+import de.sindzinski.wetter.BuildConfig;
 import de.sindzinski.wetter.MainActivity;
 import de.sindzinski.wetter.R;
 import de.sindzinski.wetter.util.Utility;
@@ -452,8 +452,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 cityLongitude = coord.getDouble(OWM_LONGITUDE);
             }
 
-            String timeZone = getTimeZone(cityLatitude, cityLongitude);
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
+            String timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
+            Log.d(LOG_TAG, timeZoneName);
+
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneName);
 
             long timeInMillis = 0;
 
@@ -642,13 +644,17 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             double cityLatitude = 0;
             double cityLongitude = 0;
+            String timeZoneName ="";
             if (cityJson.has(OWM_COORD)) {
                 JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
                 cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
                 cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
+
+                timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneName);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneName);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -851,13 +857,16 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             double cityLatitude = 0;
             double cityLongitude = 0;
+            String timeZoneName = "";
             if (cityJson.has(OWM_COORD)) {
                 JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
                 cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
                 cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
+                timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneName);
             }
 
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneName);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -1004,7 +1013,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
 
-            long locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0);
+            long locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
 
             // Insert the new weather information into the database
             JSONObject currentWeather = forecastJson.getJSONObject("current_observation");
@@ -1115,9 +1124,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
                 double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0);
+
+                String timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneName);
+
+                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneName);
             } else {
-                locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0);
+                locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
             }
 
             // Insert the new weather information into the database
@@ -1258,9 +1271,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
                 double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
                 double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0);
+
+                String timeZoneName = getTimeZoneName(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneName);
+
+                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneName);
             } else {
-                locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0);
+                locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
             }
 
             // Insert the new weather information into the database
@@ -1484,7 +1501,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param lon             the longitude of the city
      * @return the row ID of the added location.
      */
-    long addLocation(String locationSetting, String cityName, double lat, double lon, long city_id) {
+    long addLocation(String locationSetting, String cityName, double lat, double lon, long city_id, String timeZoneName) {
         long locationId;
 
         // locationid is the internal db primary key
@@ -1511,6 +1528,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_TIME_ZONE, timeZoneName);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_ID, city_id);
 
             // Finally, insert location data into the database.
@@ -1744,87 +1762,91 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 selectionArgs);
     }
 
-    public static String getTimeZone(double lat, double lon) {
-//        final String LOG_TAG = "timeZone";
-//        String timeZone = null;
-//        HttpURLConnection urlConnection = null;
-//        BufferedReader reader = null;
-//
-//        try {
-//
-//            final String BASE_URL = "https://maps.googleapis.com/maps/api/timezone/json?";
-//
-//            final String API_KEY = BuildConfig.GOOGLE_MAPS_TIMEZONE_API_KEY;
+    public static String getTimeZoneName(double lat, double lon) {
+        final String LOG_TAG = "timeZoneName";
+        String timeZoneName = "";
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+
+        try {
+            final String BASE_URL = "https://maps.googleapis.com/maps/api/timezone";
+
+            final String API_KEY = BuildConfig.GOOGLE_MAPS_TIMEZONE_API_KEY;
+            String urlPart = "json?" + "location=" + Double.toString(lat) + "," + Double.toString(lon) + "&timestamp=" + System.currentTimeMillis() / 1000 + "&key=" + API_KEY;
+            Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                    .appendEncodedPath(urlPart)
+                    .build();
+            Log.d(LOG_TAG, builtUri.toString());
 //            Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-//                    .appendPath(API_KEY)
+////                    .appendPath(API_KEY)
 //                    .appendQueryParameter("location", Double.toString(lat) + "," + Double.toHexString(lon))
 //                    .appendQueryParameter("timestamp", Long.toString(System.currentTimeMillis() / 1000))
 //                    .appendQueryParameter("key", API_KEY)
 //                    .build();
-//            URL url = new URL(builtUri.toString());
-//
-//            // Create the request to OpenWeatherMap, and open the connection
-//            urlConnection = (HttpURLConnection) url.openConnection();
-//            urlConnection.setRequestMethod("GET");
-//            urlConnection.connect();
-//
-//            // Read the input stream into a String
-//            InputStream inputStream = urlConnection.getInputStream();
-//            StringBuffer buffer = new StringBuffer();
-//            if (inputStream == null) {
-//                // Nothing to do.
-//                return null;
-//            }
-//            reader = new BufferedReader(new InputStreamReader(inputStream));
-//
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-//                // But it does make debugging a *lot* easier if you print out the completed
-//                // buffer for debugging.
-//                buffer.append(line + "\n");
-//            }
-//
-//            if (buffer.length() == 0) {
-//                // Stream was empty.  No point in parsing.
-//                return null;
-//            }
-//
-//
-//            JSONObject jsonResponse = new JSONObject(buffer.toString());
-//            String timeZoneName = jsonResponse.getString("timeZoneName");
-//
-//
-//            for (int i = 0; i < timeZoneName.length(); i++) {
-//                if (Character.isUpperCase(timeZoneName.charAt(i))) {
-//                    char c = timeZoneName.charAt(i);
-//                    timeZone = timeZone + c;
-//                }
-//            }
-//
-//            return timeZone;
-//
-//        } catch (IOException e) {
-//            Log.e(LOG_TAG, "Error ", e);
-//            // If the code didn't successfully get the weather data, there's no point in attempting
-//            // to parse it.
-//        } catch (JSONException e) {
-//            Log.e(LOG_TAG, e.getMessage(), e);
-//            e.printStackTrace();
-//
-//        } finally {
-//            if (urlConnection != null) {
-//                urlConnection.disconnect();
-//            }
-//            if (reader != null) {
-//                try {
-//                    reader.close();
-//                } catch (final IOException e) {
-//                    Log.e(LOG_TAG, "Error closing stream", e);
-//                }
-//            }
-//            return null;
-//        }
-        return null;
+            URL url = new URL(builtUri.toString());
+
+            // Create the request to OpenWeatherMap, and open the connection
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+                return timeZoneName;
+            }
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                // Stream was empty.  No point in parsing.
+                return timeZoneName;
+            }
+
+
+            JSONObject jsonResponse = new JSONObject(buffer.toString());
+            String responseString = jsonResponse.getString("timeZoneName");
+
+
+            for (int i = 0; i < responseString.length(); i++) {
+                if (Character.isUpperCase(responseString.charAt(i))) {
+                    char c = responseString.charAt(i);
+                    timeZoneName = timeZoneName + c;
+                }
+            }
+
+            Log.d(LOG_TAG, timeZoneName);
+            return timeZoneName;
+
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+            return timeZoneName;
+        }
     }
 }

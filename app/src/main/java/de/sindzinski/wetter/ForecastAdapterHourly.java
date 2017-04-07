@@ -67,7 +67,7 @@ public class ForecastAdapterHourly extends CursorAdapter {
     @Override
     public View newView(Context mContext, Cursor cursor, ViewGroup parent) {
 
-        Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
+//        Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
 
         // Choose the layout type
         int viewType = getItemViewType(cursor.getPosition());
