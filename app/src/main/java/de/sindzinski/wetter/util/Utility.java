@@ -158,7 +158,7 @@ public class Utility {
             timeZone = TimeZone.getTimeZone(timeZoneId);
         }
         try {
-            SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:MM z");
+            SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:MM");
             shortDateFormat.setTimeZone(timeZone);
             String dsorig = shortDateFormat.format(timeInMillis);
             Date dconv = shortDateFormat.parse(dsorig);
@@ -196,38 +196,34 @@ public class Utility {
         //code for formatting the date
         Calendar calendar = Calendar.getInstance();
         int today = calendar.get(Calendar.DAY_OF_MONTH);
-
         Date time = gregorianCalendar.getTime();
-        SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
-        shortDateFormat.setTimeZone(timeZone);
 
-        if (day < today + 1) {
-            // If the input date is less than a week in the future, just return the day name.
-            try {
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:00");
+//        SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
+//        shortDateFormat.setTimeZone(timeZone);
+
+        try {
+            if (day < today + 1) {
+                // If the input date is less than a week in the future, just return the day name.
+
+                SimpleDateFormat shortDateFormat = new SimpleDateFormat("HH:00");
                 shortDateFormat.setTimeZone(timeZone);
                 String dsorig = shortDateFormat.format(timeInMillis);
                 Date dconv = shortDateFormat.parse(dsorig);
                 String sconv = shortDateFormat.format(dconv);
                 return sconv;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "";
-            }
-        } else {
-            // Otherwise, use the form "Mon Jun 3"
-            try {
-                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE HH:00");
+
+            } else {
+                // Otherwise, use the form "Mon Jun 3"
+                SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE HH:00");
                 shortDateFormat.setTimeZone(timeZone);
                 String dsorig = shortDateFormat.format(timeInMillis);
                 Date dconv = shortDateFormat.parse(dsorig);
                 String sconv = shortDateFormat.format(dconv);
                 return sconv;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "";
             }
-
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
     }
 
@@ -772,7 +768,6 @@ public class Utility {
         }
         return locationId;
     }
-
 
 
     public static void deleteLocationWeatherData(Context context, long locationId) {
