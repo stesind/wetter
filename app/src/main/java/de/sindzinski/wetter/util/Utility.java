@@ -200,17 +200,7 @@ public class Utility {
         Date time = gregorianCalendar.getTime();
         SimpleDateFormat shortDateFormat = new SimpleDateFormat("EEE MMM dd HH:MM");
         shortDateFormat.setTimeZone(timeZone);
-        // If the date we're building the String for is today's date, the format
-        // is "Today, June 24"
 
-//            if (today == day) {
-//                int formatId = R.string.format_full_friendly_date;
-//                SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("dd.MMM");
-//                return String.format(context.getString(
-//                        formatId,
-//                        gregorianCalendar.getDisplayName(gregorianCalendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()),
-//                        shortenedDateFormat.format(timeInMillis)));
-//            } else
         if (day < today + 1) {
             // If the input date is less than a week in the future, just return the day name.
             try {
@@ -762,7 +752,7 @@ public class Utility {
 
     public static long getLocationId(Context context, String locationSetting) {
 
-        long locationId = 0;
+        long locationId = -1;
 
         Cursor locationCursor = context.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
@@ -778,6 +768,8 @@ public class Utility {
 
         return locationId;
     }
+
+
 
     public static void deleteLocationWeatherData(Context context, long locationId) {
         //delete all old data of given type

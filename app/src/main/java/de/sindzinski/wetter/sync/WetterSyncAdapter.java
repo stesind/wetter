@@ -45,18 +45,19 @@ import java.util.Vector;
 import de.sindzinski.wetter.BuildConfig;
 import de.sindzinski.wetter.MainActivity;
 import de.sindzinski.wetter.R;
-import de.sindzinski.wetter.util.Utility;
 import de.sindzinski.wetter.data.WeatherContract;
+import de.sindzinski.wetter.util.Utility;
 
-import static de.sindzinski.wetter.util.Utility.getLastSync;
-import static de.sindzinski.wetter.util.Utility.getLocationSetting;
-import static de.sindzinski.wetter.util.Utility.getPreferredLocation;
-import static de.sindzinski.wetter.util.Utility.setLastSync;
 import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_OWM;
 import static de.sindzinski.wetter.data.WeatherContract.PROVIDER_WUG;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_CURRENT;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_DAILY;
 import static de.sindzinski.wetter.data.WeatherContract.TYPE_HOURLY;
+import static de.sindzinski.wetter.util.Utility.getLastSync;
+import static de.sindzinski.wetter.util.Utility.getLocationId;
+import static de.sindzinski.wetter.util.Utility.getLocationSetting;
+import static de.sindzinski.wetter.util.Utility.getPreferredLocation;
+import static de.sindzinski.wetter.util.Utility.setLastSync;
 
 public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = WetterSyncAdapter.class.getSimpleName();
@@ -64,7 +65,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
     public static final long SYNC_INTERVAL = 60L * 60L;
-//    public static final int SYNC_INTERVAL = 60 * 180;
+    //    public static final int SYNC_INTERVAL = 60 * 180;
     public static final long SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000L * 60L * 60L * 24L;
     private static final long HOUR_IN_MILLIS = 1000L * 60L * 60L;
@@ -142,7 +143,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                         "http://api.wunderground.com/api/";
                 builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendPath(Utility.getApiKey(getContext()))
-                        .appendPath("geolookup")
+//                        .appendPath("geolookup")
 //                        .appendPath("conditions")
                         .appendPath(TYPE_PATH)
                         .appendPath("q")
@@ -383,11 +384,6 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         // Location information
         String OWM_CITY_ID = "id";
         String OWM_CITY_NAME = "name";
-        String OWM_COORD = "coord";
-
-        // Location coordinate
-        String OWM_LATITUDE = "lat";
-        String OWM_LONGITUDE = "lon";
 
         String OWM_TIME = "dt";
         // Weather information.  Each day's forecast info is an element of the "list" array.
@@ -442,20 +438,12 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
             long cityId = forecastJson.getLong(OWM_CITY_ID);
-            String cityName = forecastJson.getString(OWM_CITY_NAME);
 
-            double cityLatitude = 0;
-            double cityLongitude = 0;
-            if (forecastJson.has(OWM_COORD)) {
-                JSONObject coord = forecastJson.getJSONObject(OWM_COORD);
-                cityLatitude = coord.getDouble(OWM_LATITUDE);
-                cityLongitude = coord.getDouble(OWM_LONGITUDE);
+            long locationId = getLocationId(getContext(), locationSetting);
+            if (locationId<0) {
+                Log.d(LOG_TAG, "no location id found");
+                return;
             }
-
-            String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
-            Log.d(LOG_TAG, timeZoneId);
-
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneId);
 
             long timeInMillis = 0;
 
@@ -578,8 +566,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         // Location information
         String OWM_CITY = "city";
         String OWM_CITY_ID = "id";
-        String OWM_CITY_NAME = "name";
-        String OWM_COORD = "coord";
+
 
         // Location coordinate
         String OWM_LATITUDE = "lat";
@@ -639,22 +626,12 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
-            long cityId = cityJson.getLong(OWM_CITY_ID);
-            String cityName = cityJson.getString(OWM_CITY_NAME);
 
-            double cityLatitude = 0;
-            double cityLongitude = 0;
-            String timeZoneId ="";
-            if (cityJson.has(OWM_COORD)) {
-                JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
-                cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
-                cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
-
-                timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneId);
+            long locationId = getLocationId(getContext(), locationSetting);
+            if (locationId<0) {
+                Log.d(LOG_TAG, "no location id found");
+                return;
             }
-
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneId);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -852,21 +829,12 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
-            long cityId = cityJson.getLong(OWM_CITY_ID);
-            String cityName = cityJson.getString(OWM_CITY_NAME);
 
-            double cityLatitude = 0;
-            double cityLongitude = 0;
-            String timeZoneId = "";
-            if (cityJson.has(OWM_COORD)) {
-                JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
-                cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
-                cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
-                timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneId);
+            long locationId = getLocationId(getContext(), Utility.getLocationSetting(getContext()));
+            if (locationId<0) {
+                Log.d(LOG_TAG, "no location id found");
+                return;
             }
-
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, cityId, timeZoneId);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
@@ -1013,7 +981,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
 
-            long locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
+            long locationId = getLocationId(getContext(), locationSetting);
+            if (locationId<0) {
+                Log.d(LOG_TAG, "no location id found");
+                return;
+            }
 
             // Insert the new weather information into the database
             JSONObject currentWeather = forecastJson.getJSONObject("current_observation");
@@ -1115,22 +1087,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
 
-            long locationId = 0;
-            if (forecastJson.has("location")) {
-
-                JSONObject cityJson = forecastJson.getJSONObject("location");
-                long cityId = cityJson.getLong("wmo");
-                String cityName = cityJson.getString("city");
-
-                double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
-                double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
-
-                String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneId);
-
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneId);
-            } else {
-                locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
+            long locationId = getLocationId(getContext(), locationSetting);
+            if (locationId<0) {
+                Log.d(LOG_TAG, "no location id found");
+                return;
             }
 
             // Insert the new weather information into the database
@@ -1262,22 +1222,10 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
 
-            long locationId = 0;
-            if (forecastJson.has("location")) {
-
-                JSONObject cityJson = forecastJson.getJSONObject("location");
-                long cityId = cityJson.getLong("wmo");
-                String cityName = cityJson.getString("city");
-
-                double cityLatitude = cityJson.getDouble(OWM_LATITUDE);
-                double cityLongitude = cityJson.getDouble(OWM_LONGITUDE);
-
-                String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
-                Log.d(LOG_TAG, timeZoneId);
-
-                locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude, 0, timeZoneId);
-            } else {
-                locationId = addLocation(Utility.getPreferredLocation(getContext()), "", 0, 0, 0, "");
+            long locationId = getLocationId(getContext(), locationSetting);
+            if (locationId<0) {
+                Log.d(LOG_TAG, "no location id found");
+                return;
             }
 
             // Insert the new weather information into the database
@@ -1431,16 +1379,16 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                     double high = cursor.getDouble(INDEX_MAX_TEMP);
                     double low = cursor.getDouble(INDEX_MIN_TEMP);
                     String desc = cursor.getString(INDEX_SHORT_DESC);
-                    int iconId =R.drawable.ic_clear;
+                    int iconId = R.drawable.ic_clear;
                     Bitmap largeIcon = null;
 
                     if (Utility.getProvider(context).equals(context.getString(R.string.pref_provider_wug))) {
                         String iconString = cursor.getString(INDEX_ICON);
                     } else {
-                            iconId = Utility.getIconResourceForWeatherCondition(weatherId);
-                            largeIcon = BitmapFactory.decodeResource(context.getResources(),
+                        iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+                        largeIcon = BitmapFactory.decodeResource(context.getResources(),
                                 Utility.getArtResourceForWeatherCondition(weatherId));
-                        }
+                    }
 
 
                     String title = context.getString(R.string.app_name);
@@ -1449,7 +1397,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                     String contentText = String.format(context.getString(R.string.format_notification),
                             desc,
                             Utility.formatTemperature(context, temp, Utility.isMetric(context))
-                            );
+                    );
 
                     // NotificationCompatBuilder is a very convenient way to build backward-compatible
                     // notifications.  Just throw in some data.
@@ -1501,13 +1449,13 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param lon             the longitude of the city
      * @return the row ID of the added location.
      */
-    long addLocation(String locationSetting, String cityName, double lat, double lon, long city_id, String timeZoneId) {
+    public static long addLocation(Context context, String locationSetting, String cityName, double lat, double lon, long city_id, String timeZoneId) {
         long locationId;
 
         // locationid is the internal db primary key
         // city_id is the owm id for the city
         // First, check if the location with this city name exists in the db
-        Cursor locationCursor = getContext().getContentResolver().query(
+        Cursor locationCursor = context.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
                 new String[]{WeatherContract.LocationEntry._ID},
                 WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
@@ -1532,7 +1480,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_ID, city_id);
 
             // Finally, insert location data into the database.
-            Uri insertedUri = getContext().getContentResolver().insert(
+            Uri insertedUri = context.getContentResolver().insert(
                     WeatherContract.LocationEntry.CONTENT_URI,
                     locationValues
             );
@@ -1678,9 +1626,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         /*
          * Since we've created an account
          */
-                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         long syncInterval = Long.parseLong(sp.getString(context.getString(R.string.pref_sync_key), context.getString(R.string.pref_sync_default)));
-        long flexTime = syncInterval/3;
+        long flexTime = syncInterval / 3;
         WetterSyncAdapter.configurePeriodicSync(context, syncInterval, flexTime);
 
         /*
@@ -1729,6 +1677,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 selection,
                 selectionArgs);
     }
+
     static public void deleteOldWeatherData(Context mContext, Integer mType, Integer mOffset) {
         // delete old data so we don't build up an endless history
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
@@ -1740,7 +1689,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
         String selection =
                 WeatherContract.WeatherEntry.COLUMN_DATE + " < ? AND " +
-                WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
+                        WeatherContract.WeatherEntry.COLUMN_TYPE + " = ? ";
         String[] selectionArgs = new String[]{
                 Long.toString(timeInMillis),
                 Integer.toString(mType)
@@ -1850,4 +1799,133 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             return timeZoneId;
         }
     }
+
+    public static boolean geoLookUp(Context context, String locationSetting) {
+
+        final String LOG_TAG = "Wetter geolookup";
+        // These two need to be declared outside the try/catch
+        // so that they can be closed in the finally block.
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+
+        // Will contain the raw JSON response as a string.
+        String forecastJsonStr = null;
+
+        String format = "json";
+        String units = "metric";
+        int numDays = 14;
+        String locationQuery;
+
+        try {
+            // Construct the URL for the OpenWeatherMap query
+            // Possible parameters are avaiable at OWM's forecast API page, at
+            // http://openweathermap.org/API#forecast
+
+            Uri builtUri = null;
+
+            final String FORECAST_BASE_URL =
+                    "http://api.wunderground.com/api/";
+            builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                    .appendPath(Utility.getApiKey(context))
+                    .appendPath("geolookup")
+                    .appendPath("q")
+                    .appendEncodedPath(getLocationSetting(context))
+                    .build();
+
+            URL url = new URL(builtUri.toString() + ".json");
+
+            // Create the request to OpenWeatherMap, and open the connection
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+                return false;
+            }
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                // Stream was empty.  No point in parsing.
+                setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                return false;
+            }
+            forecastJsonStr = buffer.toString();
+
+            //process json
+            final String LAT = "lat";
+            final String LON = "lon";
+            final String TZ_LONG = "tz_long";
+            final String TZ_SHORT = "tz_short";
+
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+
+            // do we have an error?
+            if (forecastJson.has("Error")) {
+                String errorType = forecastJson.getString("type");
+                String errorDescription = forecastJson.getString("description");
+
+                switch (errorType) {
+                    case "querynotfound":
+                        setLocationStatus(context, LOCATION_STATUS_INVALID);
+                        return false;
+                    default:
+                        setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                        return false;
+                }
+            }
+
+            long locationId = 0;
+            if (forecastJson.has("location")) {
+
+                JSONObject json = forecastJson.getJSONObject("location");
+                long cityId = json.getLong("wmo");
+                String cityName = json.getString("city");
+
+                double lat = json.getDouble(LAT);
+                double lon = json.getDouble(LON);
+                String timeZoneId = json.getString(TZ_LONG);
+//                    String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
+                Log.d(LOG_TAG, timeZoneId);
+
+                locationId = addLocation(context, locationSetting, cityName, lon, lat, 0, timeZoneId);
+            }
+
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+            setLocationStatus(context, LOCATION_STATUS_SERVER_INVALID);
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+        }
+        return true;
+
+    }
+
+
 }
