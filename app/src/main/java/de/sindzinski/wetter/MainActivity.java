@@ -234,7 +234,6 @@ public class MainActivity extends AppCompatActivity implements
                         if (locationSetting.compareTo("") != 0) {
                             Utility.setPreferredLocation(getApplicationContext(), locationSetting);
                             Utility.resetLocationStatus(getApplicationContext());
-                            WetterSyncAdapter.geoLookUp(getApplicationContext(), locationSetting );
                             WetterSyncAdapter.syncImmediately(getApplicationContext());
                             reInitializeNavigation();
                         }
@@ -257,7 +256,6 @@ public class MainActivity extends AppCompatActivity implements
                         if (locationSetting.compareTo("") != 0) {
                             Utility.setPreferredLocation(getApplicationContext(), locationSetting);
                             Utility.resetLocationStatus(getApplicationContext());
-                            WetterSyncAdapter.geoLookUp(getApplicationContext(), locationSetting );
                             WetterSyncAdapter.syncImmediately(getApplicationContext());
                             reInitializeNavigation();
                         }

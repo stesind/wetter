@@ -752,6 +752,7 @@ public class Utility {
 
     public static long getLocationId(Context context, String locationSetting) {
 
+        final String LOG_TAG = "Wetter: getLocationId";
         long locationId = -1;
 
         Cursor locationCursor = context.getContentResolver().query(
@@ -764,8 +765,11 @@ public class Utility {
         if (locationCursor.moveToFirst()) {
             int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
             locationId = locationCursor.getLong(locationIdIndex);
+            Log.d(LOG_TAG, "location id found");
+        } else {
+            //empty cursor!
+            Log.d(LOG_TAG, "no location id found");
         }
-
         return locationId;
     }
 

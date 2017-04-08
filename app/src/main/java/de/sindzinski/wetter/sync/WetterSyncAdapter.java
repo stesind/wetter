@@ -442,7 +442,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                return;
+                geoLookUp(getContext(), locationSetting);
+                locationId = getLocationId(getContext(), locationSetting);
+                if (locationId<0) {
+                    return;
+                }
             }
 
             long timeInMillis = 0;
@@ -630,7 +634,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                return;
+                geoLookUp(getContext(), locationSetting);
+                locationId = getLocationId(getContext(), locationSetting);
+                if (locationId<0) {
+                    return;
+                }
             }
 
             // Insert the new weather information into the database
@@ -833,7 +841,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), Utility.getLocationSetting(getContext()));
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                return;
+                geoLookUp(getContext(), locationSetting);
+                locationId = getLocationId(getContext(), locationSetting);
+                if (locationId<0) {
+                    return;
+                }
             }
 
             // Insert the new weather information into the database
@@ -984,7 +996,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                return;
+                geoLookUp(getContext(), locationSetting);
+                locationId = getLocationId(getContext(), locationSetting);
+                if (locationId<0) {
+                    return;
+                }
             }
 
             // Insert the new weather information into the database
@@ -1090,7 +1106,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                return;
+                geoLookUp(getContext(), locationSetting);
+                locationId = getLocationId(getContext(), locationSetting);
+                if (locationId<0) {
+                    return;
+                }
             }
 
             // Insert the new weather information into the database
@@ -1225,7 +1245,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                return;
+                geoLookUp(getContext(), locationSetting);
+                locationId = getLocationId(getContext(), locationSetting);
+                if (locationId<0) {
+                    return;
+                }
             }
 
             // Insert the new weather information into the database
@@ -1451,7 +1475,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public static long addLocation(Context context, String locationSetting, String cityName, double lat, double lon, long city_id, String timeZoneId) {
         long locationId;
-
+        final String LOG_TAG = "Wetter: adding location";
         // locationid is the internal db primary key
         // city_id is the owm id for the city
         // First, check if the location with this city name exists in the db
@@ -1487,6 +1511,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
 
             // The resulting URI contains the ID for the row.  Extract the locationId from the Uri.
             locationId = ContentUris.parseId(insertedUri);
+            Log.d(LOG_TAG, "Added location");
         }
 
         locationCursor.close();
@@ -1711,7 +1736,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 selectionArgs);
     }
 
-    public static String gettimeZoneId(double lat, double lon) {
+    public String gettimeZoneId(double lat, double lon) {
         final String LOG_TAG = "timeZoneId";
         String timeZoneId = "";
         HttpURLConnection urlConnection = null;
@@ -1800,7 +1825,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public static boolean geoLookUp(Context context, String locationSetting) {
+    public boolean geoLookUp(Context context, String locationSetting) {
 
         final String LOG_TAG = "Wetter geolookup";
         // These two need to be declared outside the try/catch
@@ -1844,6 +1869,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
+                Log.d(LOG_TAG, "empty inputStream");
                 return false;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -1859,6 +1885,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
                 setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                Log.d(LOG_TAG, "empty buffer");
                 return false;
             }
             forecastJsonStr = buffer.toString();
