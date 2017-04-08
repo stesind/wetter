@@ -95,7 +95,7 @@ public class AppNavigationTest {
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        onView(withText(R.string.dialog_auto))
+        onView(withText(R.string.dialog_current_location))
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
     }

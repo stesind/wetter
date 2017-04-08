@@ -58,6 +58,7 @@ import static de.sindzinski.wetter.util.Utility.getLocationId;
 import static de.sindzinski.wetter.util.Utility.getLocationSetting;
 import static de.sindzinski.wetter.util.Utility.getPreferredLocation;
 import static de.sindzinski.wetter.util.Utility.setLastSync;
+import static de.sindzinski.wetter.util.Utility.wordFirstCap;
 
 public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = WetterSyncAdapter.class.getSimpleName();
@@ -442,7 +443,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                geoLookUp(getContext(), locationSetting);
+                geoLookUp(getContext(), locationSetting, 0, 0);
                 locationId = getLocationId(getContext(), locationSetting);
                 if (locationId<0) {
                     return;
@@ -634,7 +635,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                geoLookUp(getContext(), locationSetting);
+                geoLookUp(getContext(), locationSetting,0,0);
                 locationId = getLocationId(getContext(), locationSetting);
                 if (locationId<0) {
                     return;
@@ -841,7 +842,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), Utility.getLocationSetting(getContext()));
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                geoLookUp(getContext(), locationSetting);
+                geoLookUp(getContext(), locationSetting, 0, 0);
                 locationId = getLocationId(getContext(), locationSetting);
                 if (locationId<0) {
                     return;
@@ -996,7 +997,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                geoLookUp(getContext(), locationSetting);
+                geoLookUp(getContext(), locationSetting, 0,0);
                 locationId = getLocationId(getContext(), locationSetting);
                 if (locationId<0) {
                     return;
@@ -1106,7 +1107,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                geoLookUp(getContext(), locationSetting);
+                geoLookUp(getContext(), locationSetting,0,0);
                 locationId = getLocationId(getContext(), locationSetting);
                 if (locationId<0) {
                     return;
@@ -1245,7 +1246,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = getLocationId(getContext(), locationSetting);
             if (locationId<0) {
                 Log.d(LOG_TAG, "no location id found");
-                geoLookUp(getContext(), locationSetting);
+                geoLookUp(getContext(), locationSetting,0,0);
                 locationId = getLocationId(getContext(), locationSetting);
                 if (locationId<0) {
                     return;
@@ -1825,7 +1826,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public boolean geoLookUp(Context context, String locationSetting) {
+    public static long geoLookUp(Context context, String locationSetting, double lat, double lon) {
 
         final String LOG_TAG = "Wetter geolookup";
         // These two need to be declared outside the try/catch
@@ -1841,6 +1842,11 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
         int numDays = 14;
         String locationQuery;
 
+        if (locationSetting.equals("")) {
+            locationSetting = Double.toString(lat) + "," + Double.toString(lon);
+        }
+
+        Long locationId = -1L;
         try {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
@@ -1854,7 +1860,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                     .appendPath(Utility.getApiKey(context))
                     .appendPath("geolookup")
                     .appendPath("q")
-                    .appendEncodedPath(getLocationSetting(context))
+                    .appendEncodedPath(locationSetting)
                     .build();
 
             URL url = new URL(builtUri.toString() + ".json");
@@ -1870,7 +1876,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             if (inputStream == null) {
                 // Nothing to do.
                 Log.d(LOG_TAG, "empty inputStream");
-                return false;
+                return locationId;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -1886,7 +1892,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 // Stream was empty.  No point in parsing.
                 setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
                 Log.d(LOG_TAG, "empty buffer");
-                return false;
+                return locationId;
             }
             forecastJsonStr = buffer.toString();
 
@@ -1895,6 +1901,9 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
             final String LON = "lon";
             final String TZ_LONG = "tz_long";
             final String TZ_SHORT = "tz_short";
+            final String COUNTRY = "country_name";
+            final String CITY = "city";
+            final String STATE = "state";
 
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
 
@@ -1906,27 +1915,38 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 switch (errorType) {
                     case "querynotfound":
                         setLocationStatus(context, LOCATION_STATUS_INVALID);
-                        return false;
+                        return locationId;
                     default:
                         setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-                        return false;
+                        return locationId;
                 }
             }
 
-            long locationId = 0;
             if (forecastJson.has("location")) {
 
                 JSONObject json = forecastJson.getJSONObject("location");
                 long cityId = json.getLong("wmo");
-                String cityName = json.getString("city");
-
-                double lat = json.getDouble(LAT);
-                double lon = json.getDouble(LON);
+                String city = json.getString(CITY);
+                String country = json.getString(COUNTRY);
+                String state = json.getString(STATE);
+                if (country.equals("USA")) {
+                    country = state;
+                }
+                lat = json.getDouble(LAT);
+                lon = json.getDouble(LON);
                 String timeZoneId = json.getString(TZ_LONG);
 //                    String timeZoneId = gettimeZoneId(cityLatitude, cityLongitude);
                 Log.d(LOG_TAG, timeZoneId);
+                StringBuilder builder = new StringBuilder();
+                builder
+                        .append(country)
+                        .append("/")
+                        .append(city);
 
-                locationId = addLocation(context, locationSetting, cityName, lon, lat, 0, timeZoneId);
+                locationSetting = builder.toString(); //This is the complete locationsetting as wug.
+                locationSetting = wordFirstCap(locationSetting, "/");
+
+                locationId = addLocation(context, locationSetting, city, lon, lat, cityId, timeZoneId);
             }
 
         } catch (IOException e) {
@@ -1950,9 +1970,8 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         }
-        return true;
+        return locationId;
 
     }
-
 
 }

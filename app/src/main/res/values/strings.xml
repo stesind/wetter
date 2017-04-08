@@ -252,7 +252,8 @@
     <string name="dialog_title_add_location_setting">Enter a new location</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_auto">Detect Location</string>
+    <string name="dialog_current_location">Current</string>
+    <string name="dialog_place_picker">Place</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_add_location">Add location</string>

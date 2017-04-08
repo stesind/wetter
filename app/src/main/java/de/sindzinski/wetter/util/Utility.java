@@ -769,6 +769,28 @@ public class Utility {
         return locationId;
     }
 
+    public static String getLocationSetting(Context context, Long locationId) {
+
+        final String LOG_TAG = "Wetter: getLocationId";
+        String locationSetting = "";
+
+        Cursor locationCursor = context.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING},
+                WeatherContract.LocationEntry._ID + " = ?",
+                new String[]{Long.toString(locationId)},
+                null);
+
+        if (locationCursor.moveToFirst()) {
+            int locationSettingIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING);
+            locationSetting = locationCursor.getString(locationSettingIndex);
+            Log.d(LOG_TAG, "locationSetting found");
+        } else {
+            //empty cursor!
+            Log.d(LOG_TAG, "no locationSetting found");
+        }
+        return locationSetting;
+    }
 
     public static void deleteLocationWeatherData(Context context, long locationId) {
         //delete all old data of given type

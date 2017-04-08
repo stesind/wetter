@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SyncStatusObserver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
@@ -32,6 +31,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -60,6 +60,11 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.facebook.stetho.Stetho;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -99,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ViewPager mViewPager;
     private final int PERMISSIONS_REQUEST_GET_LOCATION = 101;
+    private final int PLACE_PICKER_REQUEST = 102;
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -147,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements
         sp.registerOnSharedPreferenceChangeListener(this);
 
     }
+
     private void addLocationToNavigation() {
         Cursor locationCursor = this.getContentResolver().query(
                 WeatherContract.LocationEntry.CONTENT_URI,
@@ -196,12 +203,12 @@ public class MainActivity extends AppCompatActivity implements
             String locationSetting = item.getTitle().toString();
 //            long locationId = WetterSyncAdapter.getPreferredLocationCityId(this, locationSetting);
 //            if (locationId != 0) {
-                //change the location, sync and update adapters
-                Utility.setPreferredLocation(this, locationSetting);
-                Utility.resetLocationStatus(this);
-                Utility.setLastSync(this, System.currentTimeMillis() - 1000 * 60 * 10);
-                WetterSyncAdapter.syncImmediately(this);
-                Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
+            //change the location, sync and update adapters
+            Utility.setPreferredLocation(this, locationSetting);
+            Utility.resetLocationStatus(this);
+            Utility.setLastSync(this, System.currentTimeMillis() - 1000 * 60 * 10);
+            WetterSyncAdapter.syncImmediately(this);
+            Utility.showSnackbar(this, findViewById(R.id.viewpager), R.string.location_changed);
 //            }
         }
 
@@ -229,8 +236,8 @@ public class MainActivity extends AppCompatActivity implements
                                 .toString()
                                 .toLowerCase()
                                 .replaceAll("\\s+", "");
-                        locationSetting = Utility.wordFirstCap(locationSetting,"/");
-                        locationSetting = Utility.wordFirstCap(locationSetting,",");
+                        locationSetting = Utility.wordFirstCap(locationSetting, "/");
+                        locationSetting = Utility.wordFirstCap(locationSetting, ",");
                         if (locationSetting.compareTo("") != 0) {
                             Utility.setPreferredLocation(getApplicationContext(), locationSetting);
                             Utility.resetLocationStatus(getApplicationContext());
@@ -246,29 +253,106 @@ public class MainActivity extends AppCompatActivity implements
                         dialog.cancel();
                     }
                 })
-                .setNeutralButton(R.string.dialog_auto, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.dialog_current_location, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the mSelectedItems results somewhere
                         // or return them to the component that opened the dialog
-                        Location location = getLocation();
-                        String locationSetting = getLocationSetting(location);
-                        if (locationSetting.compareTo("") != 0) {
-                            Utility.setPreferredLocation(getApplicationContext(), locationSetting);
-                            Utility.resetLocationStatus(getApplicationContext());
-                            WetterSyncAdapter.syncImmediately(getApplicationContext());
-                            reInitializeNavigation();
-                        }
+
                     }
-                });
+                })
+//                .setNeutralButton(R.string.dialog_place_picker, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int id) {
+//                        startPlacePicker();
+//                    }
+//                })
+        ;
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    public void onCurrentLocation() {
+        Location location = getLocation();
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+        String locationSetting = getLocationSetting(lat, lon);
+        if (locationSetting.compareTo("") != 0) {
+            Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+            Utility.resetLocationStatus(getApplicationContext());
+            WetterSyncAdapter.syncImmediately(getApplicationContext());
+            reInitializeNavigation();
+        }
+    }
+
+    public void startPlacePicker() {
+//        if (!checkForPermission()) {
+//            askForPermissions();
+//            return;
+//        }
+        try {
+            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException
+                | GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addLocationSetting() {
         addLocationSettingDialog();
     }
 
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(this, data);
+                String address = (String) place.getAddress();
+                LatLng latlon = place.getLatLng();
+
+                boolean geolookup = true;
+                if (geolookup) {
+                    //use geolookup from wug
+                new GeoLookUpTask().execute(latlon.latitude, latlon.longitude);
+                } else {
+                    // or use geocoder alternatively
+                    String locationSetting = getLocationSetting(latlon.latitude, latlon.longitude);
+                    Log.d(LOG_TAG, "new locationetting");
+                    if (locationSetting.compareTo("") != 0) {
+                        Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                        Utility.resetLocationStatus(getApplicationContext());
+                        WetterSyncAdapter.syncImmediately(getApplicationContext());
+                        reInitializeNavigation();
+                    }
+                }
+            }
+        }
+    }
+
+
+    class GeoLookUpTask extends AsyncTask<Double, Integer, Long> {
+
+        @Override
+        protected Long doInBackground(Double... doubles) {
+            return WetterSyncAdapter.geoLookUp(getApplicationContext(), "", doubles[0], doubles[1]);
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long locationId) {
+            // dismiss progress dialog and update ui
+            if (!(locationId<0)) {
+                String locationSetting = Utility.getLocationSetting(getApplication(),locationId);
+                Utility.setPreferredLocation(getApplication(),locationSetting);
+                Utility.resetLocationStatus(getApplicationContext());
+                WetterSyncAdapter.syncImmediately(getApplicationContext());
+                reInitializeNavigation();
+            }
+        }
+    }
 
     public void askForPermissions() {
         // Here, thisActivity is the current activity
@@ -277,15 +361,13 @@ public class MainActivity extends AppCompatActivity implements
                 != PackageManager.PERMISSION_GRANTED) &&
                 (ContextCompat.checkSelfPermission(this,
                         Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED))
-                {
+                        != PackageManager.PERMISSION_GRANTED)) {
 
             // Should we show an explanation?
             if ((ActivityCompat.shouldShowRequestPermissionRationale(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)) &&
                     (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            android.Manifest.permission.ACCESS_FINE_LOCATION)))
-                    {
+                            android.Manifest.permission.ACCESS_FINE_LOCATION))) {
 
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
@@ -347,10 +429,11 @@ public class MainActivity extends AppCompatActivity implements
                     PERMISSIONS_REQUEST_GET_LOCATION);
         }
     }
+
     public boolean checkForPermission() {
 
         if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
-                ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
             return false;
@@ -385,24 +468,24 @@ public class MainActivity extends AppCompatActivity implements
         return location;
     }
 
-    public String getLocationSetting(Location location) {
+    public String getLocationSetting(double lat, double lon) {
         String locationSetting = "";
         //locale must be set to us for getting english countey names
         Geocoder geoCoder = new Geocoder(this, Locale.US);
         StringBuilder builder = new StringBuilder();
         try {
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
 
-            List<Address> address = geoCoder.getFromLocation(lat, lng, 1);
+
+            List<Address> address = geoCoder.getFromLocation(lat, lon, 1);
 //            String countryCode = address.get(0).getCountryCode();
             String country = address.get(0).getCountryName();
 //            String country = CountryCodes.getCountry(countryCode);
-            String city = address.get(0).getLocality();
+            String locality = address.get(0).getLocality();
+            String adminArea = address.get(0).getAdminArea();
             builder
                     .append(country)
                     .append("/")
-                    .append(city);
+                    .append(adminArea);
 
             locationSetting = builder.toString(); //This is the complete locationsetting as wug.
             locationSetting = wordFirstCap(locationSetting, "/");
