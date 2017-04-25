@@ -24,7 +24,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.database.Cursor;
+import android.graphics.drawable.Icon;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -60,14 +63,15 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.facebook.stetho.Stetho;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlacePicker;
-import com.google.android.gms.maps.model.LatLng;
+//import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+//import com.google.android.gms.common.GooglePlayServicesRepairableException;
+//import com.google.android.gms.location.places.Place;
+//import com.google.android.gms.location.places.ui.PlacePicker;
+//import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -106,6 +110,8 @@ public class MainActivity extends AppCompatActivity implements
     private final int PERMISSIONS_REQUEST_GET_LOCATION = 101;
     private final int PLACE_PICKER_REQUEST = 102;
     private static final String TAG = MainActivity.class.getSimpleName();
+    final String HOURLY_VIEW = "hourly";
+    final String DAILY_VIEW = "daily";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mViewPager.setAdapter(adapter);
 
+        setDefaultFragmentFromIntentData();
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
@@ -151,6 +159,56 @@ public class MainActivity extends AppCompatActivity implements
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.registerOnSharedPreferenceChangeListener(this);
+
+        registerAppShortcuts();
+
+    }
+
+    private void setDefaultFragmentFromIntentData() {
+
+        Intent intent = getIntent();
+        String type;
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            type = extras.getString(Intent.EXTRA_TEXT);
+            if (type.equals(HOURLY_VIEW)) {
+                mViewPager = (ViewPager) findViewById(R.id.viewpager);
+                mViewPager.setCurrentItem(0);
+            } else {
+                mViewPager = (ViewPager) findViewById(R.id.viewpager);
+                mViewPager.setCurrentItem(1);
+            }
+        }
+    }
+
+    private void registerAppShortcuts() {
+        ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+
+        Intent hourlyIntent = new Intent(this, de.sindzinski.wetter.MainActivity.class)
+                .setAction(Intent.ACTION_VIEW)
+                .setData(Uri.parse("de.sindzinski.wetter.hourly"))
+                .putExtra(Intent.EXTRA_TEXT, HOURLY_VIEW);
+
+        ShortcutInfo shortcut_hourly = new ShortcutInfo.Builder(this, "id1")
+                .setShortLabel(getString(R.string.hourly_weather_forcast))
+                .setLongLabel(getString(R.string.hourly_weather_forcast))
+//                .setIcon(Icon.createWithResource(this, R.drawable.icon_website))
+                .setIntent(hourlyIntent)
+                .build();
+
+        Intent dailyIntent = new Intent(this, MainActivity.class)
+                .setAction(Intent.ACTION_VIEW)
+                .setData(Uri.parse("de.sindzinski.wetter.daily"))
+                .putExtra(Intent.EXTRA_TEXT, DAILY_VIEW);
+
+        ShortcutInfo shortcut_daily = new ShortcutInfo.Builder(this, "id2")
+                .setShortLabel(getString(R.string.daily_weather_forcast))
+                .setLongLabel(getString(R.string.daily_weather_forcast))
+//                .setIcon(Icon.createWithResource(this, R.drawable.icon_website))
+                .setIntent(dailyIntent)
+                .build();
+
+        shortcutManager.setDynamicShortcuts(Arrays.asList(shortcut_hourly, shortcut_daily));
 
     }
 
@@ -261,12 +319,13 @@ public class MainActivity extends AppCompatActivity implements
 
                     }
                 })
-//                .setNeutralButton(R.string.dialog_place_picker, new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int id) {
+                .setNeutralButton(R.string.dialog_place_picker, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
 //                        startPlacePicker();
-//                    }
-//                })
+                        onCurrentLocation();
+                    }
+                })
         ;
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -285,74 +344,74 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void startPlacePicker() {
-//        if (!checkForPermission()) {
-//            askForPermissions();
-//            return;
+//    public void startPlacePicker() {
+////        if (!checkForPermission()) {
+////            askForPermissions();
+////            return;
+////        }
+//        try {
+//            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+//            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+//        } catch (GooglePlayServicesRepairableException
+//                | GooglePlayServicesNotAvailableException e) {
+//            e.printStackTrace();
 //        }
-        try {
-            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
-        } catch (GooglePlayServicesRepairableException
-                | GooglePlayServicesNotAvailableException e) {
-            e.printStackTrace();
-        }
-    }
+//    }
 
     public void addLocationSetting() {
         addLocationSettingDialog();
     }
 
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PLACE_PICKER_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                Place place = PlacePicker.getPlace(this, data);
-                String address = (String) place.getAddress();
-                LatLng latlon = place.getLatLng();
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == PLACE_PICKER_REQUEST) {
+//            if (resultCode == RESULT_OK) {
+//                Place place = PlacePicker.getPlace(this, data);
+//                String address = (String) place.getAddress();
+//                LatLng latlon = place.getLatLng();
+//
+//                boolean geolookup = true;
+//                if (geolookup) {
+//                    //use geolookup from wug
+//                new GeoLookUpTask().execute(latlon.latitude, latlon.longitude);
+//                } else {
+//                    // or use geocoder alternatively
+//                    String locationSetting = getLocationSetting(latlon.latitude, latlon.longitude);
+//                    Log.d(LOG_TAG, "new locationetting");
+//                    if (locationSetting.compareTo("") != 0) {
+//                        Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+//                        Utility.resetLocationStatus(getApplicationContext());
+//                        WetterSyncAdapter.syncImmediately(getApplicationContext());
+//                        reInitializeNavigation();
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-                boolean geolookup = true;
-                if (geolookup) {
-                    //use geolookup from wug
-                new GeoLookUpTask().execute(latlon.latitude, latlon.longitude);
-                } else {
-                    // or use geocoder alternatively
-                    String locationSetting = getLocationSetting(latlon.latitude, latlon.longitude);
-                    Log.d(LOG_TAG, "new locationetting");
-                    if (locationSetting.compareTo("") != 0) {
-                        Utility.setPreferredLocation(getApplicationContext(), locationSetting);
-                        Utility.resetLocationStatus(getApplicationContext());
-                        WetterSyncAdapter.syncImmediately(getApplicationContext());
-                        reInitializeNavigation();
-                    }
-                }
-            }
-        }
-    }
 
-
-    class GeoLookUpTask extends AsyncTask<Double, Integer, Long> {
-
-        @Override
-        protected Long doInBackground(Double... doubles) {
-            return WetterSyncAdapter.geoLookUp(getApplicationContext(), "", doubles[0], doubles[1]);
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-//            setProgressPercent(progress[0]);
-        }
-
-        protected void onPostExecute(Long locationId) {
-            // dismiss progress dialog and update ui
-            if (!(locationId<0)) {
-                String locationSetting = Utility.getLocationSetting(getApplication(),locationId);
-                Utility.setPreferredLocation(getApplication(),locationSetting);
-                Utility.resetLocationStatus(getApplicationContext());
-                WetterSyncAdapter.syncImmediately(getApplicationContext());
-                reInitializeNavigation();
-            }
-        }
-    }
+//    class GeoLookUpTask extends AsyncTask<Double, Integer, Long> {
+//
+//        @Override
+//        protected Long doInBackground(Double... doubles) {
+//            return WetterSyncAdapter.geoLookUp(getApplicationContext(), "", doubles[0], doubles[1]);
+//        }
+//
+//        protected void onProgressUpdate(Integer... progress) {
+////            setProgressPercent(progress[0]);
+//        }
+//
+//        protected void onPostExecute(Long locationId) {
+//            // dismiss progress dialog and update ui
+//            if (!(locationId<0)) {
+//                String locationSetting = Utility.getLocationSetting(getApplication(),locationId);
+//                Utility.setPreferredLocation(getApplication(),locationSetting);
+//                Utility.resetLocationStatus(getApplicationContext());
+//                WetterSyncAdapter.syncImmediately(getApplicationContext());
+//                reInitializeNavigation();
+//            }
+//        }
+//    }
 
     public void askForPermissions() {
         // Here, thisActivity is the current activity

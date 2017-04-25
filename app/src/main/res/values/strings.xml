@@ -275,4 +275,7 @@
     <string name="nav_sub_item_1">Sub item 1</string>
     <string name="nav_sub_item_2">Sub item 2</string>
 
+    <string name="daily_weather_forcast">Daily Weather Forecast</string>
+    <string name="hourly_weather_forcast">Hourly Weather Forecast</string>
+
 </resources>
