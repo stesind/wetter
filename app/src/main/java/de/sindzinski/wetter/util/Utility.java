@@ -377,18 +377,40 @@ public class Utility {
         return String.format(context.getString(windFormat), windSpeed, direction);
     }
 
-    public static String getFormattedWind(Context context, float windSpeed, float degrees) {
-        int windFormat;
-        if (Utility.isMetric(context)) {
-            windFormat = R.string.format_wind_kmh;
-        } else {
-            windFormat = R.string.format_wind_mph;
-            windSpeed = .621371192237334f * windSpeed;
-        }
+//    public static String getFormattedWind(Context context, float windSpeed, float degrees) {
+//        int windFormat;
+//        if (Utility.isMetric(context)) {
+//            windFormat = R.string.format_wind_kmh;
+//        } else {
+//            windFormat = R.string.format_wind_mph;
+//            windSpeed = .621371192237334f * windSpeed;
+//        }
+//
+//        // From wind direction in degrees, determine compass direction as a string (e.g NW)
+//        // You know what's fun, writing really long if/else statements with tons of possible
+//        // conditions.  Seriously, try it!
+//        String direction = "Unknown";
+//        if (degrees >= 337.5 || degrees < 22.5) {
+//            direction = "N";
+//        } else if (degrees >= 22.5 && degrees < 67.5) {
+//            direction = "NE";
+//        } else if (degrees >= 67.5 && degrees < 112.5) {
+//            direction = "E";
+//        } else if (degrees >= 112.5 && degrees < 157.5) {
+//            direction = "SE";
+//        } else if (degrees >= 157.5 && degrees < 202.5) {
+//            direction = "S";
+//        } else if (degrees >= 202.5 && degrees < 247.5) {
+//            direction = "SW";
+//        } else if (degrees >= 247.5 && degrees < 292.5) {
+//            direction = "W";
+//        } else if (degrees >= 292.5 && degrees < 337.5) {
+//            direction = "NW";
+//        }
+//        return String.format(context.getString(windFormat), windSpeed, direction);
+//    }
 
-        // From wind direction in degrees, determine compass direction as a string (e.g NW)
-        // You know what's fun, writing really long if/else statements with tons of possible
-        // conditions.  Seriously, try it!
+    public static String getWindDirection(Context mContext, float degrees) {
         String direction = "Unknown";
         if (degrees >= 337.5 || degrees < 22.5) {
             direction = "N";
@@ -407,7 +429,7 @@ public class Utility {
         } else if (degrees >= 292.5 && degrees < 337.5) {
             direction = "NW";
         }
-        return String.format(context.getString(windFormat), windSpeed, direction);
+        return direction;
     }
 
     /**
@@ -943,5 +965,38 @@ public class Utility {
         return artPack;
     }
 
+    public static String getFormattedWind(Context mContext, float windSpeed, float direction) {
+        int windFormat;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String windUnit = prefs.getString(mContext.getString(R.string.pref_units_wind_key),
+                mContext.getString(R.string.pref_art_pack_wug_alt_black));
 
+        if (windUnit.equals(mContext.getString(R.string.pref_units_wind_kmh))) {
+            windFormat = R.string.format_small_wind_kmh;
+            return  String.format(mContext.getString(windFormat), windSpeed, getWindDirection(mContext, direction));
+        } else if (windUnit.equals(mContext.getString(R.string.pref_units_wind_kn))) {
+            windFormat = R.string.format_small_wind_kn;
+            return String.format(mContext.getString(windFormat), convKmvToKn(windSpeed), getWindDirection(mContext, direction));
+        } else if (windUnit.equals(mContext.getString(R.string.pref_units_wind_bf))) {
+            windFormat = R.string.format_small_wind_bf;
+            return String.format(mContext.getString(windFormat), convKnToBf(convKmvToKn(windSpeed)), getWindDirection(mContext, direction));
+        } else {
+            windFormat = R.string.format_small_wind_kmh;
+            return  String.format(mContext.getString(windFormat), windSpeed, getWindDirection(mContext, direction));
+        }
+    }
+
+    public static float convKmvToKn(float kmh) {
+
+        float kn = 0.0F;
+        kn = kmh/1.852F;
+        return kn;
+    }
+
+    public static float convKnToBf(float kn) {
+        float bf = 0.0F;
+        float value = (kn+10F)/6F;
+        bf = (int) Math.round(value);
+        return bf;
+    }
 }

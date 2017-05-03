@@ -145,7 +145,7 @@ public class WetterSyncAdapter extends AbstractThreadedSyncAdapter {
                 builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendPath(Utility.getApiKey(getContext()))
 //                        .appendPath("geolookup")
-//                        .appendPath("conditions")
+                        .appendPath("conditions")
                         .appendPath(TYPE_PATH)
                         .appendPath("q")
                         .appendEncodedPath(getLocationSetting(getContext()))

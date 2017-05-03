@@ -85,6 +85,7 @@ public class SettingsActivity extends Activity {
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_api_key_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_wind_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_art_pack_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_art_pack_wug_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_theme_key)));
@@ -204,6 +205,9 @@ public class SettingsActivity extends Activity {
                 WetterSyncAdapter.configurePeriodicSync(getActivity(), syncInterval, flexTime);
 //                WetterSyncAdapter.setSyncInterval(getActivity(),Long.parseLong(sharedPreferences.getString(getActivity().getString(R.string.pref_sync_key), getActivity().getString(R.string.pref_sync_default))));
             } else if (key.equals(getString(R.string.pref_units_key))) {
+                // units have changed. update lists of weather entries accordingly
+                getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
+            } else if (key.equals(getString(R.string.pref_units_wind_key))) {
                 // units have changed. update lists of weather entries accordingly
                 getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
             } else if (key.equals(getString(R.string.pref_location_status_key))) {

@@ -27,7 +27,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.database.Cursor;
-import android.graphics.drawable.Icon;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -63,11 +62,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.facebook.stetho.Stetho;
-//import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-//import com.google.android.gms.common.GooglePlayServicesRepairableException;
-//import com.google.android.gms.location.places.Place;
-//import com.google.android.gms.location.places.ui.PlacePicker;
-//import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,6 +74,12 @@ import de.sindzinski.wetter.sync.WetterSyncAdapter;
 import de.sindzinski.wetter.util.Utility;
 
 import static de.sindzinski.wetter.util.Utility.wordFirstCap;
+
+//import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+//import com.google.android.gms.common.GooglePlayServicesRepairableException;
+//import com.google.android.gms.location.places.Place;
+//import com.google.android.gms.location.places.ui.PlacePicker;
+//import com.google.android.gms.maps.model.LatLng;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -137,7 +137,9 @@ public class MainActivity extends AppCompatActivity implements
 
         mViewPager.setAdapter(adapter);
 
-        setDefaultFragmentFromIntentData();
+        if (savedInstanceState !=null) {
+            setDefaultFragmentFromIntentData();
+        }
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -166,10 +168,10 @@ public class MainActivity extends AppCompatActivity implements
 
     private void setDefaultFragmentFromIntentData() {
 
-        Intent intent = getIntent();
         String type;
+        Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        if (extras != null) {
+        if (extras !=null) {
             type = extras.getString(Intent.EXTRA_TEXT);
             if (type.equals(HOURLY_VIEW)) {
                 mViewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -180,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     }
+
 
     private void registerAppShortcuts() {
         ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
@@ -316,32 +319,107 @@ public class MainActivity extends AppCompatActivity implements
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the mSelectedItems results somewhere
                         // or return them to the component that opened the dialog
-
-                    }
-                })
-                .setNeutralButton(R.string.dialog_place_picker, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-//                        startPlacePicker();
                         onCurrentLocation();
                     }
                 })
+//                .setNeutralButton(R.string.dialog_place_picker, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int id) {
+////                        startPlacePicker();
+//                    }
+//                })
         ;
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
     public void onCurrentLocation() {
+        if (!checkAndAskForPermission()) {
+            return;
+        }
         Location location = getLocation();
         double lat = location.getLatitude();
         double lon = location.getLongitude();
-        String locationSetting = getLocationSetting(lat, lon);
-        if (locationSetting.compareTo("") != 0) {
-            Utility.setPreferredLocation(getApplicationContext(), locationSetting);
-            Utility.resetLocationStatus(getApplicationContext());
-            WetterSyncAdapter.syncImmediately(getApplicationContext());
-            reInitializeNavigation();
+
+        boolean geolookup = false;
+        if (geolookup) {
+            //use geolookup from wug
+            new GeoLookUpTask().execute("", lat, lon);
+            String locationSetting = getLocationSetting(lat, lon);
+            if (locationSetting.compareTo("") != 0) {
+                Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                Utility.resetLocationStatus(getApplicationContext());
+                WetterSyncAdapter.syncImmediately(getApplicationContext());
+                reInitializeNavigation();
+            }
+        } else {
+            // or use geocoder alternatively
+            String locationSetting = getLocationSetting(lat, lon);
+            Log.d(LOG_TAG, "new locationetting");
+            if (locationSetting.compareTo("") != 0) {
+                new GeoLookUpTask().execute(locationSetting, 0, 0);
+                Utility.setPreferredLocation(getApplicationContext(), locationSetting);
+                Utility.resetLocationStatus(getApplicationContext());
+                WetterSyncAdapter.syncImmediately(getApplicationContext());
+                reInitializeNavigation();
+            }
         }
+    }
+
+
+    public Location getLocation() {
+        Location location = null;
+        String provider = "";
+        String locationSetting = "";
+
+        if (!checkAndAskForPermission()) {
+            return null;
+        }
+
+        try {
+            // Get the location manager
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            // Define the criteria how to select the locatioin provider -> use
+            // default
+            Criteria criteria = new Criteria();
+            if (locationManager != null) {
+                provider = locationManager.getBestProvider(criteria, false);
+                location = locationManager.getLastKnownLocation(provider);
+            }
+
+        } catch (Exception ex) {
+            Log.e(LOG_TAG, "Error creating location service: " + ex.getMessage());
+        }
+
+        return location;
+    }
+
+    public String getLocationSetting(double lat, double lon) {
+        String locationSetting = "";
+        //locale must be set to us for getting english countey names
+        Geocoder geoCoder = new Geocoder(this, Locale.US);
+        StringBuilder builder = new StringBuilder();
+        try {
+
+            List<Address> address = geoCoder.getFromLocation(lat, lon, 1);
+//            String countryCode = address.get(0).getCountryCode();
+            String country = address.get(0).getCountryName();
+//            String country = CountryCodes.getCountry(countryCode);
+            String locality = address.get(0).getLocality();
+//            String adminArea = address.get(0).getAdminArea();
+            builder
+                    .append(country)
+                    .append("/")
+//                    .append(adminArea);
+                    .append(locality);
+
+            locationSetting = builder.toString(); //This is the complete locationsetting as wug.
+            locationSetting = wordFirstCap(locationSetting, "/");
+        } catch (IOException e) {
+        } catch (NullPointerException e) {
+        }
+
+        return locationSetting;
     }
 
 //    public void startPlacePicker() {
@@ -390,28 +468,31 @@ public class MainActivity extends AppCompatActivity implements
 //    }
 
 
-//    class GeoLookUpTask extends AsyncTask<Double, Integer, Long> {
-//
-//        @Override
-//        protected Long doInBackground(Double... doubles) {
-//            return WetterSyncAdapter.geoLookUp(getApplicationContext(), "", doubles[0], doubles[1]);
-//        }
-//
-//        protected void onProgressUpdate(Integer... progress) {
-////            setProgressPercent(progress[0]);
-//        }
-//
-//        protected void onPostExecute(Long locationId) {
-//            // dismiss progress dialog and update ui
-//            if (!(locationId<0)) {
-//                String locationSetting = Utility.getLocationSetting(getApplication(),locationId);
-//                Utility.setPreferredLocation(getApplication(),locationSetting);
-//                Utility.resetLocationStatus(getApplicationContext());
-//                WetterSyncAdapter.syncImmediately(getApplicationContext());
-//                reInitializeNavigation();
-//            }
-//        }
-//    }
+    class GeoLookUpTask extends AsyncTask<Object, Integer, Long> {
+
+        @Override
+        protected Long doInBackground(Object... params) {
+            String locationSetting = (String) params[0];
+            Double lat = (Double) params[0];
+            Double lon = (Double) params[1];
+            return WetterSyncAdapter.geoLookUp(getApplicationContext(), locationSetting, lat, lon);
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long locationId) {
+            // dismiss progress dialog and update ui
+            if (!(locationId < 0)) {
+                String locationSetting = Utility.getLocationSetting(getApplication(), locationId);
+                Utility.setPreferredLocation(getApplication(), locationSetting);
+                Utility.resetLocationStatus(getApplicationContext());
+                WetterSyncAdapter.syncImmediately(getApplicationContext());
+                reInitializeNavigation();
+            }
+        }
+    }
 
     public void askForPermissions() {
         // Here, thisActivity is the current activity
@@ -478,7 +559,7 @@ public class MainActivity extends AppCompatActivity implements
     /*
     one time ask, but should be asked beforehand
      */
-    public void checkAndAskForPermission() {
+    public boolean checkAndAskForPermission() {
         final Context context = this;
         if ((ContextCompat.checkSelfPermission((Activity) context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
                 ContextCompat.checkSelfPermission((Activity) context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -486,6 +567,9 @@ public class MainActivity extends AppCompatActivity implements
                             android.Manifest.permission.ACCESS_FINE_LOCATION,
                             android.Manifest.permission.ACCESS_COARSE_LOCATION},
                     PERMISSIONS_REQUEST_GET_LOCATION);
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -499,61 +583,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public Location getLocation() {
-        Location location = null;
-        String provider = "";
-        String locationSetting = "";
-
-        if (!checkForPermission()) {
-            askForPermissions();
-            return null;
-        }
-
-        try {
-            // Get the location manager
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            // Define the criteria how to select the locatioin provider -> use
-            // default
-            Criteria criteria = new Criteria();
-            if (locationManager != null) {
-                provider = locationManager.getBestProvider(criteria, false);
-                location = locationManager.getLastKnownLocation(provider);
-            }
-
-        } catch (Exception ex) {
-            Log.e(LOG_TAG, "Error creating location service: " + ex.getMessage());
-        }
-
-        return location;
-    }
-
-    public String getLocationSetting(double lat, double lon) {
-        String locationSetting = "";
-        //locale must be set to us for getting english countey names
-        Geocoder geoCoder = new Geocoder(this, Locale.US);
-        StringBuilder builder = new StringBuilder();
-        try {
-
-
-            List<Address> address = geoCoder.getFromLocation(lat, lon, 1);
-//            String countryCode = address.get(0).getCountryCode();
-            String country = address.get(0).getCountryName();
-//            String country = CountryCodes.getCountry(countryCode);
-            String locality = address.get(0).getLocality();
-            String adminArea = address.get(0).getAdminArea();
-            builder
-                    .append(country)
-                    .append("/")
-                    .append(adminArea);
-
-            locationSetting = builder.toString(); //This is the complete locationsetting as wug.
-            locationSetting = wordFirstCap(locationSetting, "/");
-        } catch (IOException e) {
-        } catch (NullPointerException e) {
-        }
-
-        return locationSetting;
-    }
 
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {

@@ -108,9 +108,9 @@ public class ForecastAdapterHourly extends CursorAdapter {
         // Read user preference for metric or imperial temperature units
 
         // Read wind speed and direction from cursor and update view
-        float windSpeedStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);
-        float windDirStr = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_DEGREES);
-        viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
+        float windSpeed = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_WIND_SPEED);
+        float windDir = cursor.getFloat(ForecastHourlyFragment.COL_WEATHER_DEGREES);
+        viewHolder.mWindView.setText(Utility.getFormattedWind(mContext, windSpeed, windDir));
 
 
         // Get weather icon

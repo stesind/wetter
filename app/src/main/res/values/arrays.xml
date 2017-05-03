@@ -6,9 +6,21 @@
         <item>@string/pref_units_label_imperial</item>
     </string-array>
 
+    <string-array name="pref_units_wind_options">
+        <item>@string/pref_units_label_kmh</item>
+        <item>@string/pref_units_label_kn</item>
+        <item>@string/pref_units_label_bf</item>
+    </string-array>
+
     <string-array name="pref_units_values">
         <item>@string/pref_units_metric</item>
         <item>@string/pref_units_imperial</item>
+    </string-array>
+
+    <string-array name="pref_units_wind_values">
+        <item>@string/pref_units_wind_kmh</item>
+        <item>@string/pref_units_wind_kn</item>
+        <item>@string/pref_units_wind_bf</item>
     </string-array>
 
     <string-array name="pref_theme_options">

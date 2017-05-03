@@ -37,18 +37,26 @@
 
     <!-- Label for the temperature units preference [CHAR LIMIT=30] -->
     <string name="pref_units_label">Temperature Units</string>
+    <string name="pref_units_wind_label">Wind Speed Units</string>
 
     <!-- Label for metric option in temperature unit preference [CHAR LIMIT=25] -->
     <string name="pref_units_label_metric">Metric</string>
+    <string name="pref_units_label_kmh">km/h</string>
+    <string name="pref_units_label_kn">kn</string>
+    <string name="pref_units_label_bf">bf</string>
 
     <!-- Label for imperial option in temperature unit preference [CHAR LIMIT=25] -->
     <string name="pref_units_label_imperial">Imperial</string>
 
     <!-- Key name for temperature unit preference in SharedPreferences [CHAR LIMIT=NONE] -->
     <string name="pref_units_key" translatable="false">units</string>
+    <string name="pref_units_wind_key" translatable="false">units_wind</string>
 
     <!-- Value in SharedPreferences for metric temperature unit option [CHAR LIMIT=NONE] -->
     <string name="pref_units_metric" translatable="false">metric</string>
+    <string name="pref_units_wind_kmh" translatable="false">kmh</string>
+    <string name="pref_units_wind_kn" translatable="false">kn</string>
+    <string name="pref_units_wind_bf" translatable="false">bf</string>
 
     <!-- Value in SharedPreferences for imperial temperature unit option [CHAR LIMIT=NONE] -->
     <string name="pref_units_imperial" translatable="false">imperial</string>
@@ -148,6 +156,8 @@
     <!-- Wind in kph [CHAR LIMIT=25] -->
     <string name="format_wind_kmh">Wind: <xliff:g id="speed">%1$1.0f</xliff:g> km/h <xliff:g id="direction">%2$s</xliff:g></string>
     <string name="format_small_wind_kmh"><xliff:g id="speed">%1$1.0f</xliff:g> km/h <xliff:g id="direction">%2$s</xliff:g></string>
+    <string name="format_small_wind_kn"><xliff:g id="speed">%1$1.0f</xliff:g> kn <xliff:g id="direction">%2$s</xliff:g></string>
+    <string name="format_small_wind_bf"><xliff:g id="speed">%1$1.0f</xliff:g> bf <xliff:g id="direction">%2$s</xliff:g></string>
 
     <!-- Pressure format CHAR LIMIT=25] -->
     <string name="format_pressure">Pressure: <xliff:g id="pressure">%1.0f</xliff:g> hPa</string>

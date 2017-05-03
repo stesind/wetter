@@ -149,7 +149,7 @@ public class ForecastAdapterDaily extends CursorAdapter {
         // Read wind speed and direction from cursor and update view
         float windSpeedStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_WIND_SPEED);
         float windDirStr = cursor.getFloat(ForecastDailyFragment.COL_WEATHER_DEGREES);
-        viewHolder.mWindView.setText(Utility.getSmallFormattedWind(mContext, windSpeedStr, windDirStr));
+        viewHolder.mWindView.setText(Utility.getFormattedWind(mContext, windSpeedStr, windDirStr));
 
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
